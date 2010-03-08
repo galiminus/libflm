@@ -43,7 +43,7 @@ AC_TYPE_SSIZE_T
 AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([gettimeofday localtime_r memset regcomp])
+AC_CHECK_FUNCS([gettimeofday localtime_r memset])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
