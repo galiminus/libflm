@@ -14,29 +14,39 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _FLM_CORE_PRIVATE_FILE_H_
-# define _FLM_CORE_PRIVATE_FILE_H_
+#ifndef _FLM_CORE_PRIVATE_TIMER_H_
+# define _FLM_CORE_PRIVATE_TIMER_H_
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <stdint.h>
 
-#include "flm/core/public/file.h"
+typedef struct flm__Timer flm__Timer;
 
-#include "flm/core/private/io.h"
+#include "flm/core/public/timer.h"
 
-#define FLM__TYPE_FILE	0x00030000
+#include "flm/core/private/obj.h"
 
-struct flm_File
+#define FLM__TYPE_TIMER	0x00110000
+
+struct flm_Timer
 {
 	/* inheritance */
-	struct flm_IO		io;
+	struct flm_Obj		obj;
+
+	/* members */
+	flm_TimerHandler	handler;
+
+	uint32_t		rounds;
+
+	struct flm_Timer *	next;
 };
 
 int
-flm__FileInit (flm_File * file, int fd);
+flm__TimerInit (flm_Timer *		timer,
+		flm_Monitor *		monitor,
+		flm_TimerHandler	handler,
+		uint32_t		seconds);
 
-int
-flm__FileInitOpen (flm_File * file,					\
-		   const char * root, const char * path, const char * mode);
+void
+flm__TimerPerfDestruct (flm__Timer *	timer);
 
-#endif /* !_FLM_CORE_PRIVATE_FILE_H_ */
+#endif /* !_FLM_CORE_PRIVATE_TIMER_H_ */

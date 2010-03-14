@@ -148,7 +148,7 @@ flm__EpollPerfWait (flm__Epoll * epoll)
 	int ret;
 
 	for (;;) {
-		ev_max = epoll_wait (epoll->epfd, epoll->events, epoll->size, -1);
+		ev_max = epoll_wait (epoll->epfd, epoll->events, epoll->size, 100);
 		if (ev_max >= 0) {
 			break ;
 		}

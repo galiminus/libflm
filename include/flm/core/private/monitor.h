@@ -22,6 +22,7 @@
 #include <time.h>
 
 #include "flm/core/public/monitor.h"
+#include "flm/core/public/timer.h"
 
 #include "flm/core/private/obj.h"
 #include "flm/core/private/io.h"
@@ -33,19 +34,7 @@ typedef int (*flm__MonitorAdd_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorDel_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorWait_f) (flm_Monitor * monitor);
 
-struct flm__MonitorTo
-{
-	flm_IO *			io;
-	unsigned int			count;
-	LIST_ENTRY (flm__MonitorTo)	entries;
-};
-
-struct flm__MonitorElem
-{
-	flm_IO *			io;
-	void *				data;
-	struct flm__MonitorTo *		to;
-};
+#define FLM__MONITOR_TM_WHEEL_SIZE	256
 
 struct flm_Monitor
 {
@@ -62,21 +51,17 @@ struct flm_Monitor
 	struct {
 		/* current time */
 		struct timespec			current;
+
 		/* milliseconds before next timeout */
 		int				next;
+
+		/* timer wheel (8*8*8*8) */
+		flm_Timer *			wheel[FLM__MONITOR_TM_WHEEL_SIZE];
+
+		/* current position in the timer wheel */
+		size_t				pos;
 	} tm;
-
-	struct {
-		/* current position in the timeout array */
-		size_t				current;
-		/* array of timeouts, each filterent is a second */
-		flm__Map *			wheel;
-		/* number of timeouts set */
-		size_t				count;
-	} to;
 };
-
-#define FLM_MONITOR__TIMER_WHEEL_SIZE	256
 
 int
 flm__MonitorInit (flm_Monitor * monitor);
@@ -89,5 +74,8 @@ flm__MonitorAdd (flm_Monitor * monitor, flm_IO * io);
 
 int
 flm__MonitorDel (flm_Monitor * monitor, flm_IO * io);
+
+int
+flm__MonitorTick (flm_Monitor * monitor);
 
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_H_ */

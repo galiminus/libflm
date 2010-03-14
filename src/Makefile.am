@@ -14,6 +14,7 @@ poll.c				\
 select.c			\
 obj.c				\
 tcp_server.c			\
+timer.c				\
 slabs_ext.c			\
 stream.c
 

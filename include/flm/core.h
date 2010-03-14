@@ -31,6 +31,7 @@ extern "C" {
 #include <flm/core/public/obj.h>
 #include <flm/core/public/stream.h>
 #include <flm/core/public/tcp_server.h>
+#include <flm/core/public/timer.h>
 
 #ifdef __cplusplus
 }

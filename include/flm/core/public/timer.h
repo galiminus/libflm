@@ -14,29 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _FLM_CORE_PRIVATE_FILE_H_
-# define _FLM_CORE_PRIVATE_FILE_H_
+#ifndef _FLM_CORE_PUBLIC_TIMER_H_
+# define _FLM_CORE_PUBLIC_TIMER_H_
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <stdint.h>
 
-#include "flm/core/public/file.h"
+typedef struct flm_Timer flm_Timer;
 
-#include "flm/core/private/io.h"
+#include "flm/core/public/monitor.h"
 
-#define FLM__TYPE_FILE	0x00030000
+typedef void (*flm_TimerHandler)				\
+(flm_Timer * timer, flm_Monitor * monitor, void * data);
 
-struct flm_File
-{
-	/* inheritance */
-	struct flm_IO		io;
-};
+#include "flm/core/public/obj.h"
 
-int
-flm__FileInit (flm_File * file, int fd);
+#define FLM_TIMER(_obj) FLM_CAST(_obj, flm_Timer)
 
-int
-flm__FileInitOpen (flm_File * file,					\
-		   const char * root, const char * path, const char * mode);
+flm_Timer *
+flm_TimerNew (flm_Monitor *	monitor,
+	      flm_TimerHandler	handler,
+	      uint32_t		seconds);
 
-#endif /* !_FLM_CORE_PRIVATE_FILE_H_ */
+void
+flm_TimerReset (flm_Timer *	timer,
+		uint32_t	seconds);
+
+void
+flm_TimerCancel (flm_Timer *	timer);
+
+#endif /* !_FLM_CORE_PUBLIC_TIMER_H_ */

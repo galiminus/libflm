@@ -23,6 +23,7 @@
 #include "flm/core/private/epoll.h"
 #include "flm/core/private/poll.h"
 #include "flm/core/private/select.h"
+#include "flm/core/private/timer.h"
 
 flm_Monitor *
 flm_MonitorNew ()
@@ -56,8 +57,9 @@ flm_MonitorWait (flm_Monitor * monitor)
 	if (monitor->wait == NULL) {
 		return (0);
 	}
-	while (monitor->wait (monitor) != -1)
-		;
+	while (monitor->wait (monitor) != -1) {
+		flm__MonitorTick (monitor);
+	}
 	return (0);
 }
 
@@ -80,21 +82,16 @@ flm__MonitorInit (flm_Monitor * monitor)
 		goto error;
 	}
 
-	monitor->to.wheel = flm__MapNew (FLM_MONITOR__TIMER_WHEEL_SIZE);
-	if (monitor->to.wheel == NULL) {
+	if (clock_gettime (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
 		goto release_io_map;
 	}
-	monitor->to.current	=	0;
-	monitor->to.count	=	0;
-
-	if (clock_gettime (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
-		goto release_to_wheel;
-	}
-	monitor->tm.next = 0;
+	monitor->tm.next	=	0;
+	monitor->tm.pos		=	0;
+	memset (monitor->tm.wheel,					\
+		0,							\
+		FLM__MONITOR_TM_WHEEL_SIZE * sizeof (flm_Timer *));
 	return (0);
 
-release_to_wheel:
-	flm__Release (FLM_OBJ (monitor->to.wheel));
 release_io_map:
 	flm__Release (FLM_OBJ (monitor->io.map));
 error:
@@ -104,18 +101,15 @@ error:
 void
 flm__MonitorPerfDestruct (flm_Monitor * monitor)
 {
-	struct flm__MonitorElem * filter;
+	flm_IO * io;
 	size_t index;
 
-	FLM_MAP_FOREACH (monitor->io.map, filter, index) {
-		if (filter) {
-			flm__MonitorDel (monitor, filter->io);
+	FLM_MAP_FOREACH (monitor->io.map, io, index) {
+		if (io) {
+			flm__MonitorDel (monitor, io);
 		}
 	}
 	flm__Release (FLM_OBJ (monitor->io.map));
-
-	/* free to */
-	flm__Release (FLM_OBJ (monitor->to.wheel));
 	return ;
 }
 
@@ -123,17 +117,10 @@ int
 flm__MonitorAdd (flm_Monitor * monitor,
 		 flm_IO * io)
 {
-	struct flm__MonitorElem * filter;
-
-	if ((filter = flm_SlabAlloc (sizeof (struct flm__MonitorElem))) == NULL) {
-		goto error;
-	}
-
-	filter->io = flm__Retain (FLM_OBJ (io));
-	filter->to = NULL;
-
-	if (flm__MapSet (monitor->io.map, io->sys.fd, filter) == -1) {
-		goto free_filter;
+	if (flm__MapSet (monitor->io.map,			\
+			 io->sys.fd,				\
+			 flm__Retain (FLM_OBJ (io))) == -1) {
+		goto release_io;
 	}
 
 	if (monitor->add && monitor->add (monitor, io) == -1) {
@@ -143,11 +130,8 @@ flm__MonitorAdd (flm_Monitor * monitor,
 
 unset_map:
 	flm__MapRemove (monitor->io.map, io->sys.fd);
-free_filter:
-	flm__Release (FLM_OBJ (filter->io));
-	flm__Release (FLM_OBJ (filter->data));
-	flm_SlabFree (filter);
-error:
+release_io:
+	flm__Release (FLM_OBJ (io));
 	return (-1);
 }
 
@@ -155,14 +139,60 @@ int
 flm__MonitorDel (flm_Monitor * monitor,
 		 flm_IO * io)
 {
-	struct flm__MonitorElem * filter;
-
 	if (monitor->del) {
 		monitor->del (monitor, io);
 	}
-	if ((filter = flm__MapRemove (monitor->io.map, io->sys.fd))) {
-		flm__Release (FLM_OBJ (filter->io));
-		flm_SlabFree (filter);
+	if (flm__MapRemove (monitor->io.map, io->sys.fd)) {
+		flm__Release (FLM_OBJ (io));
 	}
+	return (0);
+}
+
+
+int
+flm__MonitorTick (flm_Monitor * monitor)
+{
+	struct timespec current;
+	struct timespec diff;
+	uint64_t msec;
+	uint64_t pos;
+
+	flm_Timer * timer;
+
+	/* update time */
+	if (clock_gettime (CLOCK_MONOTONIC, &current) == -1) {
+		return (-1);
+	}
+
+	/* get the time difference from the last time we checked */
+	if ((current.tv_nsec - monitor->tm.current.tv_nsec) < 0) {
+		diff.tv_sec = current.tv_sec - monitor->tm.current.tv_sec - 1;
+		diff.tv_nsec = 1000000000 + current.tv_nsec -	\
+			monitor->tm.current.tv_nsec;
+	}
+	else {
+		diff.tv_sec = current.tv_sec - monitor->tm.current.tv_sec;
+		diff.tv_nsec = current.tv_nsec - monitor->tm.current.tv_nsec;
+	}
+
+	msec = diff.tv_sec * 10 + (diff.tv_nsec + 1000000) / 100000000;
+
+	for (pos = 0; pos < msec; pos++) {
+		for (timer = monitor->tm.wheel[(monitor->tm.pos + pos) % \
+					       FLM__MONITOR_TM_WHEEL_SIZE];
+		     timer;
+		     timer = timer->next) {
+			if (timer->rounds > 0) {
+				timer->rounds--;
+				continue ;
+			}
+			if (timer->handler) {
+				timer->handler (monitor, timer, NULL);
+			}
+		}
+	}
+	monitor->tm.current = current;
+	monitor->tm.pos = (monitor->tm.pos + msec) %	\
+		FLM__MONITOR_TM_WHEEL_SIZE;
 	return (0);
 }

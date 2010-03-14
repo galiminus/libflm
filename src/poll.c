@@ -57,7 +57,8 @@ flm__PollInit (flm__Poll * poll)
 int
 flm__PollPerfWait (flm__Poll * _poll)
 {
-	struct flm__MonitorElem * filter;
+	flm_IO * io;
+
 	size_t index;
 	size_t fd;
 
@@ -71,16 +72,16 @@ flm__PollPerfWait (flm__Poll * _poll)
 	}
 
 	fd = 0;
-	FLM_MAP_FOREACH (FLM_MONITOR (_poll)->io.map, filter, index) {
-		if (filter == NULL) {
+	FLM_MAP_FOREACH (FLM_MONITOR (_poll)->io.map, io, index) {
+		if (io == NULL) {
 			continue ;
 		}
-		fds[fd].fd = filter->io->sys.fd;
+		fds[fd].fd = io->sys.fd;
 		fds[fd].events = 0;
-		if (filter->io->rd.want) {
+		if (io->rd.want) {
 			fds[fd].events = POLLIN | POLLHUP;
 		}
-		if (filter->io->wr.want) {
+		if (io->wr.want) {
 			fds[fd].events |= POLLOUT;
 		}
 		fd++;
@@ -99,19 +100,19 @@ flm__PollPerfWait (flm__Poll * _poll)
 
 	while (fd--) {
 
-		filter = flm__MapGet (FLM_MONITOR (_poll)->io.map, fds[fd].fd);
-		if (filter == NULL) {
+		io = flm__MapGet (FLM_MONITOR (_poll)->io.map, fds[fd].fd);
+		if (io == NULL) {
 			continue ;
 		}
 
 		if (fds[fd].revents & (POLLIN | POLLHUP)) {
-			flm__IORead (filter->io, FLM_MONITOR (_poll));
+			flm__IORead (io, FLM_MONITOR (_poll));
 		}
 		if (fds[fd].revents & POLLOUT) {
-			flm__IOWrite (filter->io, FLM_MONITOR (_poll));
+			flm__IOWrite (io, FLM_MONITOR (_poll));
 		}
-		if (filter->io->cl.shutdown && !filter->io->wr.want) {
-			flm__IOClose (filter->io, FLM_MONITOR (_poll));
+		if (io->cl.shutdown && !io->wr.want) {
+			flm__IOClose (io, FLM_MONITOR (_poll));
 		}
 	}
 

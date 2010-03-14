@@ -100,7 +100,8 @@ flm__SelectPerfDel (flm__Select * select,
 int
 flm__SelectPerfWait (flm__Select * _select)
 {
-	struct flm__MonitorElem * filter;
+	flm_IO * io;
+
 	size_t index;
 	int max_fd;
 
@@ -113,9 +114,9 @@ flm__SelectPerfWait (flm__Select * _select)
 	FD_ZERO (&wset);
 
 	max_fd = -1;
-	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, filter, index) {
+	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, io, index) {
 
-		if (filter == NULL) {
+		if (io == NULL) {
 			continue ;
 		}
 
@@ -123,14 +124,14 @@ flm__SelectPerfWait (flm__Select * _select)
 			break ;
 		}
 
-		if (filter->io->rd.want) {
+		if (io->rd.want) {
 			FD_SET (index, &rset);
 		}
-		if (filter->io->wr.want) {
+		if (io->wr.want) {
 			FD_SET (index, &wset);
 		}
-		if (filter->io->sys.fd > max_fd) {
-			max_fd = filter->io->sys.fd;
+		if (io->sys.fd > max_fd) {
+			max_fd = io->sys.fd;
 		}
 	}
 
@@ -145,9 +146,9 @@ flm__SelectPerfWait (flm__Select * _select)
 		return (-1); /* fatal error */
 	}
 
-	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, filter, index) {
+	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, io, index) {
 
-		if (filter == NULL) {
+		if (io == NULL) {
 			continue ;
 		}
 
@@ -156,13 +157,13 @@ flm__SelectPerfWait (flm__Select * _select)
 		}
 
 		if (FD_ISSET (index, &rset)) {
-			flm__IORead (filter->io, FLM_MONITOR (_select));
+			flm__IORead (io, FLM_MONITOR (_select));
 		}
 		if (FD_ISSET (index, &wset)) {
-			flm__IOWrite (filter->io, FLM_MONITOR (_select));
+			flm__IOWrite (io, FLM_MONITOR (_select));
 		}
-		if (filter->io->cl.shutdown && !filter->io->wr.want) {
-			flm__IOClose (filter->io, FLM_MONITOR (_select));
+		if (io->cl.shutdown && !io->wr.want) {
+			flm__IOClose (io, FLM_MONITOR (_select));
 		}
 	}
 	return (0);

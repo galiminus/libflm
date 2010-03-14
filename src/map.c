@@ -60,7 +60,7 @@ flm__MapSet (flm__Map * map,
 
 void *
 flm__MapGet (flm__Map * map,
-	    size_t index)
+	     size_t index)
 {
 	if (index >= map->alloc) {
 		return (NULL);
@@ -70,7 +70,7 @@ flm__MapGet (flm__Map * map,
 
 void *
 flm__MapRemove (flm__Map * map,
-	       size_t index)
+		size_t index)
 {
 	void * filter;
 
@@ -84,7 +84,7 @@ flm__MapRemove (flm__Map * map,
 
 int
 flm__MapInit (flm__Map * map,
-	       size_t alloc)
+	      size_t alloc)
 {
 	if (flm__ObjInit (FLM_OBJ (map)) == -1) {
 		goto error;
