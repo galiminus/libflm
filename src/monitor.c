@@ -58,7 +58,7 @@ flm_MonitorWait (flm_Monitor * monitor)
 		return (0);
 	}
 	while (monitor->wait (monitor) != -1) {
-		flm__MonitorTick (monitor);
+		flm__MonitorTimerTick (monitor);
 	}
 	return (0);
 }
@@ -66,6 +66,8 @@ flm_MonitorWait (flm_Monitor * monitor)
 int
 flm__MonitorInit (flm_Monitor * monitor)
 {
+	size_t count;
+
 	if (flm__ObjInit (FLM_OBJ (monitor)) == -1) {
 		goto error;
 	}
@@ -87,9 +89,9 @@ flm__MonitorInit (flm_Monitor * monitor)
 	}
 	monitor->tm.next	=	0;
 	monitor->tm.pos		=	0;
-	memset (monitor->tm.wheel,					\
-		0,							\
-		FLM__MONITOR_TM_WHEEL_SIZE * sizeof (flm_Timer *));
+	for (count = 0; count < FLM__MONITOR_TM_WHEEL_SIZE; count++) {
+		TAILQ_INIT (&(monitor->tm.wheel[count]));
+	}
 	return (0);
 
 release_io_map:
@@ -106,7 +108,7 @@ flm__MonitorPerfDestruct (flm_Monitor * monitor)
 
 	FLM_MAP_FOREACH (monitor->io.map, io, index) {
 		if (io) {
-			flm__MonitorDel (monitor, io);
+			flm__MonitorIODelete (monitor, io);
 		}
 	}
 	flm__Release (FLM_OBJ (monitor->io.map));
@@ -114,8 +116,8 @@ flm__MonitorPerfDestruct (flm_Monitor * monitor)
 }
 
 int
-flm__MonitorAdd (flm_Monitor * monitor,
-		 flm_IO * io)
+flm__MonitorIOAdd (flm_Monitor * monitor,
+		   flm_IO * io)
 {
 	if (flm__MapSet (monitor->io.map,			\
 			 io->sys.fd,				\
@@ -136,8 +138,8 @@ release_io:
 }
 
 int
-flm__MonitorDel (flm_Monitor * monitor,
-		 flm_IO * io)
+flm__MonitorIODelete (flm_Monitor * monitor,
+		      flm_IO * io)
 {
 	if (monitor->del) {
 		monitor->del (monitor, io);
@@ -150,49 +152,83 @@ flm__MonitorDel (flm_Monitor * monitor,
 
 
 int
-flm__MonitorTick (flm_Monitor * monitor)
+flm__MonitorTimerTick (flm_Monitor * monitor)
 {
 	struct timespec current;
-	struct timespec diff;
-	uint64_t msec;
-	uint64_t pos;
+	uint32_t sec;
+	uint32_t pos;
 
 	flm_Timer * timer;
+	struct flm_Timer temp;
 
 	/* update time */
 	if (clock_gettime (CLOCK_MONOTONIC, &current) == -1) {
 		return (-1);
 	}
 
-	/* get the time difference from the last time we checked */
-	if ((current.tv_nsec - monitor->tm.current.tv_nsec) < 0) {
-		diff.tv_sec = current.tv_sec - monitor->tm.current.tv_sec - 1;
-		diff.tv_nsec = 1000000000 + current.tv_nsec -	\
-			monitor->tm.current.tv_nsec;
-	}
-	else {
-		diff.tv_sec = current.tv_sec - monitor->tm.current.tv_sec;
-		diff.tv_nsec = current.tv_nsec - monitor->tm.current.tv_nsec;
-	}
+	sec = current.tv_sec - monitor->tm.current.tv_sec;
 
-	msec = diff.tv_sec * 10 + (diff.tv_nsec + 1000000) / 100000000;
-
-	for (pos = 0; pos < msec; pos++) {
-		for (timer = monitor->tm.wheel[(monitor->tm.pos + pos) % \
-					       FLM__MONITOR_TM_WHEEL_SIZE];
-		     timer;
-		     timer = timer->next) {
-			if (timer->rounds > 0) {
-				timer->rounds--;
+	for (pos = 0; pos < sec; pos++) {
+		TAILQ_FOREACH (timer,
+			       &(monitor->tm.wheel[(monitor->tm.pos + pos) % \
+						   FLM__MONITOR_TM_WHEEL_SIZE]),
+			       wh.entries) {
+			if (timer->wh.rounds > 0) {
+				timer->wh.rounds--;
 				continue ;
+
 			}
+			temp.wh.entries = timer->wh.entries;
+
+			flm__Retain (FLM_OBJ (timer));
+			flm_TimerCancel (timer);
 			if (timer->handler) {
-				timer->handler (monitor, timer, NULL);
+				timer->handler (timer, monitor, NULL);
 			}
+			flm__Release (FLM_OBJ (timer));
+			timer = &temp;
 		}
 	}
 	monitor->tm.current = current;
-	monitor->tm.pos = (monitor->tm.pos + msec) %	\
+	monitor->tm.pos = (monitor->tm.pos + sec) %	\
 		FLM__MONITOR_TM_WHEEL_SIZE;
 	return (0);
+}
+
+void
+flm__MonitorTimerAdd (flm_Monitor *	monitor,
+		      flm_Timer *	timer,
+		      uint32_t		delay)
+{
+	timer->wh.rounds = delay / FLM__MONITOR_TM_WHEEL_SIZE;
+	timer->wh.pos = (timer->monitor->tm.pos + delay) %	\
+		FLM__MONITOR_TM_WHEEL_SIZE;
+
+	TAILQ_INSERT_TAIL (&(monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
+	flm__Retain (FLM_OBJ (timer));
+	return ;
+}
+
+void
+flm__MonitorTimerDelete (flm_Monitor *	monitor,
+			 flm_Timer *	timer)
+{
+	TAILQ_REMOVE (&(monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
+	flm__Release (FLM_OBJ (timer));
+	return ;
+}
+
+void
+flm__MonitorTimerReset (flm_Monitor *	monitor,
+			flm_Timer *	timer,
+			uint32_t	delay)
+{
+	TAILQ_REMOVE (&(timer->monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
+
+	timer->wh.rounds = delay / FLM__MONITOR_TM_WHEEL_SIZE;
+	timer->wh.pos = (timer->monitor->tm.pos + delay) %	\
+		FLM__MONITOR_TM_WHEEL_SIZE;
+
+	TAILQ_INSERT_TAIL (&(monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
+	return ;
 }

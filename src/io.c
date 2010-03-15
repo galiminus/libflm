@@ -103,7 +103,7 @@ flm__IOInit (flm_IO *			io,
 
 	flm__ErrorAdd (FLM__TYPE_IO >> 16, flm__IOErrors);
 
-	if (flm__MonitorAdd (monitor, io) == -1) {
+	if (flm__MonitorIOAdd (monitor, io) == -1) {
 		goto filter_destruct;
 	}
 
@@ -326,7 +326,7 @@ flm__IOPerfClose (flm_IO *	io,
 		  flm_Monitor *	monitor)
 {
 	FLM_IO_EVENT (io, cl, monitor);
-	if (flm__MonitorDel (monitor, io) == -1) {
+	if (flm__MonitorIODelete (monitor, io) == -1) {
 		FLM_IO_EVENT (io, er, monitor);
 	}
 	return ;

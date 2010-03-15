@@ -110,8 +110,19 @@ flm__SelectPerfWait (flm__Select * _select)
 
 	int ret;
 
+	struct timeval delay;
+
 	FD_ZERO (&rset);
 	FD_ZERO (&wset);
+
+	if (FLM__MONITOR_TM_RES >= 1000) {
+		delay.tv_sec = FLM__MONITOR_TM_RES / 1000;
+		delay.tv_usec = FLM__MONITOR_TM_RES % 1000;
+	}
+	else {
+		delay.tv_sec = 0;
+		delay.tv_usec = FLM__MONITOR_TM_RES;
+	}
 
 	max_fd = -1;
 	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, io, index) {
@@ -136,7 +147,7 @@ flm__SelectPerfWait (flm__Select * _select)
 	}
 
 	for (;;) {
-		ret = select (max_fd + 1, &rset, &wset, NULL, NULL);
+		ret = select (max_fd + 1, &rset, &wset, NULL, &delay);
 		if (ret >= 0) {
 			break ;
 		}

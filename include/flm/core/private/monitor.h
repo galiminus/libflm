@@ -34,7 +34,8 @@ typedef int (*flm__MonitorAdd_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorDel_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorWait_f) (flm_Monitor * monitor);
 
-#define FLM__MONITOR_TM_WHEEL_SIZE	256
+#define FLM__MONITOR_TM_WHEEL_SIZE	1024
+#define FLM__MONITOR_TM_RES		1000 /* milliseconds */
 
 struct flm_Monitor
 {
@@ -55,11 +56,11 @@ struct flm_Monitor
 		/* milliseconds before next timeout */
 		int				next;
 
-		/* timer wheel (8*8*8*8) */
-		flm_Timer *			wheel[FLM__MONITOR_TM_WHEEL_SIZE];
-
 		/* current position in the timer wheel */
 		size_t				pos;
+
+		/* simple timer wheel */
+		TAILQ_HEAD (tmwh, flm_Timer)	wheel[FLM__MONITOR_TM_WHEEL_SIZE];
 	} tm;
 };
 
@@ -70,12 +71,26 @@ void
 flm__MonitorPerfDestruct (flm_Monitor * monitor);
 
 int
-flm__MonitorAdd (flm_Monitor * monitor, flm_IO * io);
+flm__MonitorIOAdd (flm_Monitor * monitor, flm_IO * io);
 
 int
-flm__MonitorDel (flm_Monitor * monitor, flm_IO * io);
+flm__MonitorIODelete (flm_Monitor * monitor, flm_IO * io);
 
 int
-flm__MonitorTick (flm_Monitor * monitor);
+flm__MonitorTimerTick (flm_Monitor * monitor);
+
+void
+flm__MonitorTimerAdd (flm_Monitor *	monitor,
+		      flm_Timer *	timer,
+		      uint32_t		delay);
+
+void
+flm__MonitorTimerDelete (flm_Monitor *	monitor,
+			 flm_Timer *	timer);
+
+void
+flm__MonitorTimerReset (flm_Monitor *	monitor,
+			flm_Timer *	timer,
+			uint32_t	delay);
 
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_H_ */

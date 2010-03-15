@@ -56,7 +56,7 @@ struct flm_Filter
 	/* inheritance */
 	struct flm_Obj				obj;
 
-	TAILQ_HEAD (queue, flm__FilterInput)	inputs;
+	TAILQ_HEAD (flin, flm__FilterInput)	inputs;
 
 	/* IO methods */
 	struct {

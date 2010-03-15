@@ -88,7 +88,7 @@ flm__PollPerfWait (flm__Poll * _poll)
 	}
 
 	for (;;) {
-		ret = poll (fds, fd, -1);
+		ret = poll (fds, fd, FLM__MONITOR_TM_RES);
 		if (ret >= 0) {
 			break ;
 		}

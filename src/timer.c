@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "flm/core/public/timer.h"
 
@@ -26,7 +27,7 @@
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,
-	      uint32_t		seconds)
+	      uint32_t		delay)
 {
 	flm_Timer * timer;
 
@@ -34,7 +35,7 @@ flm_TimerNew (flm_Monitor *	monitor,
 	if (timer == NULL) {
 		return (NULL);
 	}
-	if (flm__TimerInit (timer, monitor, handler, seconds) == -1) {
+	if (flm__TimerInit (timer, monitor, handler, delay) == -1) {
 		flm_SlabFree (timer);
 		return (NULL);
 	}
@@ -43,48 +44,47 @@ flm_TimerNew (flm_Monitor *	monitor,
 
 void
 flm_TimerReset (flm_Timer *	timer,
-		uint32_t	seconds)
+		uint32_t	delay)
 {
-
+	if (timer->set) {
+		flm__MonitorTimerReset (timer->monitor, timer, delay);
+	}
+	else {
+		timer->set = true;
+		flm__MonitorTimerAdd (timer->monitor, timer, delay);
+	}
+	return ;
 }
 
 void
 flm_TimerCancel (flm_Timer *	timer)
 {
-
+	if (timer->set) {
+		timer->set = false;
+		flm__MonitorTimerDelete (timer->monitor, timer);
+	}
+	return ;
 }
 
 int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
-		uint32_t		seconds)
+		uint32_t		delay)
 {
-	uint32_t pos;
-
 	if (flm__ObjInit (FLM_OBJ (timer)) == -1) {
-		goto error;
+		return (-1);
 	}
 	FLM_OBJ (timer)->type = FLM__TYPE_TIMER;
 
-	FLM_OBJ (timer)->perf.destruct =				\
-		(flm__ObjPerfDestruct_f) flm__TimerPerfDestruct;
-
 	timer->handler = handler;
-	timer->rounds = seconds / FLM__MONITOR_TM_WHEEL_SIZE;
+	timer->monitor = monitor;
+	timer->set = false;
 
-	pos = (monitor->tm.pos + seconds) % FLM__MONITOR_TM_WHEEL_SIZE;
-	timer->next = monitor->tm.wheel[pos];
-	monitor->tm.wheel[pos] = timer;
+	/* round delay to the upper second */
+	delay = (delay + 1000) / 1000;
+
+	flm_TimerReset (timer, delay);
 
 	return (0);
-
-error:
-	return (-1);
-}
-
-void
-flm__TimerPerfDestruct (flm__Timer * timer)
-{
-	return ;
 }

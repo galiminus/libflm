@@ -17,6 +17,8 @@
 #ifndef _FLM_CORE_PRIVATE_TIMER_H_
 # define _FLM_CORE_PRIVATE_TIMER_H_
 
+#include <sys/queue.h>
+
 #include <stdint.h>
 
 typedef struct flm__Timer flm__Timer;
@@ -30,23 +32,28 @@ typedef struct flm__Timer flm__Timer;
 struct flm_Timer
 {
 	/* inheritance */
-	struct flm_Obj		obj;
+	struct flm_Obj			obj;
 
 	/* members */
-	flm_TimerHandler	handler;
+	flm_TimerHandler		handler;
+	flm_Monitor *			monitor;
 
-	uint32_t		rounds;
+	bool				set;
 
-	struct flm_Timer *	next;
+	struct {
+		uint32_t			rounds;
+		size_t				pos;
+		TAILQ_ENTRY (flm_Timer)		entries;
+	} wh;
 };
 
 int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
-		uint32_t		seconds);
+		uint32_t		delay);
 
 void
-flm__TimerPerfDestruct (flm__Timer *	timer);
+flm__TimerPerfDestruct (flm_Timer *	timer);
 
 #endif /* !_FLM_CORE_PRIVATE_TIMER_H_ */
