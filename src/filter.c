@@ -56,9 +56,9 @@ flm_FilterAppendBuffer (flm_Filter * filter,
 
 int
 flm_FilterAppendFile (flm_Filter * filter,
-		    flm_File * file,
-		    off_t off,
-		    size_t count)
+		      flm_File * file,
+		      off_t off,
+		      size_t count)
 {
 	struct flm__FilterInput * input;
 	struct stat stat;
@@ -81,19 +81,6 @@ flm_FilterAppendFile (flm_Filter * filter,
 	input->off = off;
 	input->count = count;
 	TAILQ_INSERT_TAIL (&(filter->inputs), input, entries);
-	return (0);
-}
-
-int
-flm_FilterPipe (flm_Filter * filter,
-	      flm_Filter * output,
-	      off_t off,
-	      size_t count)
-{
-	(void) filter;
-	(void) output;
-	(void) off;
-	(void) count;
 	return (0);
 }
 

@@ -21,6 +21,8 @@
 
 typedef struct flm_Stream flm_Stream;
 
+#include "flm/core/public/buffer.h"
+#include "flm/core/public/file.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
 

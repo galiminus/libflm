@@ -116,6 +116,10 @@ void
 flm__IOPerfDestruct (flm_IO * io);
 
 int
+flm__IOSocket (int	domain,
+	       int	type);
+
+int
 flm__IOAccept (flm_IO * io);
 
 int

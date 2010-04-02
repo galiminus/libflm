@@ -125,19 +125,9 @@ flm__IOInitSocket (flm_IO *		io,
 		   int			type)
 {
 	int fd;
-	long flags;
 
-	if ((fd = socket (domain, type, 0)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
+	if ((fd = flm__IOSocket (domain, type)) == -1) {
 		goto error;
-	}
-	if ((flags = fcntl (fd, F_GETFL, NULL)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto close_fd;
-	}
-	if (fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto close_fd;
 	}
 	if (flm__IOInit (io, monitor, cl_handler, er_handler, data, fd) != 0) {
 		goto close_fd;
@@ -171,6 +161,33 @@ flm__IOPerfDestruct (flm_IO * io)
 	}
 	flm__FilterPerfDestruct (FLM_FILTER (io));
 	return ;
+}
+
+int
+flm__IOSocket (int	domain,
+	       int	type)
+{
+	int fd;
+	long flags;
+
+	if ((fd = socket (domain, type, 0)) < 0) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto error;
+	}
+	if ((flags = fcntl (fd, F_GETFL, NULL)) < 0) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+	if (fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+	return (fd);
+
+close_fd:
+	close (fd);
+error:
+	return (-1);
 }
 
 int
