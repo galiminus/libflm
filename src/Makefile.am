@@ -13,6 +13,7 @@ epoll.c				\
 poll.c				\
 select.c			\
 obj.c				\
+tcp_client.c			\
 tcp_server.c			\
 timer.c				\
 slabs_ext.c			\

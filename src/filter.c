@@ -56,9 +56,9 @@ flm_FilterAppendBuffer (flm_Filter * filter,
 
 int
 flm_FilterAppendFile (flm_Filter * filter,
-		    flm_File * file,
-		    off_t off,
-		    size_t count)
+		      flm_File * file,
+		      off_t off,
+		      size_t count)
 {
 	struct flm__FilterInput * input;
 	struct stat stat;

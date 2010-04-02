@@ -131,6 +131,10 @@ void
 flm__IOHandleTimeout (flm_Timer * timer, flm_Monitor * monitor, void * data);
 
 int
+flm__IOSocket (int	domain,
+	       int	type);
+
+int
 flm__IOAccept (flm_IO * io);
 
 int
