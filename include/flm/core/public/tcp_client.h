@@ -43,6 +43,9 @@ typedef void (*flm_TCPClientCloseHandler)				\
 typedef void (*flm_TCPClientErrorHandler)				\
 (flm_TCPClient * tcp_client, flm_Monitor * monitor, void * data);
 
+typedef void (*flm_TCPClientTimeoutHandler)				\
+(flm_TCPClient * tcp_client, flm_Monitor * monitor, void * data);
+
 flm_TCPClient *
 flm_TCPClientNew (flm_Monitor *				monitor,
 		  flm_TCPClientConnectHandler		cn_handler,
@@ -50,8 +53,10 @@ flm_TCPClientNew (flm_Monitor *				monitor,
 		  flm_TCPClientWriteHandler		wr_handler,
 		  flm_TCPClientCloseHandler		cl_handler,
 		  flm_TCPClientErrorHandler		er_handler,
+		  flm_TCPClientTimeoutHandler		to_handler,
 		  void *				data,
 		  const char *				host,
-		  uint16_t				port);
+		  uint16_t				port,
+		  uint32_t				timeout);
 
 #endif /* !_FLM_CORE_PUBLIC_TCP_CLIENT_H_ */

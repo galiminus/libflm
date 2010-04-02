@@ -159,7 +159,14 @@ flm__IOInitSocket (flm_IO *			io,
 	if ((fd = flm__IOSocket (domain, type)) == -1) {
 		goto error;
 	}
-	if (flm__IOInit (io, monitor, cl_handler, er_handler, data, fd) != 0) {
+	if (flm__IOInit (io,			\
+			 monitor,		\
+			 cl_handler,		\
+			 er_handler,		\
+			 to_handler,		\
+			 data,			\
+			 fd,			\
+			 timeout) != 0) {
 		goto close_fd;
 	}
 	return (0);
