@@ -17,6 +17,14 @@
 #ifndef _FLM_CORE_PRIVATE_MONITOR_SELECT_H_
 # define _FLM_CORE_PRIVATE_MONITOR_SELECT_H_
 
+/* According to POSIX.1-2001 */
+#include <sys/select.h>
+
+/* According to earlier standards */
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "flm/core/private/monitor.h"
 
 typedef struct flm__Select

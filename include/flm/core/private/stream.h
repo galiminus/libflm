@@ -47,14 +47,16 @@ struct flm_Stream
 #define FLM_STREAM__IOVEC_SIZE			8
 
 int
-flm__StreamInit (flm_Stream *		stream,
-		 flm_Monitor *		monitor,
-		 flm_StreamReadHandler	rd_handler,
-		 flm_StreamWriteHandler	wr_handler,
-		 flm_StreamCloseHandler	cl_handler,
-		 flm_StreamErrorHandler	er_handler,
-		 void *			data,
-		 int			fd);
+flm__StreamInit (flm_Stream *			stream,
+		 flm_Monitor *			monitor,
+		 flm_StreamReadHandler		rd_handler,
+		 flm_StreamWriteHandler		wr_handler,
+		 flm_StreamCloseHandler		cl_handler,
+		 flm_StreamErrorHandler		er_handler,
+		 flm_StreamTimeoutHandler	to_handler,
+		 void *				data,
+		 int				fd,
+		 uint32_t			timeout);
 
 void
 flm__StreamPerfRead (flm_Stream * stream,

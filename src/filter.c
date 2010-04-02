@@ -85,19 +85,6 @@ flm_FilterAppendFile (flm_Filter * filter,
 }
 
 int
-flm_FilterPipe (flm_Filter * filter,
-	      flm_Filter * output,
-	      off_t off,
-	      size_t count)
-{
-	(void) filter;
-	(void) output;
-	(void) off;
-	(void) count;
-	return (0);
-}
-
-int
 flm__FilterInit (flm_Filter * filter)
 {
 	if (flm__ObjInit (FLM_OBJ (filter)) == -1) {

@@ -64,9 +64,11 @@ flm__TCPServerInit (flm_TCPServer *			tcp_server,
 			       monitor,					\
 			       (flm__IOCloseHandler) cl_handler,	\
 			       (flm__IOErrorHandler) er_handler,	\
+			       NULL,
 			       data,					\
 			       AF_INET,					\
-			       SOCK_STREAM) == -1) {
+			       SOCK_STREAM,
+			       0) == -1) {
 		goto error;
 	}
 	FLM_OBJ (tcp_server)->type = FLM__TYPE_TCP_SERVER;

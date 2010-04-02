@@ -33,11 +33,12 @@ typedef void (*flm_TimerHandler)				\
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,
-	      uint32_t		seconds);
+	      void *		data,
+	      uint32_t		delay);
 
 void
 flm_TimerReset (flm_Timer *	timer,
-		uint32_t	seconds);
+		uint32_t	delay);
 
 void
 flm_TimerCancel (flm_Timer *	timer);

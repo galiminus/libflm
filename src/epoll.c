@@ -33,6 +33,9 @@ static int
 flm__EpollPerfDel (flm__Epoll * epoll, flm_IO * io);
 
 static int
+flm__EpollPerfReset (flm__Epoll * epoll, flm_IO * io);
+
+static int
 flm__EpollPerfWait (flm__Epoll * epoll);
 
 flm__Epoll *
@@ -66,6 +69,9 @@ flm__EpollInit (flm__Epoll * epoll)
 
 	FLM_MONITOR (epoll)->del	=			\
 		(flm__MonitorDel_f) flm__EpollPerfDel;
+
+	FLM_MONITOR (epoll)->reset	=			\
+		(flm__MonitorDel_f) flm__EpollPerfReset;
 
 	FLM_MONITOR (epoll)->wait	=			\
 		(flm__MonitorWait_f) flm__EpollPerfWait;
@@ -138,6 +144,16 @@ flm__EpollPerfDel (flm__Epoll * epoll,
 }
 
 int
+flm__EpollPerfReset (flm__Epoll * epoll,
+		     flm_IO * io)
+{
+	if (flm__EpollCtl (epoll, io, EPOLL_CTL_MOD) == -1) {
+		return (-1);
+	}
+	return (0);
+}
+
+int
 flm__EpollPerfWait (flm__Epoll * epoll)
 {
 	int ev_max;
@@ -155,8 +171,11 @@ flm__EpollPerfWait (flm__Epoll * epoll)
 		if (ev_max >= 0) {
 			break ;
 		}
-		if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) {
-			continue ;		}
+		if (errno == EINTR  ||		\
+		    errno == EAGAIN ||		\
+		    errno == EWOULDBLOCK) {
+			continue ;
+		}
 		return (-1);
 	}
 
@@ -167,17 +186,17 @@ flm__EpollPerfWait (flm__Epoll * epoll)
 		}
 
 		ret = 0;
-		if ((event->events & (EPOLLIN | EPOLLRDHUP)) &&			\
-		    flm__IORead (io, FLM_MONITOR (epoll)) == io->rd.limit &&	\
-		    io->rd.can &&						\
-		    flm__EpollCtl (epoll, io, EPOLL_CTL_MOD) == -1) {
+		if ((event->events & (EPOLLIN | EPOLLRDHUP)) &&		     \
+		    flm__IORead (io, FLM_MONITOR (epoll)) == io->rd.limit && \
+		    io->rd.can &&					     \
+		    flm__EpollPerfReset (epoll, io) == -1) {
 			ret = -1;
 		}
-		if ((event->events & EPOLLOUT) &&				\
-		    flm__IOWrite (io, FLM_MONITOR (epoll)) == io->wr.limit &&	\
-		    io->wr.can &&						\
-		    flm__EpollCtl (epoll, io, EPOLL_CTL_MOD) == -1) {
-				ret = -1;
+		if ((event->events & EPOLLOUT) &&			     \
+		    flm__IOWrite (io, FLM_MONITOR (epoll)) == io->wr.limit &&\
+		    io->wr.can &&					     \
+		    flm__EpollPerfReset (epoll, io) == -1) {
+			ret = -1;
 		}
 		if (io->cl.shutdown && !io->wr.want) {
 			flm__IOClose (io, FLM_MONITOR (epoll));

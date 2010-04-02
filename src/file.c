@@ -67,7 +67,9 @@ flm__FileInit (flm_File * file,
 			 NULL,			\
 			 NULL,			\
 			 NULL,			\
-			 fd) == -1) {
+			 NULL,			\
+			 fd,			\
+			 0) == -1) {
 		return (-1);
 	}
 	FLM_OBJ (file)->type = FLM__TYPE_FILE;

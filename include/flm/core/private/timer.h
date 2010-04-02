@@ -36,6 +36,7 @@ struct flm_Timer
 
 	/* members */
 	flm_TimerHandler		handler;
+	void *				data;
 	flm_Monitor *			monitor;
 
 	bool				set;
@@ -51,6 +52,7 @@ int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
+		void *			data,
 		uint32_t		delay);
 
 void

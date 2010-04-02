@@ -33,9 +33,6 @@ static int
 flm__SelectPerfAdd (flm__Select * select, flm_IO * io);
 
 static int
-flm__SelectPerfDel (flm__Select * select, flm_IO * io);
-
-static int
 flm__SelectPerfWait (flm__Select * select);
 
 flm__Select *
@@ -64,9 +61,6 @@ flm__SelectInit (flm__Select * select)
 	FLM_MONITOR (select)->add	=				\
 		(flm__MonitorAdd_f) flm__SelectPerfAdd;
 
-	FLM_MONITOR (select)->del	=				\
-		(flm__MonitorDel_f) flm__SelectPerfDel;
-
 	FLM_MONITOR (select)->wait	=				\
 		(flm__MonitorWait_f) flm__SelectPerfWait;
 
@@ -86,34 +80,16 @@ flm__SelectPerfAdd (flm__Select * select,
 }
 
 int
-flm__SelectPerfDel (flm__Select * select,
-		    flm_IO * io)
-{
-	(void) select;
-
-	if (io->sys.fd >= FD_SETSIZE) {
-		return (-1);
-	}
-	return (0);
-}
-
-int
 flm__SelectPerfWait (flm__Select * _select)
 {
 	flm_IO * io;
-
 	size_t index;
-	int max_fd;
+	int ret;
+	struct timeval delay;
 
 	fd_set rset;
 	fd_set wset;
-
-	int ret;
-
-	struct timeval delay;
-
-	FD_ZERO (&rset);
-	FD_ZERO (&wset);
+	int max;
 
 	if (FLM__MONITOR_TM_RES >= 1000) {
 		delay.tv_sec = FLM__MONITOR_TM_RES / 1000;
@@ -124,30 +100,27 @@ flm__SelectPerfWait (flm__Select * _select)
 		delay.tv_usec = FLM__MONITOR_TM_RES;
 	}
 
-	max_fd = -1;
+	max = -1;
+	FD_ZERO (&rset);
+	FD_ZERO (&wset);
 	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, io, index) {
-
 		if (io == NULL) {
 			continue ;
 		}
 
-		if (index >= FD_SETSIZE) {
-			break ;
-		}
-
 		if (io->rd.want) {
-			FD_SET (index, &rset);
+			FD_SET (io->sys.fd, &rset);
 		}
 		if (io->wr.want) {
-			FD_SET (index, &wset);
+			FD_SET (io->sys.fd, &wset);
 		}
-		if (io->sys.fd > max_fd) {
-			max_fd = io->sys.fd;
+		if (io->sys.fd > max) {
+			max = io->sys.fd;
 		}
 	}
 
 	for (;;) {
-		ret = select (max_fd + 1, &rset, &wset, NULL, &delay);
+		ret = select (max + 1, &rset, &wset, NULL, &delay);
 		if (ret >= 0) {
 			break ;
 		}
@@ -163,6 +136,10 @@ flm__SelectPerfWait (flm__Select * _select)
 			continue ;
 		}
 
+		if ((int)index > max) {
+			break ;
+		}
+
 		if (index >= FD_SETSIZE) {
 			break ;
 		}
@@ -175,6 +152,7 @@ flm__SelectPerfWait (flm__Select * _select)
 		}
 		if (io->cl.shutdown && !io->wr.want) {
 			flm__IOClose (io, FLM_MONITOR (_select));
+			break ;
 		}
 	}
 	return (0);

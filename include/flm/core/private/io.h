@@ -24,6 +24,7 @@
 
 #include "flm/core/public/io.h"
 #include "flm/core/public/monitor.h"
+#include "flm/core/public/timer.h"
 
 #include "flm/core/private/filter.h"
 
@@ -44,6 +45,9 @@ typedef void (*flm__IOCloseHandler)			\
 typedef void (*flm__IOErrorHandler)			\
 (flm_IO * io, flm_Monitor * monitor, void * data);
 
+typedef void (*flm__IOTimeoutHandler)			\
+(flm_IO * io, flm_Monitor * monitor, void * data);
+
 struct flm_IO
 {
 	/* inheritance */
@@ -53,6 +57,10 @@ struct flm_IO
 		int				fd;
 	} sys;
 
+	struct {
+		flm_Timer *			timer;
+		flm__IOTimeoutHandler		handler;
+	} to;
 	struct {
 		bool				can;
 		bool				want;
@@ -100,20 +108,27 @@ flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
 	     flm__IOCloseHandler	cl_handler,
 	     flm__IOErrorHandler	er_handler,
+	     flm__IOTimeoutHandler	to_handler,
 	     void *			data,
-	     int			fd);
+	     int			fd,
+	     uint32_t			timeout);
 
 int
-flm__IOInitSocket (flm_IO *		io,
-		   flm_Monitor *	monitor,
-		   flm__IOCloseHandler	cl_handler,
-		   flm__IOErrorHandler	er_handler,
-		   void *		data,
-		   int			domain,
-		   int			type);
+flm__IOInitSocket (flm_IO *			io,
+		   flm_Monitor *		monitor,
+		   flm__IOCloseHandler		cl_handler,
+		   flm__IOErrorHandler		er_handler,
+		   flm__IOTimeoutHandler	to_handler,
+		   void *			data,
+		   int				domain,
+		   int				type,
+		   uint32_t			timeout);
 
 void
 flm__IOPerfDestruct (flm_IO * io);
+
+void
+flm__IOHandleTimeout (flm_Timer * timer, flm_Monitor * monitor, void * data);
 
 int
 flm__IOAccept (flm_IO * io);

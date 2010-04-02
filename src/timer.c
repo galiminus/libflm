@@ -27,6 +27,7 @@
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,
+	      void *		data,
 	      uint32_t		delay)
 {
 	flm_Timer * timer;
@@ -35,7 +36,7 @@ flm_TimerNew (flm_Monitor *	monitor,
 	if (timer == NULL) {
 		return (NULL);
 	}
-	if (flm__TimerInit (timer, monitor, handler, delay) == -1) {
+	if (flm__TimerInit (timer, monitor, handler, data, delay) == -1) {
 		flm_SlabFree (timer);
 		return (NULL);
 	}
@@ -70,6 +71,7 @@ int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
+		void *			data,
 		uint32_t		delay)
 {
 	if (flm__ObjInit (FLM_OBJ (timer)) == -1) {
@@ -78,8 +80,11 @@ flm__TimerInit (flm_Timer *		timer,
 	FLM_OBJ (timer)->type = FLM__TYPE_TIMER;
 
 	timer->handler = handler;
+	timer->data = data;
 	timer->monitor = monitor;
 	timer->set = false;
+
+	printf ("CREATE\n");
 
 	/* round delay to the upper second */
 	delay = (delay + 1000) / 1000;
