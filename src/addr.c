@@ -44,7 +44,7 @@ error:
 }
 
 void
-flm__AddrDestruct (flm_Addr * addr)
+flm__AddrPerfDestruct (flm_Addr * addr)
 {
 	freeaddrinfo (addr->info);
 	return ;

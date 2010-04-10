@@ -1,6 +1,7 @@
 includedir=$(prefix)/include/flm/core/private
 
 include_HEADERS =			\
+addr.h					\
 alloc.h					\
 buffer.h				\
 filter.h				\

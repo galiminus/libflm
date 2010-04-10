@@ -24,7 +24,7 @@
  * using the slab allocator is faster but consumes much more memory.
  * Internaly, libflm use the slab allocator for each obj creation.
  *
- * You can disable the slab allocator by setting the \c LIBFLM_DISABLE_ALLOCATOR
+ * You can disable the slab allocator by setting the \c LIBFLM_DISABLE_SLAB_ALLOCATOR
  * environment variable to a value different than 'no'. This can be useful
  * for low-memory systems.
  */

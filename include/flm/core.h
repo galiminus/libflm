@@ -30,6 +30,8 @@ extern "C" {
 #include <flm/core/public/monitor.h>
 #include <flm/core/public/obj.h>
 #include <flm/core/public/stream.h>
+#include <flm/core/public/tcp_addr.h>
+#include <flm/core/public/tcp_client.h>
 #include <flm/core/public/tcp_server.h>
 #include <flm/core/public/timer.h>
 

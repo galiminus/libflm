@@ -17,6 +17,8 @@
 #ifndef _FLM_CORE_PRIVATE_TCP_CLIENT_H_
 # define _FLM_CORE_PRIVATE_TCP_CLIENT_H_
 
+#include <stdbool.h>
+
 #include "flm/core/public/tcp_client.h"
 
 #include "flm/core/private/io.h"
@@ -28,6 +30,9 @@ struct flm_TCPClient
 {
 	/* inheritance */
 	struct flm_IO				io;
+
+	/* members */
+	bool					connected;
 
 	struct {
 		flm_TCPClientConnectHandler	handler;
@@ -45,5 +50,10 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 		    void *				data,
 		    const char *			host,
 		    uint16_t				port);
+
+void
+flm__TCPClientPerfWrite (flm_TCPClient *	tcp_client,
+			 flm_Monitor *		monitor,
+			 uint8_t		count);
 
 #endif /* !_FLM_CORE_PRIVATE_TCP_CLIENT_H_ */

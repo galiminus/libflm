@@ -165,7 +165,6 @@ flm__EpollPerfWait (flm__Epoll * epoll)
 		if ((io = FLM_IO (event->data.ptr)) == NULL) {
 			continue ;
 		}
-
 		ret = 0;
 		if ((event->events & (EPOLLIN | EPOLLRDHUP)) &&			\
 		    flm__IORead (io, FLM_MONITOR (epoll)) == io->rd.limit &&	\

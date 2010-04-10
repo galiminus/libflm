@@ -19,7 +19,9 @@
 #include <sys/socket.h>
 
 #include "flm/core/private/alloc.h"
+#include "flm/core/private/error.h"
 #include "flm/core/private/stream.h"
+#include "flm/core/private/tcp_addr.h"
 #include "flm/core/private/tcp_client.h"
 
 flm_TCPClient *
@@ -47,7 +49,7 @@ flm_TCPClientNew (flm_Monitor * monitor,
 				cl_handler,				\
 				er_handler,				\
 				data,					\
-				host,				\
+				host,					\
 				port) == -1) {
 		flm_SlabFree (tcp_client);
 		return (NULL);
@@ -68,13 +70,23 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 		    uint16_t				port)
 {
 	int fd;
+	flm_TCPAddr * tcp_addr;
 
 	if ((fd = flm__IOSocket (AF_INET, SOCK_STREAM)) == -1) {
 		goto error;
 	}
 
-	if (connect (fd, NULL, NULL) == -1) {
+	/* do it synchronously for now, the Addr class should run
+	   asynchronously in the near future */
+	if ((tcp_addr = flm_TCPAddrNew (host, port)) == NULL) {
 		goto close_fd;
+	}
+
+	if (connect (fd,						\
+		     FLM_ADDR (tcp_addr)->info->ai_addr,		\
+		     FLM_ADDR (tcp_addr)->info->ai_addrlen) == -1 &&	\
+	    errno != EINPROGRESS) {
+		goto release_addr;
 	}
 
 	if (flm__StreamInit (FLM_STREAM (tcp_client),			\
@@ -84,17 +96,69 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 			     (flm_StreamCloseHandler) cl_handler,	\
 			     (flm_StreamErrorHandler) er_handler,	\
 			     data,					\
-			     FLM_IO (tcp_client)->sys.fd) == -1) {
+			     fd) == -1) {
 		goto close_fd;
 	}
 	FLM_OBJ (tcp_client)->type = FLM__TYPE_TCP_CLIENT;
 
+	/* the socket is in nonblocking mode, thus we need to check for
+	 connection completion on writing */
+	FLM_IO (tcp_client)->perf.write =			\
+		(flm__IOSysRead_f) flm__TCPClientPerfWrite;
+
 	tcp_client->cn.handler = cn_handler;
+
+	if (errno == EINPROGRESS) {
+		tcp_client->connected = false;
+		FLM_IO (tcp_client)->wr.want = true;
+	}
+	else {
+		tcp_client->connected = true;
+		FLM_IO_EVENT_WITH (tcp_client, cn, monitor, FLM_IO (tcp_client)->sys.fd);
+	}
 
 	return (0);
 
+release_addr:
+	flm__Release (FLM_OBJ (tcp_addr));
 close_fd:
 	close (fd);
 error:
 	return (-1);
+}
+
+void
+flm__TCPClientPerfWrite (flm_TCPClient *	tcp_client,
+			 flm_Monitor *		monitor,
+			 uint8_t		count)
+{
+	int error;
+	socklen_t len;
+
+	if (tcp_client->connected) {
+		flm__StreamPerfWrite (FLM_STREAM (tcp_client), monitor, count);
+		return ;
+	}
+	len = sizeof (error);
+	if (getsockopt (FLM_IO (tcp_client)->sys.fd,		\
+			SOL_SOCKET,				\
+			SO_ERROR,				\
+			&error,					\
+			&len) == -1) {
+		goto error;
+	}
+	if (error != 0 && error != EINPROGRESS) {
+		goto error;
+	}
+	printf ("PLOP\n");
+	FLM_IO_EVENT_WITH (tcp_client, cn, monitor, FLM_IO (tcp_client)->sys.fd);
+	tcp_client->connected = true;
+	return ;
+
+error:
+	/* fatal error */
+	flm__Error = error;
+	flm_IOClose (FLM_IO (tcp_client));
+	FLM_IO_EVENT (FLM_IO (tcp_client), er, monitor);
+	return ;
 }

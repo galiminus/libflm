@@ -23,6 +23,8 @@
 
 #include "flm/core/private/obj.h"
 
+#define FLM_ADDR(_obj) FLM_CAST(_obj, flm_Addr)
+
 #define FLM__TYPE_ADDR	0x00170000
 
 typedef struct flm_Addr

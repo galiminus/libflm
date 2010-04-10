@@ -15,35 +15,48 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "flm/core/private/tcp_addr.h"
+#include "flm/core/private/addr.h"
 #include "flm/core/private/alloc.h"
+#include "flm/core/private/tcp_addr.h"
 
 flm_TCPAddr *
 flm_TCPAddrNew (const char *		hostname,
 		uint16_t		port)
 {
-	flm_TCPAddr * TCPAddr;
+	flm_TCPAddr * tcp_addr;
 
-	if ((TCPAddr = flm_SlabAlloc (sizeof (flm_TCPAddr))) == NULL) {
+	if ((tcp_addr = flm_SlabAlloc (sizeof (flm_TCPAddr))) == NULL) {
 		return (NULL);
 	}
-	if (flm__TCPAddrInit (TCPAddr, hostname, port) == -1) {
-		flm_SlabFree (TCPAddr);
+	if (flm__TCPAddrInit (tcp_addr, hostname, port) == -1) {
+		flm_SlabFree (tcp_addr);
 		return (NULL);
 	}
-	return (TCPAddr);
+	return (tcp_addr);
 }
 
 int
-flm__TCPAddrInit (flm_TCPAddr *		tcpaddr,
+flm__TCPAddrInit (flm_TCPAddr *		tcp_addr,
 		  const char *		hostname,
 		  uint16_t		port)
 {
-	if (flm__ObjInit (FLM_OBJ (tcpaddr)) == -1) {
+	struct addrinfo hints;
+	char sport[6];
+
+	memset (&hints, 0, sizeof (struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	snprintf (sport, 6, "%d", port);
+
+	if (flm__AddrInit (FLM_ADDR (tcp_addr), hostname, sport, &hints) == -1) {
 		return (-1);
 	}
-	FLM_OBJ (tcpaddr)->type = FLM__TYPE_TCP_ADDR;
+	FLM_OBJ (tcp_addr)->type = FLM__TYPE_TCP_ADDR;
 
 	return (0);
 }
