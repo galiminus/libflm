@@ -40,14 +40,19 @@ typedef void (*flm_StreamCloseHandler)					\
 typedef void (*flm_StreamErrorHandler)					\
 (flm_Stream * stream, flm_Monitor * monitor, void * data);
 
+typedef void (*flm_StreamTimeoutHandler)				\
+(flm_Stream * stream, flm_Monitor * monitor, void * data);
+
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,	\
 	       flm_StreamReadHandler	rd_handler,	\
 	       flm_StreamWriteHandler	wr_handler,	\
 	       flm_StreamCloseHandler	cl_handler,	\
 	       flm_StreamErrorHandler	er_handler,	\
+	       flm_StreamTimeoutHandler	to_handler,	\
 	       void *			data,		\
-	       int			fd);
+	       int			fd,
+	       uint32_t			timeout);
 
 int
 flm_StreamPrintf (flm_Stream *	stream,

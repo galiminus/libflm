@@ -54,8 +54,10 @@ flm_StreamNew (flm_Monitor *		monitor,
 	       flm_StreamWriteHandler	wr_handler,
 	       flm_StreamCloseHandler	cl_handler,
 	       flm_StreamErrorHandler	er_handler,
+	       flm_StreamTimeoutHandler	to_handler,
 	       void *			data,
-	       int			fd)
+	       int			fd,
+	       uint32_t			timeout)
 {
 	flm_Stream * stream;
 
@@ -68,8 +70,10 @@ flm_StreamNew (flm_Monitor *		monitor,
 			     wr_handler,				\
 			     cl_handler,				\
 			     er_handler,				\
+			     to_handler,				\
 			     data,					\
-			     fd) == -1) {
+			     fd,					\
+			     timeout) == -1) {
 		flm_SlabFree (stream);
 		return (NULL);
 	}
@@ -157,21 +161,25 @@ flm_StreamPushFile (flm_Stream *	stream,
 }
 
 int
-flm__StreamInit (flm_Stream *		stream,
-		 flm_Monitor *		monitor,
-		 flm_StreamReadHandler	rd_handler,
-		 flm_StreamWriteHandler	wr_handler,
-		 flm_StreamCloseHandler	cl_handler,
-		 flm_StreamErrorHandler	er_handler,
-		 void *			data,
-		 int			fd)
+flm__StreamInit (flm_Stream *			stream,
+		 flm_Monitor *			monitor,
+		 flm_StreamReadHandler		rd_handler,
+		 flm_StreamWriteHandler		wr_handler,
+		 flm_StreamCloseHandler		cl_handler,
+		 flm_StreamErrorHandler		er_handler,
+		 flm_StreamTimeoutHandler	to_handler,
+		 void *				data,
+		 int				fd,
+		 uint32_t			timeout)
 {
 	if (flm__IOInit (FLM_IO (stream),			\
 			 monitor,				\
 			 (flm__IOCloseHandler) cl_handler,	\
 			 (flm__IOErrorHandler) er_handler,	\
+			 (flm__IOTimeoutHandler) to_handler,	\
 			 data,					\
-			 fd) == -1) {
+			 fd,					\
+			 timeout) == -1) {
 		return (-1);
 	}
 	FLM_OBJ (stream)->type = FLM__TYPE_STREAM;
@@ -205,7 +213,8 @@ flm__StreamPerfRead (flm_Stream *	stream,
 	size_t iov_read;
 
 	for (iov_count = 0; iov_count < count; iov_count++) {
-		iovec[iov_count].iov_base = flm_SlabAlloc (FLM_STREAM__RBUFFER_SIZE);
+		iovec[iov_count].iov_base =				\
+			flm_SlabAlloc (FLM_STREAM__RBUFFER_SIZE);
 
 		if (iovec[iov_count].iov_base == NULL) {
 			/* no more memory */
@@ -248,11 +257,11 @@ flm__StreamPerfRead (flm_Stream *	stream,
 	FLM_IO (stream)->rd.can = 1;
 	for (drain = nb_read; drain; drain_count++) {
 
-		iov_read = drain < iovec[drain_count].iov_len ?			\
+		iov_read = drain < iovec[drain_count].iov_len ?		\
 			drain : iovec[drain_count].iov_len;
 
-		if ((buffer = flm_BufferNew (iovec[drain_count].iov_base,	\
-					     iov_read,				\
+		if ((buffer = flm_BufferNew (iovec[drain_count].iov_base, \
+					     iov_read,			  \
 					     flm_SlabFree)) == NULL) {
 			FLM_IO_EVENT (FLM_IO (stream), er, monitor);
 			goto out;

@@ -78,6 +78,7 @@ flm__MonitorInit (flm_Monitor * monitor)
 
 	monitor->add		=	NULL;
 	monitor->del		=	NULL;
+	monitor->reset		=	NULL;
 	monitor->wait		=	NULL;
 
 	if ((monitor->io.map = flm__MapNew (0)) == NULL) {
@@ -150,6 +151,15 @@ flm__MonitorIODelete (flm_Monitor * monitor,
 	return (0);
 }
 
+int
+flm__MonitorIOReset (flm_Monitor * monitor,
+		     flm_IO * io)
+{
+	if (monitor->reset && monitor->reset (monitor, io) == -1) {
+		return (-1);
+	}
+	return (0);
+}
 
 int
 flm__MonitorTimerTick (flm_Monitor * monitor)
@@ -183,7 +193,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
 			flm__Retain (FLM_OBJ (timer));
 			flm_TimerCancel (timer);
 			if (timer->handler) {
-				timer->handler (timer, monitor, NULL);
+				timer->handler (timer, monitor, timer->data);
 			}
 			flm__Release (FLM_OBJ (timer));
 			timer = &temp;
@@ -200,6 +210,7 @@ flm__MonitorTimerAdd (flm_Monitor *	monitor,
 		      flm_Timer *	timer,
 		      uint32_t		delay)
 {
+	printf ("PUT TIMER\n");
 	timer->wh.rounds = delay / FLM__MONITOR_TM_WHEEL_SIZE;
 	timer->wh.pos = (timer->monitor->tm.pos + delay) %	\
 		FLM__MONITOR_TM_WHEEL_SIZE;

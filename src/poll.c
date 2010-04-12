@@ -66,8 +66,9 @@ flm__PollPerfWait (flm__Poll * _poll)
 
 	int ret;
 
-	if ((fds = flm__MemAlloc (flm__MapSize (FLM_MONITOR (_poll)->io.map) * \
-			       sizeof (struct pollfd))) == NULL) {
+	fds = flm__MemAlloc (flm__MapSize (FLM_MONITOR (_poll)->io.map) * \
+			     sizeof (struct pollfd));
+	if (fds == NULL) {
 		goto error;
 	}
 
@@ -92,7 +93,9 @@ flm__PollPerfWait (flm__Poll * _poll)
 		if (ret >= 0) {
 			break ;
 		}
-		if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) {
+		if (errno == EINTR  ||		\
+		    errno == EAGAIN ||		\
+		    errno == EWOULDBLOCK) {
 			continue ;
 		}
 		goto free_fds; /* fatal error */

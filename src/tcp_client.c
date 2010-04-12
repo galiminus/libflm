@@ -31,9 +31,11 @@ flm_TCPClientNew (flm_Monitor * monitor,
 		  flm_TCPClientWriteHandler		wr_handler,
 		  flm_TCPClientCloseHandler		cl_handler,
 		  flm_TCPClientErrorHandler		er_handler,
+		  flm_TCPClientTimeoutHandler		to_handler,
 		  void *				data,
 		  const char *				host,
-		  uint16_t				port)
+		  uint16_t				port,
+		  uint32_t				timeout)
 {
 	flm_TCPClient * tcp_client;
 
@@ -48,9 +50,11 @@ flm_TCPClientNew (flm_Monitor * monitor,
 				wr_handler,				\
 				cl_handler,				\
 				er_handler,				\
+				to_handler,				\
 				data,					\
 				host,					\
-				port) == -1) {
+				port,					\
+				timeout) == -1) {
 		flm_SlabFree (tcp_client);
 		return (NULL);
 	}
@@ -65,9 +69,11 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 		    flm_TCPClientWriteHandler		wr_handler,
 		    flm_TCPClientCloseHandler		cl_handler,
 		    flm_TCPClientErrorHandler		er_handler,
+		    flm_TCPClientTimeoutHandler		to_handler,
 		    void *				data,
 		    const char *			host,
-		    uint16_t				port)
+		    uint16_t				port,
+		    uint32_t				timeout)
 {
 	int fd;
 	flm_TCPAddr * tcp_addr;
@@ -95,8 +101,10 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 			     (flm_StreamWriteHandler) wr_handler,	\
 			     (flm_StreamCloseHandler) cl_handler,	\
 			     (flm_StreamErrorHandler) er_handler,	\
+			     (flm_StreamTimeoutHandler) to_handler,	\
 			     data,					\
-			     fd) == -1) {
+			     fd,
+			     timeout) == -1) {
 		goto close_fd;
 	}
 	FLM_OBJ (tcp_client)->type = FLM__TYPE_TCP_CLIENT;

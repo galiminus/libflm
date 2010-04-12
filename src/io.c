@@ -64,13 +64,23 @@ flm_IOClose (flm_IO *		io)
 	return ;
 }
 
+void
+flm_IOResetTimeout (flm_IO *	io,
+		    uint32_t	delay)
+{
+	flm_TimerReset (io->to.timer, delay);
+	return ;
+}
+
 int
 flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
 	     flm__IOCloseHandler	cl_handler,
 	     flm__IOErrorHandler	er_handler,
+	     flm__IOTimeoutHandler	to_handler,
 	     void *			data,
-	     int			fd)
+	     int			fd,
+	     uint32_t			timeout)
 {
 	if (flm__FilterInit (FLM_FILTER (io)) == -1) {
 		goto error;
@@ -81,6 +91,20 @@ flm__IOInit (flm_IO *			io,
 		(flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
 
 	io->sys.fd		=	fd;
+
+	if (timeout > 0) {
+		io->to.timer	= flm_TimerNew (monitor,		\
+					       flm__IOHandleTimeout,	\
+					       io,			\
+					       timeout);
+		if (flm__Retain (FLM_OBJ (io->to.timer)) == NULL) {
+			goto filter_destruct;
+		}
+		io->to.handler	=	to_handler;
+	}
+	else {
+		io->to.handler	=	NULL;
+	}
 
 	io->rd.can		=	false;
 	io->rd.want		=	true;
@@ -104,11 +128,15 @@ flm__IOInit (flm_IO *			io,
 	flm__ErrorAdd (FLM__TYPE_IO >> 16, flm__IOErrors);
 
 	if (flm__MonitorIOAdd (monitor, io) == -1) {
-		goto filter_destruct;
+		goto release_timer;
 	}
 
 	return (0);
 
+release_timer:
+	if (timeout) {
+		flm__Release (FLM_OBJ (io->to.timer));
+	}
 filter_destruct:
 	flm__FilterPerfDestruct (FLM_FILTER (io));
 error:
@@ -116,20 +144,29 @@ error:
 }
 
 int
-flm__IOInitSocket (flm_IO *		io,
-		   flm_Monitor *	monitor,
-		   flm__IOCloseHandler	cl_handler,
-		   flm__IOErrorHandler	er_handler,
-		   void *		data,
-		   int			domain,
-		   int			type)
+flm__IOInitSocket (flm_IO *			io,
+		   flm_Monitor *		monitor,
+		   flm__IOCloseHandler		cl_handler,
+		   flm__IOErrorHandler		er_handler,
+		   flm__IOTimeoutHandler	to_handler,
+		   void *			data,
+		   int				domain,
+		   int				type,
+		   uint32_t			timeout)
 {
 	int fd;
 
 	if ((fd = flm__IOSocket (domain, type)) == -1) {
 		goto error;
 	}
-	if (flm__IOInit (io, monitor, cl_handler, er_handler, data, fd) != 0) {
+	if (flm__IOInit (io,			\
+			 monitor,		\
+			 cl_handler,		\
+			 er_handler,		\
+			 to_handler,		\
+			 data,			\
+			 fd,			\
+			 timeout) != 0) {
 		goto close_fd;
 	}
 	return (0);
@@ -160,6 +197,23 @@ flm__IOPerfDestruct (flm_IO * io)
 		retry++;
 	}
 	flm__FilterPerfDestruct (FLM_FILTER (io));
+	return ;
+}
+
+void
+flm__IOHandleTimeout (flm_Timer * timer, flm_Monitor * monitor, void * data)
+{
+	flm_IO * io = data;
+
+	(void) timer;
+
+	FLM_IO_EVENT (io, to, monitor);
+	if (flm__MonitorIOReset (monitor, io) == -1) {
+		return ;
+	}
+	if (io->cl.shutdown && !io->wr.want) {
+		flm__IOClose (io, monitor);
+	}
 	return ;
 }
 
@@ -202,7 +256,7 @@ flm__IOAccept (flm_IO * io)
 	addr_len = sizeof (struct sockaddr_in);
 	addr = (struct sockaddr *) &addr_in;
 
-#if defined(linu)
+#if defined(linux) && defined(plop)
 	if ((fd = accept4 (io->sys.fd, addr, &addr_len, SOCK_NONBLOCK)) < 0) {
 		flm__Error = FLM_ERR_ERRNO;
 		goto error;
