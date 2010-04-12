@@ -30,17 +30,26 @@ typedef void (*flm_IOReadHandler) (flm_IO * io, void * data, size_t count);
 typedef void (*flm_IOWriteHandler) (flm_IO * io, void * data, size_t count);
 
 /**
- * \brief Close the \c flm_io obj as soon as possible.
+ * \brief Close the \c flm_io object as soon as possible.
  *
  * All the data to write will be written before closing the underlying
  * file descriptor. You will never receive read notifications anymore.
  *
- * \param io A pointer to a \c flm_io obj.
+ * \param io A pointer to a \c flm_io object.
  * \return Nothing, this function cannot fail.
  */
 void
 flm_IOShutdown (flm_IO * io);
 
+/**
+ * \brief Close the \c flm_io object immediatly.
+ *
+ * The underlying file descriptor will be closed even if some data are not
+ * processed or written yet.
+ *
+ * \param io A pointer to a \c flm_IO object.
+ * \return Nothing, this function cannot fail.
+ */
 void
 flm_IOClose (flm_IO * io);
 

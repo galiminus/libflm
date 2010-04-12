@@ -43,6 +43,24 @@ typedef void (*flm_TCPClientCloseHandler)				\
 typedef void (*flm_TCPClientErrorHandler)				\
 (flm_TCPClient * tcp_client, flm_Monitor * monitor, void * data);
 
+/**
+ * \brief Create a new TCPClient object and connect it to \c host:port.
+ *
+ * Note that the connection will be handled in the background, thus a connection
+ * error is more likely to appear in the error handler.
+ *
+ * \param monitor A pointer to the Monitor object used to monitor socket
+ * availability.
+ * \param cn_handler Handler called on connect.
+ * \param rd_handler Handler called on read.
+ * \param wr_handler Handler called on write.
+ * \param cl_handler Handler called on close.
+ * \param er_handler Handler called on error.
+ * \param data User defined data.
+ * \param host The hostname to connect to.
+ * \param port The port to connect to.
+ * \return A new TCPClient object.
+ */
 flm_TCPClient *
 flm_TCPClientNew (flm_Monitor *				monitor,
 		  flm_TCPClientConnectHandler		cn_handler,

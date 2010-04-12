@@ -19,8 +19,19 @@
 
 enum flm_error
 {
+	/**
+	 * Everything went fine.
+	 */
 	FLM_ERR_SUCCESS	=	0x0000,
+
+	/**
+	 * System error, you should take a look at errno.
+	 */
 	FLM_ERR_ERRNO,
+
+	/**
+	 * Default value, but this should never happen :)
+	 */
 	FLM_ERR_UNKNOWN
 };
 
@@ -28,7 +39,8 @@ enum flm_error
  * \brief Return last error code.
  *
  * All error codes are defined in the documentation.
- * The error code depends of the last operation performed.
+ * The error code depends of the last operation performed, note that
+ * the function is fully threadsafe and use per-thread variable.
  *
  * \return The last error code, this function itself cannot fail.
  */
