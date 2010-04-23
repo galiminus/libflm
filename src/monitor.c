@@ -18,10 +18,8 @@
 #include <string.h>
 
 #include "flm/core/private/alloc.h"
-#include "flm/core/private/map.h"
 #include "flm/core/private/monitor.h"
 #include "flm/core/private/epoll.h"
-#include "flm/core/private/poll.h"
 #include "flm/core/private/select.h"
 #include "flm/core/private/timer.h"
 
@@ -35,11 +33,6 @@ flm_MonitorNew ()
 
 	if ((!backend || !strcmp (backend, "epoll")) &&
 	    (monitor = FLM_MONITOR (flm__EpollNew ()))) {
-		return (monitor);
-	}
-
-	if ((!backend || !strcmp (backend, "poll")) &&
-	    (monitor = FLM_MONITOR (flm__PollNew ()))) {
 		return (monitor);
 	}
 
@@ -73,20 +66,13 @@ flm__MonitorInit (flm_Monitor * monitor)
 	}
 	FLM_OBJ (monitor)->type = FLM__TYPE_MONITOR;
 
-	FLM_OBJ (monitor)->perf.destruct =			\
-		(flm__ObjPerfDestruct_f) flm__MonitorPerfDestruct;
-
 	monitor->add		=	NULL;
 	monitor->del		=	NULL;
 	monitor->reset		=	NULL;
 	monitor->wait		=	NULL;
 
-	if ((monitor->io.map = flm__MapNew (0)) == NULL) {
-		goto error;
-	}
-
 	if (clock_gettime (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
-		goto release_io_map;
+		return (-1);
 	}
 	monitor->tm.next	=	0;
 	monitor->tm.pos		=	0;
@@ -94,61 +80,26 @@ flm__MonitorInit (flm_Monitor * monitor)
 		TAILQ_INIT (&(monitor->tm.wheel[count]));
 	}
 	return (0);
-
-release_io_map:
-	flm__Release (FLM_OBJ (monitor->io.map));
-error:
-	return (-1);
-}
-
-void
-flm__MonitorPerfDestruct (flm_Monitor * monitor)
-{
-	flm_IO * io;
-	size_t index;
-
-	FLM_MAP_FOREACH (monitor->io.map, io, index) {
-		if (io) {
-			flm__MonitorIODelete (monitor, io);
-		}
-	}
-	flm__Release (FLM_OBJ (monitor->io.map));
-	return ;
 }
 
 int
 flm__MonitorIOAdd (flm_Monitor * monitor,
 		   flm_IO * io)
 {
-	if (flm__MapSet (monitor->io.map,			\
-			 io->sys.fd,				\
-			 flm__Retain (FLM_OBJ (io))) == -1) {
-		goto release_io;
-	}
-
 	if (monitor->add && monitor->add (monitor, io) == -1) {
-		goto unset_map;
+		return (-1);
 	}
 	return (0);
-
-unset_map:
-	flm__MapRemove (monitor->io.map, io->sys.fd);
-release_io:
-	flm__Release (FLM_OBJ (io));
-	return (-1);
 }
 
-int
+void
 flm__MonitorIODelete (flm_Monitor * monitor,
 		      flm_IO * io)
 {
 	if (monitor->del) {
 		monitor->del (monitor, io);
 	}
-	if (flm__MapRemove (monitor->io.map, io->sys.fd)) {
-		flm__Release (FLM_OBJ (io));
-	}
-	return (0);
+	return ;
 }
 
 int
@@ -210,7 +161,6 @@ flm__MonitorTimerAdd (flm_Monitor *	monitor,
 		      flm_Timer *	timer,
 		      uint32_t		delay)
 {
-	printf ("PUT TIMER\n");
 	timer->wh.rounds = delay / FLM__MONITOR_TM_WHEEL_SIZE;
 	timer->wh.pos = (timer->monitor->tm.pos + delay) %	\
 		FLM__MONITOR_TM_WHEEL_SIZE;

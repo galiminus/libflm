@@ -22,59 +22,47 @@
 #include "flm/core/private/tcp_server.h"
 
 flm_TCPServer *
-flm_TCPServerNew (flm_Monitor * monitor,
-		  flm_TCPServerAcceptHandler		ac_handler,
-		  flm_TCPServerCloseHandler		cl_handler,
-		  flm_TCPServerErrorHandler		er_handler,
-		  void *				data,
-		  const char *				interface,
-		  uint16_t				port)
+flm_TCPServerNew (flm_Monitor *	monitor,
+		  const char * 	interface,
+		  uint16_t	port)
 {
 	flm_TCPServer * tcp_server;
 
-	tcp_server = flm_SlabAlloc (sizeof (flm_TCPServer));
+	tcp_server = flm__Alloc (sizeof (flm_TCPServer));
 	if (tcp_server == NULL) {
 		return (NULL);
 	}
 	if (flm__TCPServerInit (tcp_server,				\
 				monitor,				\
-				ac_handler,				\
-				cl_handler,				\
-				er_handler,				\
-				data,					\
 				interface,				\
 				port) == -1) {
-		flm_SlabFree (tcp_server);
+		flm__Free (tcp_server);
 		return (NULL);
 	}
 	return (tcp_server);
 }
 
+void
+flm_TCPServerOnRead (flm_TCPServer *		tcp_server,
+		     flm_TCPServerAcceptHandler	handler)
+{
+	return ;
+}
+
 int
-flm__TCPServerInit (flm_TCPServer *			tcp_server,
-		    flm_Monitor *			monitor,
-		    flm_TCPServerAcceptHandler		ac_handler,
-		    flm_TCPServerCloseHandler		cl_handler,
-		    flm_TCPServerErrorHandler		er_handler,
-		    void *				data,
-		    const char *			interface,
-		    uint16_t				port)
+flm__TCPServerInit (flm_TCPServer *	tcp_server,
+		    flm_Monitor *	monitor,
+		    const char *	interface,
+		    uint16_t		port)
 {
 	if (flm__IOInitSocket (FLM_IO (tcp_server),			\
 			       monitor,					\
-			       (flm__IOCloseHandler) cl_handler,	\
-			       (flm__IOErrorHandler) er_handler,	\
-			       NULL,
-			       data,					\
 			       AF_INET,					\
 			       SOCK_STREAM,
 			       0) == -1) {
 		goto error;
 	}
 	FLM_OBJ (tcp_server)->type = FLM__TYPE_TCP_SERVER;
-
-	FLM_IO (tcp_server)->perf.read =				\
-		(flm__IOSysRead_f) flm__TCPServerPerfRead;
 
 	if (setsockopt (FLM_IO (tcp_server)->sys.fd,			\
 			SOL_SOCKET,					\

@@ -27,41 +27,41 @@ flm_FileNew (int fd)
 {
 	flm_File * file;
 
-	file = flm_SlabAlloc (sizeof (flm_File));
+	file = flm__Alloc (sizeof (flm_File));
 	if (file == NULL) {
 		return (NULL);
 	}
 	if (flm__FileInit (file, fd) == -1) {
-		flm_SlabFree (file);
+		flm__Free (file);
 		return (NULL);
 	}
 	return (file);
 }
 
 flm_File *
-flm_FileOpen (const char * root,
-	      const char * path,
-	      const char * mode)
+flm_FileOpen (const char *	root,
+	      const char *	path,
+	      const char *	mode)
 {
 	flm_File * file;
 
-	file = flm_SlabAlloc (sizeof (flm_File));
+	file = flm__Alloc (sizeof (flm_File));
 	if (file == NULL) {
 		return (NULL);
 	}
 	if (flm__FileInitOpen (file, root, path, mode) == -1) {
-		flm_SlabFree (file);
+		flm__Free (file);
 		return (NULL);
 	}
 	return (file);
 }
 
 int
-flm__FileInit (flm_File * file,
-	       int fd)
+flm__FileInit (flm_File *	file,
+	       int		fd)
 {
 	/* a file is an IO for practical reason but doesn't share the
-	   asynchronous aspect of the other kind of IO, here */
+	   asynchronous aspect of the other kind of IO */
 	if (flm__IOInit (FLM_IO (file),		\
 			 NULL,			\
 			 NULL,			\
@@ -78,10 +78,10 @@ flm__FileInit (flm_File * file,
 }
 
 int
-flm__FileInitOpen (flm_File * file,
-		   const char * root,
-		   const char * path,
-		   const char * mode)
+flm__FileInitOpen (flm_File *	file,
+		   const char *	root,
+		   const char *	path,
+		   const char *	mode)
 {
 	int fd;
 	int flags;

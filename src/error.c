@@ -79,7 +79,7 @@ flm__ErrorLocation ()
 	}
 
 	if ((error = pthread_getspecific (flm__ErrorLocationKey)) == NULL) {
-		error = flm__MemAlloc (sizeof (int));
+		error = flm__Alloc (sizeof (int));
 		pthread_setspecific (flm__ErrorLocationKey, error);
 	}
 	return (error);

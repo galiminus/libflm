@@ -46,7 +46,7 @@ flm__Release (flm_Obj * obj)
 		if (obj->perf.destruct) {
 			obj->perf.destruct (obj);
 		}
-		flm_SlabFree (obj);
+		flm__Free (obj);
 	}
 	return ;
 }

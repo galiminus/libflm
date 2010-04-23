@@ -61,7 +61,7 @@ flm_StreamNew (flm_Monitor *		monitor,
 {
 	flm_Stream * stream;
 
-	if ((stream = flm_SlabAlloc (sizeof (flm_Stream))) == NULL) {
+	if ((stream = flm__Alloc (sizeof (flm_Stream))) == NULL) {
 		return (NULL);
 	}
 	if (flm__StreamInit (stream,					\
@@ -74,7 +74,7 @@ flm_StreamNew (flm_Monitor *		monitor,
 			     data,					\
 			     fd,					\
 			     timeout) == -1) {
-		flm_SlabFree (stream);
+		flm__Free (stream);
 		return (NULL);
 	}
 	return (stream);
@@ -103,7 +103,7 @@ flm_StreamPrintf (flm_Stream *	stream,
 
 	alloc = len + 1;
 
-	content = flm_SlabAlloc (alloc * sizeof (char));
+	content = flm__Alloc (alloc * sizeof (char));
 	if (content == NULL) {
 		goto error;
 	}
@@ -116,7 +116,7 @@ flm_StreamPrintf (flm_Stream *	stream,
 		goto free_content;
 	}
 
-	if ((buffer = flm_BufferNew (content, len, flm_SlabFree)) == NULL) {
+	if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
 		goto free_content;
 	}
 
@@ -129,7 +129,7 @@ flm_StreamPrintf (flm_Stream *	stream,
 release_buffer:
 	flm__Release (FLM_OBJ (buffer));
 free_content:
-	flm_SlabFree (content);
+	flm__Free (content);
 error:
 	return (-1);
 }
@@ -214,7 +214,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
 
 	for (iov_count = 0; iov_count < count; iov_count++) {
 		iovec[iov_count].iov_base =				\
-			flm_SlabAlloc (FLM_STREAM__RBUFFER_SIZE);
+			flm__Alloc (FLM_STREAM__RBUFFER_SIZE);
 
 		if (iovec[iov_count].iov_base == NULL) {
 			/* no more memory */
@@ -262,7 +262,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
 
 		if ((buffer = flm_BufferNew (iovec[drain_count].iov_base, \
 					     iov_read,			  \
-					     flm_SlabFree)) == NULL) {
+					     flm__Free)) == NULL) {
 			FLM_IO_EVENT (FLM_IO (stream), er, monitor);
 			goto out;
 		}
@@ -281,7 +281,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
 out:
 	/* free remaining iov_bases */
 	for (iov_count = drain_count; iov_count < count; iov_count++) {
-		flm_SlabFree (iovec[iov_count].iov_base);
+		flm__Free (iovec[iov_count].iov_base);
 	}
 
 	return ;
@@ -339,7 +339,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 		temp.entries = filter->entries;
 		flm__Release (filter->class.obj);
 		TAILQ_REMOVE (&(FLM_FILTER (stream)->inputs), filter, entries);
-		flm_SlabFree (filter);
+		flm__Free (filter);
 		filter = &temp;
 	}
 

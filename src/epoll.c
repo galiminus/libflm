@@ -43,12 +43,12 @@ flm__EpollNew ()
 {
 	flm__Epoll * epoll;
 
-	epoll = flm_SlabAlloc (sizeof (flm__Epoll));
+	epoll = flm__Alloc (sizeof (flm__Epoll));
 	if (epoll == NULL) {
 		return (NULL);
 	}
 	if (flm__EpollInit (epoll) == -1) {
-		flm_SlabFree (epoll);
+		flm__Free (epoll);
 		return (NULL);
 	}
 	return (epoll);
@@ -82,7 +82,7 @@ flm__EpollInit (flm__Epoll * epoll)
 		goto monitor_destruct;
 	}
 
-	epoll->events = flm__MemAlloc (epoll->size * sizeof (struct epoll_event));
+	epoll->events = flm__Alloc (epoll->size * sizeof (struct epoll_event));
 	if (epoll->events == NULL) {
 		goto close_epfd;
 	}

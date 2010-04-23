@@ -50,8 +50,7 @@ AC_CONFIG_FILES([Makefile
 		 include/flm/Makefile
 		 include/flm/core/Makefile
 		 include/flm/core/public/Makefile
-		 include/flm/core/private/Makefile
-		 include/flm/core/extern/Makefile])
+		 include/flm/core/private/Makefile])
 
 AC_CHECK_FUNCS([memset socket])
 

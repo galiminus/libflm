@@ -8,11 +8,9 @@ filter.h				\
 error.h					\
 file.h					\
 io.h					\
-map.h					\
 monitor.h				\
 select.h				\
 epoll.h					\
-poll.h					\
 obj.h					\
 stream.h				\
 tcp_client.h				\

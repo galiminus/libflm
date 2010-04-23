@@ -20,29 +20,12 @@
  * most commons memory-management functions (malloc(3), realloc(3) and free(3)),
  * the main purpose is to implement a tracing system above these function
  * keep track of allocations and desallocations.
- * libflm alse provides a slab allocator based on the memcached's allocator,
- * using the slab allocator is faster but consumes much more memory.
- * Internaly, libflm use the slab allocator for each obj creation.
- *
- * You can disable the slab allocator by setting the \c LIBFLM_DISABLE_SLAB_ALLOCATOR
- * environment variable to a value different than 'no'. This can be useful
- * for low-memory systems.
  */
 
 #ifndef _FLM_CORE_PRIVATE_ALLOC_H_
 # define _FLM_CORE_PRIVATE_ALLOC_H_
 
 #include <stdlib.h>
-
-#include "flm/core/public/alloc.h"
-
-#define FLM__SLABS_BASE		64
-#define FLM__SLABS_FACTOR	1.25
-
-struct flm__AllocSlabHeader {
-	unsigned int	clsid;
-	size_t		size;
-};
 
 /**
  * \brief Simple wrapper around malloc(3).
@@ -53,7 +36,7 @@ struct flm__AllocSlabHeader {
  * \retval NULL in case of error.
  */
 void *
-flm__MemAlloc (unsigned int size);
+flm__Alloc (unsigned int size);
 
 /**
  * \brief Simple wrapper around realloc(3)

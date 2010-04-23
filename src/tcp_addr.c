@@ -28,11 +28,11 @@ flm_TCPAddrNew (const char *		hostname,
 {
 	flm_TCPAddr * tcp_addr;
 
-	if ((tcp_addr = flm_SlabAlloc (sizeof (flm_TCPAddr))) == NULL) {
+	if ((tcp_addr = flm__Alloc (sizeof (flm_TCPAddr))) == NULL) {
 		return (NULL);
 	}
 	if (flm__TCPAddrInit (tcp_addr, hostname, port) == -1) {
-		flm_SlabFree (tcp_addr);
+		flm__Free (tcp_addr);
 		return (NULL);
 	}
 	return (tcp_addr);

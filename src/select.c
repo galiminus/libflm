@@ -40,12 +40,12 @@ flm__SelectNew ()
 {
 	flm__Select * select;
 
-	select = flm_SlabAlloc (sizeof (flm__Select));
+	select = flm__Alloc (sizeof (flm__Select));
 	if (select == NULL) {
 		return (NULL);
 	}
 	if (flm__SelectInit (select) == -1) {
-		flm_SlabFree (select);
+		flm__Free (select);
 		return (NULL);
 	}
 	return (select);
@@ -71,11 +71,10 @@ int
 flm__SelectPerfAdd (flm__Select * select,
 		    flm_IO * io)
 {
-	(void) select;
-
 	if (io->sys.fd >= FD_SETSIZE) {
 		return (-1);
 	}
+	select->ios[io->sys.fd] = io;
 	return (0);
 }
 
@@ -90,6 +89,7 @@ flm__SelectPerfWait (flm__Select * _select)
 	fd_set rset;
 	fd_set wset;
 	int max;
+	unsigned int fd;
 
 	if (FLM__MONITOR_TM_RES >= 1000) {
 		delay.tv_sec = FLM__MONITOR_TM_RES / 1000;
@@ -103,7 +103,7 @@ flm__SelectPerfWait (flm__Select * _select)
 	max = -1;
 	FD_ZERO (&rset);
 	FD_ZERO (&wset);
-	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, io, index) {
+	for (fd = 0; fd < FD_SETSIZE && (io = _select->ios[fd]); fd++) {
 		if (io == NULL) {
 			continue ;
 		}
@@ -130,8 +130,7 @@ flm__SelectPerfWait (flm__Select * _select)
 		return (-1); /* fatal error */
 	}
 
-	FLM_MAP_FOREACH (FLM_MONITOR (_select)->io.map, io, index) {
-
+	for (fd = 0; fd < FD_SETSIZE && (io = _select->ios[fd]); fd++) {
 		if (io == NULL) {
 			continue ;
 		}

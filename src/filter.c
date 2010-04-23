@@ -43,7 +43,7 @@ flm_FilterAppendBuffer (flm_Filter * filter,
 		count = buffer->len - off;
 	}
 
-	if ((input = flm_SlabAlloc (sizeof (struct flm__FilterInput))) == NULL) {
+	if ((input = flm__Alloc (sizeof (struct flm__FilterInput))) == NULL) {
 		return (-1);
 	}
 	input->class.buffer = flm__Retain (FLM_OBJ (buffer));
@@ -73,7 +73,7 @@ flm_FilterAppendFile (flm_Filter * filter,
 		count = stat.st_size - off;
 	}
 
-	if ((input = flm_SlabAlloc (sizeof (struct flm__FilterInput))) == NULL) {
+	if ((input = flm__Alloc (sizeof (struct flm__FilterInput))) == NULL) {
 		return (-1);
 	}
 	input->class.file = flm__Retain (FLM_OBJ (file));
@@ -109,7 +109,7 @@ flm__FilterPerfDestruct (flm_Filter * filter)
 		temp.entries = input->entries;
 		flm__Release (input->class.obj);
 		TAILQ_REMOVE (&filter->inputs, input, entries);
-		flm_SlabFree (input);
+		flm__Free (input);
 		input = &temp;
 	}
 	return ;

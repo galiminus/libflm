@@ -39,7 +39,7 @@ flm_TCPClientNew (flm_Monitor * monitor,
 {
 	flm_TCPClient * tcp_client;
 
-	tcp_client = flm_SlabAlloc (sizeof (flm_TCPClient));
+	tcp_client = flm__Alloc (sizeof (flm_TCPClient));
 	if (tcp_client == NULL) {
 		return (NULL);
 	}
@@ -55,7 +55,7 @@ flm_TCPClientNew (flm_Monitor * monitor,
 				host,					\
 				port,					\
 				timeout) == -1) {
-		flm_SlabFree (tcp_client);
+		flm__Free (tcp_client);
 		return (NULL);
 	}
 	return (tcp_client);

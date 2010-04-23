@@ -32,12 +32,12 @@ flm_TimerNew (flm_Monitor *	monitor,
 {
 	flm_Timer * timer;
 
-	timer = flm_SlabAlloc (sizeof (flm_Timer));
+	timer = flm__Alloc (sizeof (flm_Timer));
 	if (timer == NULL) {
 		return (NULL);
 	}
 	if (flm__TimerInit (timer, monitor, handler, data, delay) == -1) {
-		flm_SlabFree (timer);
+		flm__Free (timer);
 		return (NULL);
 	}
 	return (timer);

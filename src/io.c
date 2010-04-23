@@ -36,12 +36,6 @@
 #include "flm/core/private/obj.h"
 #include "flm/core/private/monitor.h"
 
-const char * flm__IOErrors[] =
-{
-	"Object is not shared",
-	"Not implemented"
-};
-
 void
 flm_IOShutdown (flm_IO *	io)
 {
@@ -60,7 +54,6 @@ flm_IOClose (flm_IO *		io)
 	io->wr.want = false;
 
 	io->cl.shutdown = true;
-
 	return ;
 }
 
@@ -75,10 +68,6 @@ flm_IOResetTimeout (flm_IO *	io,
 int
 flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
-	     flm__IOCloseHandler	cl_handler,
-	     flm__IOErrorHandler	er_handler,
-	     flm__IOTimeoutHandler	to_handler,
-	     void *			data,
 	     int			fd,
 	     uint32_t			timeout)
 {
@@ -114,13 +103,6 @@ flm__IOInit (flm_IO *			io,
 	io->wr.want		=	false;
 	io->wr.limit		=	4;
 
-	io->cl.shutdown		=	false;
-	io->cl.handler		=	cl_handler;
-
-	io->er.handler		=	er_handler;
-
-	io->user.data		=	data;
-
 	io->perf.read		=	NULL;
 	io->perf.write		=	NULL;
 	io->perf.close		=	flm__IOPerfClose;
@@ -146,10 +128,6 @@ error:
 int
 flm__IOInitSocket (flm_IO *			io,
 		   flm_Monitor *		monitor,
-		   flm__IOCloseHandler		cl_handler,
-		   flm__IOErrorHandler		er_handler,
-		   flm__IOTimeoutHandler	to_handler,
-		   void *			data,
 		   int				domain,
 		   int				type,
 		   uint32_t			timeout)
@@ -161,10 +139,6 @@ flm__IOInitSocket (flm_IO *			io,
 	}
 	if (flm__IOInit (io,			\
 			 monitor,		\
-			 cl_handler,		\
-			 er_handler,		\
-			 to_handler,		\
-			 data,			\
 			 fd,			\
 			 timeout) != 0) {
 		goto close_fd;
@@ -256,7 +230,7 @@ flm__IOAccept (flm_IO * io)
 	addr_len = sizeof (struct sockaddr_in);
 	addr = (struct sockaddr *) &addr_in;
 
-#if defined(linux) && defined(plop)
+#if defined(HAVE_ACCEPT4)
 	if ((fd = accept4 (io->sys.fd, addr, &addr_len, SOCK_NONBLOCK)) < 0) {
 		flm__Error = FLM_ERR_ERRNO;
 		goto error;
@@ -287,48 +261,6 @@ close_fd:
 error:
 	return (-1);
 #endif
-}
-
-int
-flm__IOBind (flm_IO * io,
-	     const char * interface,
-	     int port,
-	     int type)
-{
-	struct addrinfo hints;
-	struct addrinfo * res;
-	struct addrinfo * rp;
-	char sport[6];
-	int error;
-
-	memset (&hints, 0, sizeof (struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = type;
-	hints.ai_flags = AI_PASSIVE;
-
-	snprintf (sport, 6, "%d", port);
-	if ((error = getaddrinfo (interface, sport, &hints, &res)) != 0) {
-		goto error;
-	}
-
-	for (rp = res; rp != NULL; rp = rp->ai_next) {
-		if (bind (io->sys.fd, rp->ai_addr, rp->ai_addrlen) != 0) {
-			continue ;
-		}
-		break ;
-	}
-	if (rp == NULL) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto free_res;
-	}
-
-	freeaddrinfo (res);
-	return (0);
-
-free_res:
-	freeaddrinfo (res);
-error:
-	return (-1);
 }
 
 int

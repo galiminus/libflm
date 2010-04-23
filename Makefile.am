@@ -3,5 +3,4 @@ SUBDIRS = 				\
 	include/flm			\
 	include/flm/core		\
 	include/flm/core/public		\
-	include/flm/core/private	\
-	include/flm/core/extern
+	include/flm/core/private

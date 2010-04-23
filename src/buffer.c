@@ -26,17 +26,17 @@
 #include "flm/core/private/buffer.h"
 
 flm_Buffer *
-flm_BufferNew (char * content,
-	       size_t len,
-	       flm_BufferFreeContentHandler fr_handler)
+flm_BufferNew (char *				content,
+	       size_t				len,
+	       flm_BufferFreeContentHandler	fr_handler)
 {
 	flm_Buffer * buffer;
 
-	if ((buffer = flm_SlabAlloc (sizeof (flm_Buffer))) == NULL) {
+	if ((buffer = flm__Alloc (sizeof (flm_Buffer))) == NULL) {
 		return (NULL);
 	}
 	if (flm__BufferInit (buffer, content, len, fr_handler) == -1) {
-		flm_SlabFree (buffer);
+		flm__Free (buffer);
 		return (NULL);
 	}
 	return (buffer);
@@ -55,10 +55,10 @@ flm_BufferContent (flm_Buffer * buffer)
 }
 
 int
-flm__BufferInit (flm_Buffer * buffer,
-		 char * content,
-		 size_t len,
-		 flm_BufferFreeContentHandler fr_handler)
+flm__BufferInit (flm_Buffer *			buffer,
+		 char *				content,
+		 size_t				len,
+		 flm_BufferFreeContentHandler	fr_handler)
 {
 	if (flm__ObjInit (FLM_OBJ (buffer)) == -1) {
 		return (-1);

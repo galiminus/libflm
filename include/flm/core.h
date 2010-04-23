@@ -21,7 +21,6 @@
 extern "C" {
 #endif
 
-#include <flm/core/public/alloc.h>
 #include <flm/core/public/buffer.h>
 #include <flm/core/public/filter.h>
 #include <flm/core/public/error.h>

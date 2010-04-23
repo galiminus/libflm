@@ -25,11 +25,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "flm/core/private/io.h"
 #include "flm/core/private/monitor.h"
 
 typedef struct flm__Select
 {
 	struct flm_Monitor	monitor;
+
+	flm_IO *		ios[FD_SETSIZE];
 } flm__Select;
 
 flm__Select *
