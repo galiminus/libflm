@@ -42,16 +42,9 @@ struct flm_TCPClient
 int
 flm__TCPClientInit (flm_TCPClient *			tcp_client,
 		    flm_Monitor *			monitor,
-		    flm_TCPClientConnectHandler		cn_handler,
-		    flm_TCPClientReadHandler		rd_handler,
-		    flm_TCPClientWriteHandler		wr_handler,
-		    flm_TCPClientCloseHandler		cl_handler,
-		    flm_TCPClientErrorHandler		er_handler,
-		    flm_TCPClientTimeoutHandler		to_handler,
-		    void *				data,
 		    const char *			host,
 		    uint16_t				port,
-		    uint32_t				timeout);
+		    void *				state);
 
 void
 flm__TCPClientPerfWrite (flm_TCPClient *	tcp_client,

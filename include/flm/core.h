@@ -22,14 +22,12 @@ extern "C" {
 #endif
 
 #include <flm/core/public/buffer.h>
-#include <flm/core/public/filter.h>
 #include <flm/core/public/error.h>
 #include <flm/core/public/file.h>
 #include <flm/core/public/io.h>
 #include <flm/core/public/monitor.h>
 #include <flm/core/public/obj.h>
 #include <flm/core/public/stream.h>
-#include <flm/core/public/tcp_addr.h>
 #include <flm/core/public/tcp_client.h>
 #include <flm/core/public/tcp_server.h>
 #include <flm/core/public/timer.h>

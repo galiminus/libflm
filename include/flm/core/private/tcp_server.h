@@ -35,18 +35,15 @@ struct flm_TCPServer
 };
 
 int
-flm__TCPServerInit (flm_TCPServer *			tcp_server,
-		    flm_Monitor *			monitor,
-		    flm_TCPServerAcceptHandler	ac_handler,
-		    flm_TCPServerCloseHandler		cl_handler,
-		    flm_TCPServerErrorHandler		er_handler,
-		    void *				data,
-		    const char *			interface,
-		    uint16_t				port);
+flm__TCPServerInit (flm_TCPServer *		tcp_server,
+		    flm_Monitor *		monitor,
+		    const char *		interface,
+		    uint16_t			port,
+		    void *			state);
 
 int
-flm__TCPServerPerfRead (flm_TCPServer * tcp_server,
-			flm_Monitor * monitor,
-			uint8_t count);
+flm__TCPServerPerfRead (flm_TCPServer *		tcp_server,
+			flm_Monitor *		monitor,
+			uint8_t			count);
 
 #endif /* !_FLM_CORE_PRIVATE_TCP_SERVER_H_ */

@@ -79,7 +79,7 @@ flm__EpollInit (flm__Epoll * epoll)
 	epoll->size = FLM__EPOLL_MAXEVENTS_DEFAULT;
 
 	if ((epoll->epfd = epoll_create (epoll->size)) == -1) {
-		goto monitor_destruct;
+		goto error;
 	}
 
 	epoll->events = flm__Alloc (epoll->size * sizeof (struct epoll_event));
@@ -91,8 +91,6 @@ flm__EpollInit (flm__Epoll * epoll)
 
 close_epfd:
 	close (epoll->epfd);
-monitor_destruct:
-	flm__MonitorPerfDestruct (FLM_MONITOR (epoll));
 error:
 	return (-1);
 }
@@ -102,7 +100,6 @@ flm__EpollPerfDestruct (flm__Epoll * epoll)
 {
 	close (epoll->epfd);
 	flm__Free (epoll->events);
-	flm__MonitorPerfDestruct (FLM_MONITOR (epoll));
 	return ;
 }
 

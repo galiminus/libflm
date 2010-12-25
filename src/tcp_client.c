@@ -25,17 +25,10 @@
 #include "flm/core/private/tcp_client.h"
 
 flm_TCPClient *
-flm_TCPClientNew (flm_Monitor * monitor,
-		  flm_TCPClientConnectHandler		cn_handler,
-		  flm_TCPClientReadHandler		rd_handler,
-		  flm_TCPClientWriteHandler		wr_handler,
-		  flm_TCPClientCloseHandler		cl_handler,
-		  flm_TCPClientErrorHandler		er_handler,
-		  flm_TCPClientTimeoutHandler		to_handler,
-		  void *				data,
-		  const char *				host,
-		  uint16_t				port,
-		  uint32_t				timeout)
+flm_TCPClientNew (flm_Monitor *	monitor,
+		  const char *	host,
+		  uint16_t	port,
+		  void *	state)
 {
 	flm_TCPClient * tcp_client;
 
@@ -43,18 +36,7 @@ flm_TCPClientNew (flm_Monitor * monitor,
 	if (tcp_client == NULL) {
 		return (NULL);
 	}
-	if (flm__TCPClientInit (tcp_client,				\
-				monitor,				\
-				cn_handler,				\
-				rd_handler,				\
-				wr_handler,				\
-				cl_handler,				\
-				er_handler,				\
-				to_handler,				\
-				data,					\
-				host,					\
-				port,					\
-				timeout) == -1) {
+	if (flm__TCPClientInit (tcp_client, monitor, host, port, state) == -1) {
 		flm__Free (tcp_client);
 		return (NULL);
 	}
@@ -64,16 +46,9 @@ flm_TCPClientNew (flm_Monitor * monitor,
 int
 flm__TCPClientInit (flm_TCPClient *			tcp_client,
 		    flm_Monitor *			monitor,
-		    flm_TCPClientConnectHandler		cn_handler,
-		    flm_TCPClientReadHandler		rd_handler,
-		    flm_TCPClientWriteHandler		wr_handler,
-		    flm_TCPClientCloseHandler		cl_handler,
-		    flm_TCPClientErrorHandler		er_handler,
-		    flm_TCPClientTimeoutHandler		to_handler,
-		    void *				data,
 		    const char *			host,
 		    uint16_t				port,
-		    uint32_t				timeout)
+		    void *				state)
 {
 	int fd;
 	flm_TCPAddr * tcp_addr;
@@ -95,26 +70,13 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 		goto release_addr;
 	}
 
-	if (flm__StreamInit (FLM_STREAM (tcp_client),			\
-			     monitor,					\
-			     (flm_StreamReadHandler) rd_handler,	\
-			     (flm_StreamWriteHandler) wr_handler,	\
-			     (flm_StreamCloseHandler) cl_handler,	\
-			     (flm_StreamErrorHandler) er_handler,	\
-			     (flm_StreamTimeoutHandler) to_handler,	\
-			     data,					\
-			     fd,
-			     timeout) == -1) {
+	if (flm__StreamInit (FLM_STREAM (tcp_client), monitor, fd, state) == -1) {
 		goto close_fd;
 	}
 	FLM_OBJ (tcp_client)->type = FLM__TYPE_TCP_CLIENT;
 
-	/* the socket is in nonblocking mode, thus we need to check for
-	 connection completion on writing */
 	FLM_IO (tcp_client)->perf.write =			\
 		(flm__IOSysRead_f) flm__TCPClientPerfWrite;
-
-	tcp_client->cn.handler = cn_handler;
 
 	if (errno == EINPROGRESS) {
 		tcp_client->connected = false;
@@ -122,13 +84,13 @@ flm__TCPClientInit (flm_TCPClient *			tcp_client,
 	}
 	else {
 		tcp_client->connected = true;
-		FLM_IO_EVENT_WITH (tcp_client, cn, monitor, FLM_IO (tcp_client)->sys.fd);
+		FLM_IO_EVENT_WITH (tcp_client, cn, FLM_IO (tcp_client)->sys.fd);
 	}
 
 	return (0);
 
 release_addr:
-	flm__Release (FLM_OBJ (tcp_addr));
+	flm_Release (FLM_OBJ (tcp_addr));
 close_fd:
 	close (fd);
 error:
@@ -143,6 +105,8 @@ flm__TCPClientPerfWrite (flm_TCPClient *	tcp_client,
 	int error;
 	socklen_t len;
 
+	/* the socket is in nonblocking mode, we need to check for
+	 connection completion on writing */
 	if (tcp_client->connected) {
 		flm__StreamPerfWrite (FLM_STREAM (tcp_client), monitor, count);
 		return ;
@@ -158,8 +122,7 @@ flm__TCPClientPerfWrite (flm_TCPClient *	tcp_client,
 	if (error != 0 && error != EINPROGRESS) {
 		goto error;
 	}
-	printf ("PLOP\n");
-	FLM_IO_EVENT_WITH (tcp_client, cn, monitor, FLM_IO (tcp_client)->sys.fd);
+	FLM_IO_EVENT_WITH (tcp_client, cn, FLM_IO (tcp_client)->sys.fd);
 	tcp_client->connected = true;
 	return ;
 
@@ -167,6 +130,6 @@ error:
 	/* fatal error */
 	flm__Error = error;
 	flm_IOClose (FLM_IO (tcp_client));
-	FLM_IO_EVENT (FLM_IO (tcp_client), er, monitor);
+	FLM_IO_EVENT_WITH (FLM_IO (tcp_client), er, error);
 	return ;
 }

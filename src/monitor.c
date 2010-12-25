@@ -50,7 +50,7 @@ flm_MonitorWait (flm_Monitor * monitor)
 	if (monitor->wait == NULL) {
 		return (0);
 	}
-	while (monitor->wait (monitor) != -1) {
+	while (monitor->wait (monitor) != -1 && monitor->count > 0) {
 		flm__MonitorTimerTick (monitor);
 	}
 	return (0);
@@ -62,7 +62,7 @@ flm__MonitorInit (flm_Monitor * monitor)
 	size_t count;
 
 	if (flm__ObjInit (FLM_OBJ (monitor)) == -1) {
-		goto error;
+		return (-1);
 	}
 	FLM_OBJ (monitor)->type = FLM__TYPE_MONITOR;
 
@@ -70,6 +70,8 @@ flm__MonitorInit (flm_Monitor * monitor)
 	monitor->del		=	NULL;
 	monitor->reset		=	NULL;
 	monitor->wait		=	NULL;
+
+	monitor->count		=	0;
 
 	if (clock_gettime (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
 		return (-1);
@@ -89,6 +91,8 @@ flm__MonitorIOAdd (flm_Monitor * monitor,
 	if (monitor->add && monitor->add (monitor, io) == -1) {
 		return (-1);
 	}
+	flm_Retain (FLM_OBJ (io));
+	monitor->count++;
 	return (0);
 }
 
@@ -99,6 +103,8 @@ flm__MonitorIODelete (flm_Monitor * monitor,
 	if (monitor->del) {
 		monitor->del (monitor, io);
 	}
+	flm_Release (FLM_OBJ (io));
+	monitor->count--;
 	return ;
 }
 
@@ -141,12 +147,12 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
 			}
 			temp.wh.entries = timer->wh.entries;
 
-			flm__Retain (FLM_OBJ (timer));
+			flm_Retain (FLM_OBJ (timer));
 			flm_TimerCancel (timer);
 			if (timer->handler) {
-				timer->handler (timer, monitor, timer->data);
+				timer->handler (timer->data);
 			}
-			flm__Release (FLM_OBJ (timer));
+			flm_Release (FLM_OBJ (timer));
 			timer = &temp;
 		}
 	}
@@ -166,7 +172,10 @@ flm__MonitorTimerAdd (flm_Monitor *	monitor,
 		FLM__MONITOR_TM_WHEEL_SIZE;
 
 	TAILQ_INSERT_TAIL (&(monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
-	flm__Retain (FLM_OBJ (timer));
+	flm_Retain (FLM_OBJ (timer));
+
+	monitor->count++;
+
 	return ;
 }
 
@@ -175,7 +184,10 @@ flm__MonitorTimerDelete (flm_Monitor *	monitor,
 			 flm_Timer *	timer)
 {
 	TAILQ_REMOVE (&(monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
-	flm__Release (FLM_OBJ (timer));
+	flm_Release (FLM_OBJ (timer));
+
+	monitor->count--;
+
 	return ;
 }
 

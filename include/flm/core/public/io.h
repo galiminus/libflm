@@ -26,8 +26,9 @@ typedef struct flm_IO flm_IO;
 
 #define FLM_IO(_obj) FLM_CAST(_obj, flm_IO)
 
-typedef void (*flm_IOReadHandler) (flm_IO * io, void * data, size_t count);
-typedef void (*flm_IOWriteHandler) (flm_IO * io, void * data, size_t count);
+typedef void (*flm_IOCloseHandler) (void * state);
+
+typedef void (*flm_IOErrorHandler) (void * state, int error);
 
 /**
  * \brief Close the \c flm_io object as soon as possible.
@@ -52,5 +53,16 @@ flm_IOShutdown (flm_IO * io);
  */
 void
 flm_IOClose (flm_IO * io);
+
+int
+flm_IODescriptor (flm_IO * io);
+
+void
+flm_IOOnClose (flm_IO * io,
+	       flm_IOCloseHandler handler);
+
+void
+flm_IOOnError (flm_IO * io,
+	       flm_IOErrorHandler handler);
 
 #endif /* _FLM_CORE_PUBLIC_IO_H_ */

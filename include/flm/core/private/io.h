@@ -24,9 +24,8 @@
 
 #include "flm/core/public/io.h"
 #include "flm/core/public/monitor.h"
-#include "flm/core/public/timer.h"
 
-#include "flm/core/private/filter.h"
+#include "flm/core/private/obj.h"
 
 #define FLM__TYPE_IO	0x000A0000
 
@@ -39,112 +38,63 @@ typedef void	(*flm__IOSysWrite_f)			\
 typedef void	(*flm__IOSysClose_f)			\
 (flm_IO * io, flm_Monitor * monitor);
 
-typedef void (*flm__IOCloseHandler)			\
-(flm_IO * io, flm_Monitor * monitor, void * data);
-
-typedef void (*flm__IOErrorHandler)			\
-(flm_IO * io, flm_Monitor * monitor, void * data);
-
-typedef void (*flm__IOTimeoutHandler)			\
-(flm_IO * io, flm_Monitor * monitor, void * data);
-
 struct flm_IO
 {
 	/* inheritance */
-	struct flm_Filter			filter;
+	struct flm_Obj			obj;
+
+	void *				state;
+
+	flm_Monitor *			monitor;
 
 	struct {
-		int				fd;
+		int			fd;
 	} sys;
-
 	struct {
-		flm_Timer *			timer;
-		flm__IOTimeoutHandler		handler;
-	} to;
-	struct {
-		bool				can;
-		bool				want;
-		uint8_t				limit;
+		bool			can;
+		bool			want;
+		uint8_t			limit;
 	} rd;
 	struct {
-		bool				can;
-		bool				want;
-		uint8_t				limit;
+		bool			can;
+		bool			want;
+		uint8_t			limit;
 	} wr;
 	struct {
-		bool				shutdown;
-		flm__IOCloseHandler		handler;
+		bool			shutdown;
+		flm_IOCloseHandler	handler;
 	} cl;
 	struct {
-		flm__IOErrorHandler		handler;
+		flm_IOErrorHandler	handler;
 	} er;
-	struct {
-		void *				data;
-	} user;
 
 	/* IO methods */
 	struct {
-		flm__IOSysRead_f		read;
-		flm__IOSysWrite_f		write;
-		flm__IOSysClose_f		close;
+		flm__IOSysRead_f	read;
+		flm__IOSysWrite_f	write;
+		flm__IOSysClose_f	close;
 	} perf;
 };
 
-#define FLM_IO_EVENT(io, type, monitor)					\
-	if (io->type.handler) {						\
-		io->type.handler (io, monitor, FLM_IO (io)->user.data);	\
+#define FLM_IO_EVENT(io, type)				\
+	if (io->type.handler) {				\
+		io->type.handler (FLM_IO (io)->state);	\
 	}
 
-#define FLM_IO_EVENT_WITH(io, type, monitor, ...)			\
+#define FLM_IO_EVENT_WITH(io, type, ...)				\
 	if (io->type.handler) {						\
-		io->type.handler (io,					\
-				  monitor,				\
-				  FLM_IO (io)->user.data,		\
-				  __VA_ARGS__);				\
+		io->type.handler (FLM_IO(io)->state, __VA_ARGS__);	\
 	}
 
 int
 flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
-	     flm__IOCloseHandler	cl_handler,
-	     flm__IOErrorHandler	er_handler,
-	     flm__IOTimeoutHandler	to_handler,
-	     void *			data,
 	     int			fd,
-	     uint32_t			timeout);
-
-int
-flm__IOInitSocket (flm_IO *			io,
-		   flm_Monitor *		monitor,
-		   flm__IOCloseHandler		cl_handler,
-		   flm__IOErrorHandler		er_handler,
-		   flm__IOTimeoutHandler	to_handler,
-		   void *			data,
-		   int				domain,
-		   int				type,
-		   uint32_t			timeout);
+	     void *			state);
 
 void
 flm__IOPerfDestruct (flm_IO * io);
 
-void
-flm__IOHandleTimeout (flm_Timer * timer, flm_Monitor * monitor, void * data);
-
-int
-flm__IOSocket (int	domain,
-	       int	type);
-
-int
-flm__IOAccept (flm_IO * io);
-
-int
-flm__IOBind (flm_IO * io,
-	     const char * interface,
-	     int port,
-	     int type);
-
-int
-flm__IOListen (flm_IO * io);
 
 uint8_t
 flm__IORead (flm_IO *		io,

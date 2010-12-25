@@ -23,8 +23,7 @@ typedef struct flm_Timer flm_Timer;
 
 #include "flm/core/public/monitor.h"
 
-typedef void (*flm_TimerHandler)				\
-(flm_Timer * timer, flm_Monitor * monitor, void * data);
+typedef void (*flm_TimerHandler) (void * state);
 
 #include "flm/core/public/obj.h"
 
@@ -33,7 +32,7 @@ typedef void (*flm_TimerHandler)				\
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,
-	      void *		data,
+	      void *		state,
 	      uint32_t		delay);
 
 void

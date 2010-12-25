@@ -74,6 +74,10 @@ flm__TimerInit (flm_Timer *		timer,
 		void *			data,
 		uint32_t		delay)
 {
+	if (monitor == NULL) {
+		return (-1);
+	}
+
 	if (flm__ObjInit (FLM_OBJ (timer)) == -1) {
 		return (-1);
 	}
@@ -83,8 +87,6 @@ flm__TimerInit (flm_Timer *		timer,
 	timer->data = data;
 	timer->monitor = monitor;
 	timer->set = false;
-
-	printf ("CREATE\n");
 
 	/* round delay to the upper second */
 	delay = (delay + 1000) / 1000;

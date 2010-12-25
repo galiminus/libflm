@@ -1,10 +1,8 @@
 lib_LTLIBRARIES = libflm.la
 
 libflm_la_SOURCES =		\
-addr.c				\
 alloc.c				\
 buffer.c			\
-filter.c			\
 error.c				\
 file.c				\
 io.c				\
@@ -12,8 +10,6 @@ monitor.c			\
 epoll.c				\
 select.c			\
 obj.c				\
-tcp_addr.c			\
-tcp_client.c			\
 tcp_server.c			\
 timer.c				\
 stream.c

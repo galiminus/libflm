@@ -30,17 +30,40 @@
 
 #define FLM__TYPE_STREAM	0x000F0000
 
+struct flm__StreamInput
+{
+	union {
+		flm_Obj *		obj;
+		flm_File *		file;
+		flm_Buffer *		buffer;
+	} class;
+	enum {
+					FLM__STREAM_TYPE_FILE,
+					FLM__STREAM_TYPE_BUFFER
+	} type;
+
+	off_t				off;
+	size_t				count;
+	int				tried;
+	TAILQ_ENTRY (flm__StreamInput)	entries;
+};
+
 struct flm_Stream
 {
 	/* inheritance */
 	struct flm_IO				io;
 
 	struct {
+		flm_StreamFeedHandler		handler;
+	} fe;
+	struct {
 		flm_StreamReadHandler		handler;
 	} rd;
 	struct {
 		flm_StreamWriteHandler		handler;
 	} wr;
+
+	TAILQ_HEAD (flin, flm__StreamInput)	inputs;
 };
 
 #define FLM_STREAM__RBUFFER_SIZE		2048
@@ -49,14 +72,11 @@ struct flm_Stream
 int
 flm__StreamInit (flm_Stream *			stream,
 		 flm_Monitor *			monitor,
-		 flm_StreamReadHandler		rd_handler,
-		 flm_StreamWriteHandler		wr_handler,
-		 flm_StreamCloseHandler		cl_handler,
-		 flm_StreamErrorHandler		er_handler,
-		 flm_StreamTimeoutHandler	to_handler,
-		 void *				data,
 		 int				fd,
-		 uint32_t			timeout);
+		 void *				state);
+
+void
+flm__StreamPerfDestruct (flm_Stream * stream);
 
 void
 flm__StreamPerfRead (flm_Stream * stream,

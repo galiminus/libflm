@@ -57,7 +57,6 @@ flm_ErrorDesc ()
 
 	case FLM_ERR_SUCCESS:
 		return (FLM__STRERR_SUCCESS);
-
 	}
 	return (flm__ErrorDesc (error >> 16, error & 0x0000ffff));
 }

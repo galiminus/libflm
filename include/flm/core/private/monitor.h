@@ -26,7 +26,6 @@
 
 #include "flm/core/private/obj.h"
 #include "flm/core/private/io.h"
-#include "flm/core/private/map.h"
 
 #define FLM__TYPE_MONITOR	0x000D0000
 
@@ -47,9 +46,7 @@ struct flm_Monitor
 	flm__MonitorReset_f			reset;
 	flm__MonitorWait_f			wait;
 
-	struct {
-		flm__Map *			map;
-	} io;
+	uint32_t				count;
 
 	struct {
 		/* current time */
@@ -69,13 +66,10 @@ struct flm_Monitor
 int
 flm__MonitorInit (flm_Monitor * monitor);
 
-void
-flm__MonitorPerfDestruct (flm_Monitor * monitor);
-
 int
 flm__MonitorIOAdd (flm_Monitor * monitor, flm_IO * io);
 
-int
+void
 flm__MonitorIODelete (flm_Monitor * monitor, flm_IO * io);
 
 int

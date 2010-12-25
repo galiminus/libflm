@@ -68,12 +68,11 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libflm_la_LIBADD =
-am_libflm_la_OBJECTS = libflm_la-addr.lo libflm_la-alloc.lo \
-	libflm_la-buffer.lo libflm_la-filter.lo libflm_la-error.lo \
-	libflm_la-file.lo libflm_la-io.lo libflm_la-monitor.lo \
-	libflm_la-epoll.lo libflm_la-select.lo libflm_la-obj.lo \
-	libflm_la-tcp_addr.lo libflm_la-tcp_client.lo \
-	libflm_la-tcp_server.lo libflm_la-timer.lo libflm_la-stream.lo
+am_libflm_la_OBJECTS = libflm_la-alloc.lo libflm_la-buffer.lo \
+	libflm_la-error.lo libflm_la-file.lo libflm_la-io.lo \
+	libflm_la-monitor.lo libflm_la-epoll.lo libflm_la-select.lo \
+	libflm_la-obj.lo libflm_la-tcp_server.lo libflm_la-timer.lo \
+	libflm_la-stream.lo
 libflm_la_OBJECTS = $(am_libflm_la_OBJECTS)
 libflm_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libflm_la_CFLAGS) \
@@ -212,10 +211,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libflm.la
 libflm_la_SOURCES = \
-addr.c				\
 alloc.c				\
 buffer.c			\
-filter.c			\
 error.c				\
 file.c				\
 io.c				\
@@ -223,8 +220,6 @@ monitor.c			\
 epoll.c				\
 select.c			\
 obj.c				\
-tcp_addr.c			\
-tcp_client.c			\
 tcp_server.c			\
 timer.c				\
 stream.c
@@ -305,20 +300,16 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-addr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-buffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-epoll.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-file.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-filter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-io.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-monitor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-obj.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-select.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-stream.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-tcp_addr.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-tcp_client.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-tcp_server.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-timer.Plo@am__quote@
 
@@ -343,13 +334,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-libflm_la-addr.lo: addr.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-addr.lo -MD -MP -MF $(DEPDIR)/libflm_la-addr.Tpo -c -o libflm_la-addr.lo `test -f 'addr.c' || echo '$(srcdir)/'`addr.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libflm_la-addr.Tpo $(DEPDIR)/libflm_la-addr.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='addr.c' object='libflm_la-addr.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-addr.lo `test -f 'addr.c' || echo '$(srcdir)/'`addr.c
-
 libflm_la-alloc.lo: alloc.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-alloc.lo -MD -MP -MF $(DEPDIR)/libflm_la-alloc.Tpo -c -o libflm_la-alloc.lo `test -f 'alloc.c' || echo '$(srcdir)/'`alloc.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libflm_la-alloc.Tpo $(DEPDIR)/libflm_la-alloc.Plo
@@ -363,13 +347,6 @@ libflm_la-buffer.lo: buffer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='buffer.c' object='libflm_la-buffer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-buffer.lo `test -f 'buffer.c' || echo '$(srcdir)/'`buffer.c
-
-libflm_la-filter.lo: filter.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-filter.lo -MD -MP -MF $(DEPDIR)/libflm_la-filter.Tpo -c -o libflm_la-filter.lo `test -f 'filter.c' || echo '$(srcdir)/'`filter.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libflm_la-filter.Tpo $(DEPDIR)/libflm_la-filter.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='filter.c' object='libflm_la-filter.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-filter.lo `test -f 'filter.c' || echo '$(srcdir)/'`filter.c
 
 libflm_la-error.lo: error.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-error.lo -MD -MP -MF $(DEPDIR)/libflm_la-error.Tpo -c -o libflm_la-error.lo `test -f 'error.c' || echo '$(srcdir)/'`error.c
@@ -419,20 +396,6 @@ libflm_la-obj.lo: obj.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='obj.c' object='libflm_la-obj.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-obj.lo `test -f 'obj.c' || echo '$(srcdir)/'`obj.c
-
-libflm_la-tcp_addr.lo: tcp_addr.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-tcp_addr.lo -MD -MP -MF $(DEPDIR)/libflm_la-tcp_addr.Tpo -c -o libflm_la-tcp_addr.lo `test -f 'tcp_addr.c' || echo '$(srcdir)/'`tcp_addr.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libflm_la-tcp_addr.Tpo $(DEPDIR)/libflm_la-tcp_addr.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcp_addr.c' object='libflm_la-tcp_addr.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-tcp_addr.lo `test -f 'tcp_addr.c' || echo '$(srcdir)/'`tcp_addr.c
-
-libflm_la-tcp_client.lo: tcp_client.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-tcp_client.lo -MD -MP -MF $(DEPDIR)/libflm_la-tcp_client.Tpo -c -o libflm_la-tcp_client.lo `test -f 'tcp_client.c' || echo '$(srcdir)/'`tcp_client.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libflm_la-tcp_client.Tpo $(DEPDIR)/libflm_la-tcp_client.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcp_client.c' object='libflm_la-tcp_client.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-tcp_client.lo `test -f 'tcp_client.c' || echo '$(srcdir)/'`tcp_client.c
 
 libflm_la-tcp_server.lo: tcp_server.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-tcp_server.lo -MD -MP -MF $(DEPDIR)/libflm_la-tcp_server.Tpo -c -o libflm_la-tcp_server.lo `test -f 'tcp_server.c' || echo '$(srcdir)/'`tcp_server.c

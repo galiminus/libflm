@@ -28,31 +28,19 @@ typedef struct flm_Stream flm_Stream;
 
 #define FLM_STREAM(_obj) FLM_CAST(_obj, flm_Stream)
 
-typedef void (*flm_StreamReadHandler)					\
-(flm_Stream * stream, flm_Monitor * monitor, void * data, flm_Buffer * buffer);
+typedef void (*flm_StreamReadHandler)			\
+(void * state, flm_Buffer * buffer);
 
-typedef void (*flm_StreamWriteHandler)					\
-(flm_Stream * stream, flm_Monitor * monitor, void * data, flm_Buffer * buffer);
+typedef void (*flm_StreamWriteHandler)			\
+(void * state, flm_Buffer * buffer);
 
-typedef void (*flm_StreamCloseHandler)					\
-(flm_Stream * stream, flm_Monitor * monitor, void * data);
-
-typedef void (*flm_StreamErrorHandler)					\
-(flm_Stream * stream, flm_Monitor * monitor, void * data);
-
-typedef void (*flm_StreamTimeoutHandler)				\
-(flm_Stream * stream, flm_Monitor * monitor, void * data);
+typedef void (*flm_StreamFeedHandler)			\
+(void * state, uint32_t size);
 
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,	\
-	       flm_StreamReadHandler	rd_handler,	\
-	       flm_StreamWriteHandler	wr_handler,	\
-	       flm_StreamCloseHandler	cl_handler,	\
-	       flm_StreamErrorHandler	er_handler,	\
-	       flm_StreamTimeoutHandler	to_handler,	\
-	       void *			data,		\
-	       int			fd,
-	       uint32_t			timeout);
+	       int			fd,		\
+	       void *			state);
 
 int
 flm_StreamPrintf (flm_Stream *	stream,
@@ -70,5 +58,17 @@ flm_StreamPushFile (flm_Stream *	stream,
 		    flm_File *		file,
 		    off_t		off,
 		    size_t		count);
+
+void
+flm_StreamOnRead (flm_Stream *		stream,
+		  flm_StreamReadHandler	handler);
+
+void
+flm_StreamOnWrite (flm_Stream *			stream,
+		   flm_StreamWriteHandler	handler);
+
+void
+flm_StreamFeed (flm_Stream *		stream,
+		flm_StreamFeedHandler	handler);
 
 #endif /* _FLM_CORE_PUBLIC_STREAM_H_ */

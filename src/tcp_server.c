@@ -14,17 +14,32 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <errno.h>
+#define _GNU_SOURCE
+
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <fcntl.h>
+#include <netdb.h>
+
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+
+#include "flm/core/public/error.h"
 
 #include "flm/core/private/alloc.h"
+#include "flm/core/private/error.h"
 #include "flm/core/private/tcp_server.h"
 
 flm_TCPServer *
 flm_TCPServerNew (flm_Monitor *	monitor,
 		  const char * 	interface,
-		  uint16_t	port)
+		  uint16_t	port,
+		  void *	state)
 {
 	flm_TCPServer * tcp_server;
 
@@ -32,10 +47,7 @@ flm_TCPServerNew (flm_Monitor *	monitor,
 	if (tcp_server == NULL) {
 		return (NULL);
 	}
-	if (flm__TCPServerInit (tcp_server,				\
-				monitor,				\
-				interface,				\
-				port) == -1) {
+	if (flm__TCPServerInit (tcp_server, monitor, interface, port, state) == -1) {
 		flm__Free (tcp_server);
 		return (NULL);
 	}
@@ -43,9 +55,10 @@ flm_TCPServerNew (flm_Monitor *	monitor,
 }
 
 void
-flm_TCPServerOnRead (flm_TCPServer *		tcp_server,
-		     flm_TCPServerAcceptHandler	handler)
+flm_TCPServerOnAccept (flm_TCPServer *			tcp_server,
+		       flm_TCPServerAcceptHandler	handler)
 {
+	tcp_server->ac.handler = handler;
 	return ;
 }
 
@@ -53,56 +66,147 @@ int
 flm__TCPServerInit (flm_TCPServer *	tcp_server,
 		    flm_Monitor *	monitor,
 		    const char *	interface,
-		    uint16_t		port)
+		    uint16_t		port,
+		    void *		state)
 {
-	if (flm__IOInitSocket (FLM_IO (tcp_server),			\
-			       monitor,					\
-			       AF_INET,					\
-			       SOCK_STREAM,
-			       0) == -1) {
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
+	char str_port[6];
+	int fd;
+	int error;
+	long flags;
+
+	memset (&hints, 0, sizeof (struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_protocol = 0;
+	hints.ai_canonname = NULL;
+	hints.ai_addr = NULL;
+	hints.ai_next = NULL;
+
+	if (snprintf (str_port, sizeof (str_port), "%d", port) < 0) {
 		goto error;
+	}
+	if ((error = getaddrinfo (NULL, str_port, &hints, &result)) != 0) {
+		goto error;
+	}
+
+	for (rp = result; rp != NULL; rp = rp->ai_next) {
+		if ((fd = socket(rp->ai_family,
+				 rp->ai_socktype,
+				 rp->ai_protocol)) == -1) {
+			continue;
+		}
+		if (bind (fd, rp->ai_addr, rp->ai_addrlen) == 0) {
+			break;
+		}
+		close (fd);
+	}
+	if (rp == NULL) {
+		goto error;
+	}
+
+	if ((flags = fcntl (fd, F_GETFL, NULL)) < 0) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+	if (fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+
+	if (setsockopt (fd,				\
+			SOL_SOCKET,			\
+			SO_REUSEADDR,			\
+			(int[]){1},			\
+			sizeof (int)) == -1) {
+		goto close_fd;
+	}
+
+	if (listen (fd, 1024) == -1) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+
+	if (flm__IOInit (FLM_IO (tcp_server),		\
+			 monitor,			\
+			 fd,				\
+			 state) == -1) {
+		goto close_fd;
 	}
 	FLM_OBJ (tcp_server)->type = FLM__TYPE_TCP_SERVER;
 
-	if (setsockopt (FLM_IO (tcp_server)->sys.fd,			\
-			SOL_SOCKET,					\
-			SO_REUSEADDR,					\
-			(int[]){1},					\
-			sizeof (int)) == -1) {
-		goto io_destruct;
-	}
+	FLM_IO (tcp_server)->perf.read	=		\
+		(flm__IOSysRead_f) flm__TCPServerPerfRead;
 
-	if (flm__IOBind (FLM_IO (tcp_server),				\
-			 interface,					\
-			 port,						\
-			 SOCK_STREAM) == -1) {
-		goto io_destruct;
-	}
-
-	if (flm__IOListen (FLM_IO (tcp_server)) == -1) {
-		goto io_destruct;
-	}
-
-	tcp_server->ac.handler = ac_handler;
+	flm_TCPServerOnAccept (tcp_server, NULL);
 
 	return (0);
 
-io_destruct:
-	flm__IOPerfDestruct (FLM_IO (tcp_server));
+close_fd:
+	close (fd);
 error:
 	return (-1);
 }
 
 int
-flm__TCPServerPerfRead (flm_TCPServer * tcp_server,
-			flm_Monitor * monitor,
-			uint8_t count)
+flm__TCPServerSysAccept (flm_TCPServer * tcp_server)
+{
+	struct sockaddr_in addr_in;
+	struct sockaddr * addr;
+	unsigned int addr_len;
+	int fd;
+
+	memset (&addr_in, 0, sizeof (struct sockaddr_in));
+	addr_len = sizeof (struct sockaddr_in);
+	addr = (struct sockaddr *) &addr_in;
+
+#if defined(HAVE_ACCEPT4)
+	if ((fd = accept4 (flm_IODescriptor (FLM_IO (tcp_server)),
+			   addr,
+			   &addr_len,
+			   SOCK_NONBLOCK)) < 0) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto error;
+	}
+#else
+	long flags;
+
+	if ((fd = accept (flm_IODescriptor (FLM_IO (tcp_server)),
+			  addr,
+			  &addr_len)) < 0) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto error;
+	}
+	if ((flags = fcntl (fd, F_GETFL, NULL)) < 0) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+	if (fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		flm__Error = FLM_ERR_ERRNO;
+		goto close_fd;
+	}
+#endif
+	return (fd);
+
+close_fd:
+	close (fd);
+error:
+	return (-1);
+}
+
+int
+flm__TCPServerPerfRead (flm_TCPServer *	tcp_server,
+			flm_Monitor *	monitor,
+			uint8_t		count)
 {
 	int fd;
 
 	(void) count;
+	(void) monitor;
 
-	if ((fd = flm__IOAccept (FLM_IO (tcp_server))) == -1) {
+	if ((fd = flm__TCPServerSysAccept (tcp_server)) == -1) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			FLM_IO (tcp_server)->rd.can = 0;
 		}
@@ -111,12 +215,13 @@ flm__TCPServerPerfRead (flm_TCPServer * tcp_server,
 		}
 		else {
 			FLM_IO (tcp_server)->rd.can = 0;
-			FLM_IO_EVENT (FLM_IO (tcp_server), er, monitor);
+			FLM_IO_EVENT_WITH (FLM_IO (tcp_server), er, flm_Error());
+			return (-1);
 		}
 	}
 	else {
 		FLM_IO (tcp_server)->rd.can = 1;
-		FLM_IO_EVENT_WITH (tcp_server, ac, monitor, fd);
+		FLM_IO_EVENT_WITH (tcp_server, ac, fd);
 	}
 	return (0);
 }

@@ -16,9 +16,9 @@
 
 #include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "flm/core/private/alloc.h"
-#include "flm/core/private/filter.h"
 #include "flm/core/private/file.h"
 #include "flm/core/private/io.h"
 
@@ -60,20 +60,10 @@ int
 flm__FileInit (flm_File *	file,
 	       int		fd)
 {
-	/* a file is an IO for practical reason but doesn't share the
-	   asynchronous aspect of the other kind of IO */
-	if (flm__IOInit (FLM_IO (file),		\
-			 NULL,			\
-			 NULL,			\
-			 NULL,			\
-			 NULL,			\
-			 NULL,			\
-			 fd,			\
-			 0) == -1) {
+	if (flm__IOInit (FLM_IO (file), NULL, fd, NULL) == -1) {
 		return (-1);
 	}
 	FLM_OBJ (file)->type = FLM__TYPE_FILE;
-
 	return (0);
 }
 

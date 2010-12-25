@@ -21,6 +21,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <errno.h>
 
@@ -64,6 +65,8 @@ flm__SelectInit (flm__Select * select)
 	FLM_MONITOR (select)->wait	=				\
 		(flm__MonitorWait_f) flm__SelectPerfWait;
 
+	memset (select->ios, 0, sizeof (select->ios));
+
 	return (0);
 }
 
@@ -82,14 +85,13 @@ int
 flm__SelectPerfWait (flm__Select * _select)
 {
 	flm_IO * io;
-	size_t index;
+	size_t fd;
 	int ret;
 	struct timeval delay;
 
 	fd_set rset;
 	fd_set wset;
 	int max;
-	unsigned int fd;
 
 	if (FLM__MONITOR_TM_RES >= 1000) {
 		delay.tv_sec = FLM__MONITOR_TM_RES / 1000;
@@ -103,11 +105,10 @@ flm__SelectPerfWait (flm__Select * _select)
 	max = -1;
 	FD_ZERO (&rset);
 	FD_ZERO (&wset);
-	for (fd = 0; fd < FD_SETSIZE && (io = _select->ios[fd]); fd++) {
-		if (io == NULL) {
+	for (fd = 0; fd < FD_SETSIZE; fd++) {
+		if ((io = _select->ios[fd]) == NULL) {
 			continue ;
 		}
-
 		if (io->rd.want) {
 			FD_SET (io->sys.fd, &rset);
 		}
@@ -130,23 +131,23 @@ flm__SelectPerfWait (flm__Select * _select)
 		return (-1); /* fatal error */
 	}
 
-	for (fd = 0; fd < FD_SETSIZE && (io = _select->ios[fd]); fd++) {
-		if (io == NULL) {
+	for (fd = 0; fd < FD_SETSIZE; fd++) {
+		if ((io = _select->ios[fd]) == NULL) {
 			continue ;
 		}
 
-		if ((int)index > max) {
+		if ((int)fd > max) {
 			break ;
 		}
 
-		if (index >= FD_SETSIZE) {
+		if (fd >= FD_SETSIZE) {
 			break ;
 		}
 
-		if (FD_ISSET (index, &rset)) {
+		if (FD_ISSET (fd, &rset)) {
 			flm__IORead (io, FLM_MONITOR (_select));
 		}
-		if (FD_ISSET (index, &wset)) {
+		if (FD_ISSET (fd, &wset)) {
 			flm__IOWrite (io, FLM_MONITOR (_select));
 		}
 		if (io->cl.shutdown && !io->wr.want) {

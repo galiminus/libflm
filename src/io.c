@@ -14,27 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _GNU_SOURCE
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <errno.h>
-#include <fcntl.h>
-#include <netdb.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "flm/core/private/alloc.h"
-#include "flm/core/private/buffer.h"
 #include "flm/core/private/error.h"
-#include "flm/core/private/file.h"
 #include "flm/core/private/io.h"
 #include "flm/core/private/obj.h"
 #include "flm/core/private/monitor.h"
+
+const char * flm__IOErrors[] =
+{
+	"Object is not shared",
+	"Not implemented"
+};
 
 void
 flm_IOShutdown (flm_IO *	io)
@@ -57,11 +52,25 @@ flm_IOClose (flm_IO *		io)
 	return ;
 }
 
-void
-flm_IOResetTimeout (flm_IO *	io,
-		    uint32_t	delay)
+int
+flm_IODescriptor (flm_IO *	io)
 {
-	flm_TimerReset (io->to.timer, delay);
+	return (io->sys.fd);
+}
+
+void
+flm_IOOnClose (flm_IO *			io,
+	       flm_IOCloseHandler	handler)
+{
+	io->cl.handler = handler;
+	return ;
+}
+
+void
+flm_IOOnError (flm_IO *			io,
+	       flm_IOErrorHandler	handler)
+{
+	io->er.handler = handler;
 	return ;
 }
 
@@ -69,31 +78,19 @@ int
 flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
 	     int			fd,
-	     uint32_t			timeout)
+	     void *			state)
 {
-	if (flm__FilterInit (FLM_FILTER (io)) == -1) {
-		goto error;
+	if (flm__ObjInit (FLM_OBJ (io)) == -1) {
+		return (-1);
 	}
 	FLM_OBJ (io)->type = FLM__TYPE_IO;
 
 	FLM_OBJ (io)->perf.destruct =					\
 		(flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
 
-	io->sys.fd		=	fd;
+	io->state		=	state;
 
-	if (timeout > 0) {
-		io->to.timer	= flm_TimerNew (monitor,		\
-					       flm__IOHandleTimeout,	\
-					       io,			\
-					       timeout);
-		if (flm__Retain (FLM_OBJ (io->to.timer)) == NULL) {
-			goto filter_destruct;
-		}
-		io->to.handler	=	to_handler;
-	}
-	else {
-		io->to.handler	=	NULL;
-	}
+	io->sys.fd		=	fd;
 
 	io->rd.can		=	false;
 	io->rd.want		=	true;
@@ -103,52 +100,22 @@ flm__IOInit (flm_IO *			io,
 	io->wr.want		=	false;
 	io->wr.limit		=	4;
 
+	io->cl.shutdown		=	false;
+	flm_IOOnClose (io, NULL);
+	flm_IOOnError (io, NULL);
+
 	io->perf.read		=	NULL;
 	io->perf.write		=	NULL;
 	io->perf.close		=	flm__IOPerfClose;
 
+	io->monitor		=	monitor;
+	if (io->monitor && flm__MonitorIOAdd (io->monitor, io) == -1) {
+		return (-1);
+	}
+
 	flm__ErrorAdd (FLM__TYPE_IO >> 16, flm__IOErrors);
 
-	if (flm__MonitorIOAdd (monitor, io) == -1) {
-		goto release_timer;
-	}
-
 	return (0);
-
-release_timer:
-	if (timeout) {
-		flm__Release (FLM_OBJ (io->to.timer));
-	}
-filter_destruct:
-	flm__FilterPerfDestruct (FLM_FILTER (io));
-error:
-	return (-1);
-}
-
-int
-flm__IOInitSocket (flm_IO *			io,
-		   flm_Monitor *		monitor,
-		   int				domain,
-		   int				type,
-		   uint32_t			timeout)
-{
-	int fd;
-
-	if ((fd = flm__IOSocket (domain, type)) == -1) {
-		goto error;
-	}
-	if (flm__IOInit (io,			\
-			 monitor,		\
-			 fd,			\
-			 timeout) != 0) {
-		goto close_fd;
-	}
-	return (0);
-
-close_fd:
-	close (fd);
-error:
-	return (-1);
 }
 
 void
@@ -163,114 +130,14 @@ flm__IOPerfDestruct (flm_IO * io)
 			continue ;
 		}
 		if (errno == EBADF) {
-			break ; /* shouldn't happen */
+			break ;
 		}
 		if (retry == 3) { /* retry 2 times then give up */
 			break ;
 		}
 		retry++;
 	}
-	flm__FilterPerfDestruct (FLM_FILTER (io));
 	return ;
-}
-
-void
-flm__IOHandleTimeout (flm_Timer * timer, flm_Monitor * monitor, void * data)
-{
-	flm_IO * io = data;
-
-	(void) timer;
-
-	FLM_IO_EVENT (io, to, monitor);
-	if (flm__MonitorIOReset (monitor, io) == -1) {
-		return ;
-	}
-	if (io->cl.shutdown && !io->wr.want) {
-		flm__IOClose (io, monitor);
-	}
-	return ;
-}
-
-int
-flm__IOSocket (int	domain,
-	       int	type)
-{
-	int fd;
-	long flags;
-
-	if ((fd = socket (domain, type, 0)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto error;
-	}
-	if ((flags = fcntl (fd, F_GETFL, NULL)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto close_fd;
-	}
-	if (fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto close_fd;
-	}
-	return (fd);
-
-close_fd:
-	close (fd);
-error:
-	return (-1);
-}
-
-int
-flm__IOAccept (flm_IO * io)
-{
-	struct sockaddr_in addr_in;
-	struct sockaddr * addr;
-	unsigned int addr_len;
-	int fd;
-
-	memset (&addr_in, 0, sizeof (struct sockaddr_in));
-	addr_len = sizeof (struct sockaddr_in);
-	addr = (struct sockaddr *) &addr_in;
-
-#if defined(HAVE_ACCEPT4)
-	if ((fd = accept4 (io->sys.fd, addr, &addr_len, SOCK_NONBLOCK)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto error;
-	}
-	return (fd);
-
-error:
-	return (-1);
-#else
-	long flags;
-
-	if ((fd = accept (io->sys.fd, addr, &addr_len)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto error;
-	}
-	if ((flags = fcntl (fd, F_GETFL, NULL)) < 0) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto close_fd;
-	}
-	if (fcntl (fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		flm__Error = FLM_ERR_ERRNO;
-		goto close_fd;
-	}
-	return (fd);
-
-close_fd:
-	close (fd);
-error:
-	return (-1);
-#endif
-}
-
-int
-flm__IOListen (flm_IO * io)
-{
-	if (listen (io->sys.fd, 1024) == -1) {
-		flm__Error = FLM_ERR_ERRNO;
-		return (-1);
-	}
-	return (0);
 }
 
 uint8_t
@@ -328,9 +195,7 @@ void
 flm__IOPerfClose (flm_IO *	io,
 		  flm_Monitor *	monitor)
 {
-	FLM_IO_EVENT (io, cl, monitor);
-	if (flm__MonitorIODelete (monitor, io) == -1) {
-		FLM_IO_EVENT (io, er, monitor);
-	}
+	FLM_IO_EVENT (io, cl);
+	flm__MonitorIODelete (monitor, io);
 	return ;
 }

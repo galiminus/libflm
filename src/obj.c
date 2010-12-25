@@ -26,7 +26,7 @@ const char * flm__ObjErrors[] =
 };
 
 void *
-flm__Retain (flm_Obj * obj)
+flm_Retain (flm_Obj * obj)
 {
 	if (obj == NULL) {
 		return (NULL);
@@ -36,7 +36,7 @@ flm__Retain (flm_Obj * obj)
 }
 
 void
-flm__Release (flm_Obj * obj)
+flm_Release (flm_Obj * obj)
 {
 	if (obj == NULL) {
 		return ;
@@ -61,7 +61,7 @@ flm__ObjInit (flm_Obj * obj)
 	obj->perf.destruct = NULL;
 
 	/* reference counter */
-	obj->stat.refcount = 0;
+	obj->stat.refcount = 1;
 
 	flm__ErrorAdd (FLM__TYPE_OBJ >> 16, flm__ObjErrors);
 

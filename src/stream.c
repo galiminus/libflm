@@ -39,8 +39,9 @@
 #include "flm/core/private/error.h"
 #include "flm/core/private/file.h"
 #include "flm/core/private/io.h"
-#include "flm/core/private/stream.h"
+#include "flm/core/private/monitor.h"
 #include "flm/core/private/obj.h"
+#include "flm/core/private/stream.h"
 
 const char * flm__StreamErrors[] =
 {
@@ -50,30 +51,15 @@ const char * flm__StreamErrors[] =
 
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,
-	       flm_StreamReadHandler	rd_handler,
-	       flm_StreamWriteHandler	wr_handler,
-	       flm_StreamCloseHandler	cl_handler,
-	       flm_StreamErrorHandler	er_handler,
-	       flm_StreamTimeoutHandler	to_handler,
-	       void *			data,
 	       int			fd,
-	       uint32_t			timeout)
+	       void *			state)
 {
 	flm_Stream * stream;
 
 	if ((stream = flm__Alloc (sizeof (flm_Stream))) == NULL) {
 		return (NULL);
 	}
-	if (flm__StreamInit (stream,					\
-			     monitor,					\
-			     rd_handler,				\
-			     wr_handler,				\
-			     cl_handler,				\
-			     er_handler,				\
-			     to_handler,				\
-			     data,					\
-			     fd,					\
-			     timeout) == -1) {
+	if (flm__StreamInit (stream, monitor, fd, state) == -1) {
 		flm__Free (stream);
 		return (NULL);
 	}
@@ -127,7 +113,8 @@ flm_StreamPrintf (flm_Stream *	stream,
 	return (0);
 
 release_buffer:
-	flm__Release (FLM_OBJ (buffer));
+	flm_Release (FLM_OBJ (buffer));
+	return (-1);
 free_content:
 	flm__Free (content);
 error:
@@ -140,11 +127,40 @@ flm_StreamPushBuffer (flm_Stream *	stream,
 		      off_t		off,
 		      size_t		count)
 {
-	if (flm_FilterAppendBuffer (FLM_FILTER (stream), buffer, off, count) == -1) {
-		return (-1);
+	struct flm__StreamInput * input;
+
+	if (off < 0) {
+		off = 0;
 	}
+	if (off > (off_t) buffer->len) {
+		off = buffer->len;
+	}
+	if (count == 0 || count > buffer->len) {
+		count = buffer->len - off;
+	}
+
+	if ((input = flm__Alloc (sizeof (struct flm__StreamInput))) == NULL) {
+		goto error;
+	}
+
 	FLM_IO (stream)->wr.want = true;
+	if (FLM_IO (stream)->monitor &&					\
+	    flm__MonitorIOReset (FLM_IO (stream)->monitor, FLM_IO (stream)) == -1) {
+		goto free_input;
+	}
+
+	input->class.buffer = flm_Retain (FLM_OBJ (buffer));
+	input->type = FLM__STREAM_TYPE_BUFFER;
+	input->off = off;
+	input->count = count;
+	TAILQ_INSERT_TAIL (&(stream->inputs), input, entries);
+
 	return (0);
+
+free_input:
+	flm__Free (input);
+error:
+	return (-1);
 }
 
 int
@@ -153,40 +169,79 @@ flm_StreamPushFile (flm_Stream *	stream,
 		    off_t		off,
 		    size_t		count)
 {
-	if (flm_FilterAppendFile (FLM_FILTER (stream), file, off, count) == -1) {
-		return (-1);
+	struct flm__StreamInput * input;
+	struct stat stat;
+
+	if (count == 0) {
+		if (fstat (FLM_IO (file)->sys.fd, &stat) == -1) {
+			return (-1);
+		}
+		if (off > stat.st_size) {
+			off = stat.st_size;
+		}
+		count = stat.st_size - off;
 	}
+
+	if ((input = flm__Alloc (sizeof (struct flm__StreamInput))) == NULL) {
+		goto error;
+	}
+	if (FLM_IO (stream)->monitor &&					\
+	    flm__MonitorIOReset (FLM_IO (stream)->monitor, FLM_IO (stream)) == -1) {
+		goto free_input;
+	}	
+
+	input->class.file = flm_Retain (FLM_OBJ (file));
+	input->type = FLM__STREAM_TYPE_BUFFER;
+	input->off = off;
+	input->count = count;
+	TAILQ_INSERT_TAIL (&(stream->inputs), input, entries);
+
 	FLM_IO (stream)->wr.want = true;
 	return (0);
+
+free_input:
+	flm__Free (input);
+error:
+	return (-1);
+}
+
+void
+flm_StreamOnRead (flm_Stream *		stream,
+		  flm_StreamReadHandler	handler)
+{
+	stream->rd.handler = handler;
+	return ;
+}
+
+void
+flm_StreamOnWrite (flm_Stream *			stream,
+		   flm_StreamWriteHandler	handler)
+{
+	stream->wr.handler = handler;
+	return ;
+}
+
+void
+flm_StreamFeed (flm_Stream *		stream,
+		flm_StreamFeedHandler	handler)
+{
+	stream->fe.handler = handler;
+	return ;
 }
 
 int
 flm__StreamInit (flm_Stream *			stream,
 		 flm_Monitor *			monitor,
-		 flm_StreamReadHandler		rd_handler,
-		 flm_StreamWriteHandler		wr_handler,
-		 flm_StreamCloseHandler		cl_handler,
-		 flm_StreamErrorHandler		er_handler,
-		 flm_StreamTimeoutHandler	to_handler,
-		 void *				data,
 		 int				fd,
-		 uint32_t			timeout)
+		 void *				state)
 {
-	if (flm__IOInit (FLM_IO (stream),			\
-			 monitor,				\
-			 (flm__IOCloseHandler) cl_handler,	\
-			 (flm__IOErrorHandler) er_handler,	\
-			 (flm__IOTimeoutHandler) to_handler,	\
-			 data,					\
-			 fd,					\
-			 timeout) == -1) {
+	if (flm__IOInit (FLM_IO (stream), monitor, fd, state) == -1) {
 		return (-1);
 	}
 	FLM_OBJ (stream)->type = FLM__TYPE_STREAM;
 
-	stream->rd.handler		=	rd_handler;
-
-	stream->wr.handler		=	wr_handler;
+	FLM_OBJ (stream)->perf.destruct =			\
+		(flm__ObjPerfDestruct_f) flm__StreamPerfDestruct;
 
 	FLM_IO (stream)->perf.read	=			\
 		(flm__IOSysRead_f) flm__StreamPerfRead;
@@ -194,7 +249,29 @@ flm__StreamInit (flm_Stream *			stream,
 	FLM_IO (stream)->perf.write	=			\
 		(flm__IOSysWrite_f) flm__StreamPerfWrite;
 
+	TAILQ_INIT (&stream->inputs);
+
+	flm_StreamOnRead (stream, NULL);
+	flm_StreamOnWrite (stream, NULL);
+
 	return (0);
+}
+
+void
+flm__StreamPerfDestruct (flm_Stream * stream)
+{
+	struct flm__StreamInput * input;
+	struct flm__StreamInput temp;
+
+	/* remove remaining stuff to write */
+	TAILQ_FOREACH (input, &stream->inputs, entries) {
+		temp.entries = input->entries;
+		flm_Release (input->class.obj);
+		TAILQ_REMOVE (&stream->inputs, input, entries);
+		flm__Free (input);
+		input = &temp;
+	}
+	return ;
 }
 
 void
@@ -249,7 +326,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
 			/* fatal error */
 			flm__Error = FLM_ERR_ERRNO;
 			flm_IOClose (FLM_IO (stream));
-			FLM_IO_EVENT (FLM_IO (stream), er, monitor);
+			FLM_IO_EVENT_WITH (FLM_IO (stream), er, flm_Error());
 		}
 		goto out;
 	}
@@ -263,11 +340,11 @@ flm__StreamPerfRead (flm_Stream *	stream,
 		if ((buffer = flm_BufferNew (iovec[drain_count].iov_base, \
 					     iov_read,			  \
 					     flm__Free)) == NULL) {
-			FLM_IO_EVENT (FLM_IO (stream), er, monitor);
+			FLM_IO_EVENT_WITH (FLM_IO (stream), er, flm_Error());
 			goto out;
 		}
 
-		FLM_IO_EVENT_WITH (stream, rd, monitor, buffer);
+		FLM_IO_EVENT_WITH (stream, rd, buffer);
 
 		if (drain < iovec[drain_count].iov_len) {
 			FLM_IO (stream)->rd.can = 0;
@@ -292,8 +369,8 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 		      flm_Monitor *	monitor,
 		      uint8_t		count)
 {
-	struct flm__FilterInput * filter;
-	struct flm__FilterInput temp;
+	struct flm__StreamInput * input;
+	struct flm__StreamInput temp;
 	ssize_t nb_write;
 	ssize_t drain;
 
@@ -314,7 +391,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 			/* fatal error */
 			flm__Error = FLM_ERR_ERRNO;
 			flm_IOClose (FLM_IO (stream));
-			FLM_IO_EVENT (FLM_IO (stream), er, monitor);
+			FLM_IO_EVENT_WITH (FLM_IO (stream), er, flm_Error());
 			return ;
 		}
 	}
@@ -323,27 +400,27 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 
 	drain = nb_write;
 	FLM_IO (stream)->wr.can = 1;
-	TAILQ_FOREACH (filter, &(FLM_FILTER (stream)->inputs), entries) {
+	TAILQ_FOREACH (input, &(stream->inputs), entries) {
 		if (drain == 0) {
 			break ;
 		}
-		if (drain < filter->tried) {
-			filter->off += drain;
-			filter->count -= drain;
+		if (drain < input->tried) {
+			input->off += drain;
+			input->count -= drain;
 			FLM_IO (stream)->wr.can = 0;
 			break ;
 		}
 
-		drain -= filter->tried;
+		drain -= input->tried;
 
-		temp.entries = filter->entries;
-		flm__Release (filter->class.obj);
-		TAILQ_REMOVE (&(FLM_FILTER (stream)->inputs), filter, entries);
-		flm__Free (filter);
-		filter = &temp;
+		temp.entries = input->entries;
+		flm_Release (input->class.obj);
+		TAILQ_REMOVE (&(stream->inputs), input, entries);
+		flm__Free (input);
+		input = &temp;
 	}
 
-	if (TAILQ_FIRST (&FLM_FILTER (stream)->inputs) == NULL) {
+	if (TAILQ_FIRST (&stream->inputs) == NULL) {
 		FLM_IO (stream)->wr.want = false;
 	}
 	return ;
@@ -352,20 +429,20 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 ssize_t
 flm__StreamWrite (flm_Stream * stream)
 {
-	struct flm__FilterInput * filter;
+	struct flm__StreamInput * input;
 	ssize_t nb_write;
 
-	if ((filter = TAILQ_FIRST (&FLM_FILTER (stream)->inputs)) == NULL) {
+	if ((input = TAILQ_FIRST (&stream->inputs)) == NULL) {
 		return (0);
 	}
 
 	nb_write = 0;
-	switch (filter->type) {
-	case FLM__FILTER_TYPE_BUFFER:
+	switch (input->type) {
+	case FLM__STREAM_TYPE_BUFFER:
 		nb_write = flm__StreamSysWritev (stream);
 		break ;
 
-	case FLM__FILTER_TYPE_FILE:
+	case FLM__STREAM_TYPE_FILE:
 #if defined (linux)
 		nb_write = flm__StreamSysSendFile (stream);
 #else
@@ -379,23 +456,23 @@ flm__StreamWrite (flm_Stream * stream)
 ssize_t
 flm__StreamSysWritev (flm_Stream * stream)
 {
-	struct flm__FilterInput * filter;
+	struct flm__StreamInput * input;
 
 	struct msghdr msg;
 	struct iovec iovec[FLM_STREAM__IOVEC_SIZE];
 	size_t iov_count;
 
 	iov_count = 0;
-	TAILQ_FOREACH (filter, &FLM_FILTER (stream)->inputs, entries) {
+	TAILQ_FOREACH (input, &stream->inputs, entries) {
 		if (iov_count == FLM_STREAM__IOVEC_SIZE) {
 			break ;
 		}
-		if (filter->type != FLM__FILTER_TYPE_BUFFER) {
+		if (input->type != FLM__STREAM_TYPE_BUFFER) {
 			break ;
 		}
 
-		iovec[iov_count].iov_base = &filter->class.buffer->content[filter->off];
-		iovec[iov_count].iov_len = filter->tried = filter->count;
+		iovec[iov_count].iov_base = &input->class.buffer->content[input->off];
+		iovec[iov_count].iov_len = input->tried = input->count;
 		iov_count++;
 	}
 	return (writev (FLM_IO (stream)->sys.fd, iovec, iov_count));
@@ -404,18 +481,18 @@ flm__StreamSysWritev (flm_Stream * stream)
 ssize_t
 flm__StreamSysSendFile (flm_Stream * stream)
 {
-	struct flm__FilterInput * filter;
+	struct flm__StreamInput * input;
 
 	off_t off;
 
-	if ((filter = TAILQ_FIRST (&FLM_FILTER (stream)->inputs)) == NULL) {
+	if ((input = TAILQ_FIRST (&stream->inputs)) == NULL) {
 		return (0);
 	}
 
-	off = filter->off;
-	filter->tried = filter->count;
+	off = input->off;
+	input->tried = input->count;
 	return (sendfile (FLM_IO (stream)->sys.fd,		 \
-			  FLM_IO (filter->class.file)->sys.fd,	 \
+			  FLM_IO (input->class.file)->sys.fd,	 \
 			  &off,					 \
-			  filter->tried));
+			  input->tried));
 }

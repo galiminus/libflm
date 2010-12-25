@@ -44,28 +44,4 @@ struct flm_Obj
 int
 flm__ObjInit (flm_Obj * obj);
 
-/**
- * \brief Increment the reference counter
- *
- * You should take a look to flm_retain().
- *
- * \param obj A pointer to an obj.
- * \return The pointer given to the function.
- */
-void *
-flm__Retain (flm_Obj * obj);
-
-/**
- * \brief Decrement the reference counter
- *
- * If the reference counter reaches 0 the obj is automaticaly freed.
- * You should never use an obj after a call to flm_obj_release, you
- * cannot know if another reference exists.
- *
- * \param obj A pointer to an obj to dereference.
- * \return Nothing.
- */
-void
-flm__Release (flm_Obj * obj);
-
 #endif /* !_FLM_CORE_PRIVATE_OBJ_H_ */
