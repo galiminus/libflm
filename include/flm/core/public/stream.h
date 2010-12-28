@@ -34,8 +34,8 @@ typedef void (*flm_StreamReadHandler)			\
 typedef void (*flm_StreamWriteHandler)			\
 (void * state, flm_Buffer * buffer);
 
-typedef void (*flm_StreamFeedHandler)			\
-(void * state, uint32_t size);
+typedef void *(*flm_StreamFeedHandler)			\
+(void * state, size_t size);
 
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,	\

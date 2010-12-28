@@ -78,6 +78,10 @@ flm__StreamInit (flm_Stream *			stream,
 void
 flm__StreamPerfDestruct (flm_Stream * stream);
 
+void *
+flm__StreamDefaultFeed (void * state,
+			size_t size);
+
 void
 flm__StreamPerfRead (flm_Stream * stream,
 		     flm_Monitor * monitor,

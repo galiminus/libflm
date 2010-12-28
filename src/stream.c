@@ -222,8 +222,8 @@ flm_StreamOnWrite (flm_Stream *			stream,
 }
 
 void
-flm_StreamFeed (flm_Stream *		stream,
-		flm_StreamFeedHandler	handler)
+flm_StreamOnFeed (flm_Stream *		stream,
+		  flm_StreamFeedHandler	handler)
 {
 	stream->fe.handler = handler;
 	return ;
@@ -253,6 +253,7 @@ flm__StreamInit (flm_Stream *			stream,
 
 	flm_StreamOnRead (stream, NULL);
 	flm_StreamOnWrite (stream, NULL);
+	flm_StreamOnFeed (stream, flm__StreamDefaultFeed);
 
 	return (0);
 }
@@ -274,6 +275,15 @@ flm__StreamPerfDestruct (flm_Stream * stream)
 	return ;
 }
 
+void *
+flm__StreamDefaultFeed (void * _state,
+			size_t size)
+{
+	(void) _state;
+
+	return (flm__Alloc (size));
+}
+
 void
 flm__StreamPerfRead (flm_Stream *	stream,
 		     flm_Monitor *	monitor,
@@ -290,8 +300,9 @@ flm__StreamPerfRead (flm_Stream *	stream,
 	size_t iov_read;
 
 	for (iov_count = 0; iov_count < count; iov_count++) {
-		iovec[iov_count].iov_base =				\
-			flm__Alloc (FLM_STREAM__RBUFFER_SIZE);
+		iovec[iov_count].iov_base =
+			stream->fe.handler(FLM_IO (stream)->state,
+					   FLM_STREAM__RBUFFER_SIZE);
 
 		if (iovec[iov_count].iov_base == NULL) {
 			/* no more memory */
