@@ -24,7 +24,7 @@ typedef struct flm_Container flm_Container;
 #define FLM_CONTAINER(_obj) FLM_CAST(_obj, flm_Container)
 
 typedef void (*flm_ContainerFreeHandler)	\
-(flm_Container * container);
+(void * container);
 
 flm_Container *
 flm_ContainerNew (void * content,
