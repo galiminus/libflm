@@ -14,27 +14,33 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _FLM_CORE_H_
-# define _FLM_CORE_H_
+#ifndef _FLM_CORE_PUBLIC_THREAD_POOL_H_
+# define _FLM_CORE_PUBLIC_THREAD_POOL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef struct flm_ThreadPool flm_ThreadPool;
 
-#include <flm/core/public/buffer.h>
-#include <flm/core/public/error.h>
-#include <flm/core/public/file.h>
-#include <flm/core/public/io.h>
-#include <flm/core/public/monitor.h>
-#include <flm/core/public/obj.h>
-#include <flm/core/public/stream.h>
-#include <flm/core/public/tcp_client.h>
-#include <flm/core/public/tcp_server.h>
-#include <flm/core/public/timer.h>
-#include <flm/core/public/thread_pool.h>
+#include "flm/core/public/container.h"
+#include "flm/core/public/obj.h"
 
-#ifdef __cplusplus
-}
-#endif
+#define FLM_THREAD_POOL(_obj) FLM_CAST(_obj, flm_ThreadPool)
 
-#endif /* !_FLM_CORE_H_ */
+typedef void (*flm_ThreadPoolCallHandler)	\
+(flm_Container * params);
+
+flm_ThreadPool *
+flm_ThreadPoolNew (uint32_t count);
+
+int
+flm_ThreadPoolJoin (flm_ThreadPool * thread_pool);
+
+int
+flm_ThreadPoolCall (flm_ThreadPool *		thread_pool,
+		    flm_ThreadPoolCallHandler	handler,
+		    flm_Container *		params);
+
+int
+flm_ThreadPoolBroadcast (flm_ThreadPool *		thread_pool,
+			 flm_ThreadPoolCallHandler	handler,
+			 flm_Container *		params);
+
+#endif /* !_FLM_CORE_PUBLIC_THREAD_POOL_H_ */
