@@ -21,6 +21,7 @@
 
 typedef struct flm_TCPServer flm_TCPServer;
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
 
@@ -30,9 +31,9 @@ typedef void (*flm_TCPServerAcceptHandler)	\
 (void * state, int fd);
 
 flm_TCPServer *
-flm_TCPServerNew (flm_Monitor *	monitor,
-		  const char *	interface,
-		  uint16_t	port,
+flm_TCPServerNew (flm_Monitor *		monitor,
+		  const char *		interface,
+		  uint16_t		port,
 		  void *	state);
 
 void

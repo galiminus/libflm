@@ -34,6 +34,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "flm/core/public/container.h"
+
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/buffer.h"
 #include "flm/core/private/error.h"
@@ -52,7 +54,7 @@ const char * flm__StreamErrors[] =
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,
 	       int			fd,
-	       void *			state)
+	       void *		state)
 {
 	flm_Stream * stream;
 
@@ -221,19 +223,11 @@ flm_StreamOnWrite (flm_Stream *			stream,
 	return ;
 }
 
-void
-flm_StreamOnFeed (flm_Stream *		stream,
-		  flm_StreamFeedHandler	handler)
-{
-	stream->fe.handler = handler;
-	return ;
-}
-
 int
 flm__StreamInit (flm_Stream *			stream,
 		 flm_Monitor *			monitor,
 		 int				fd,
-		 void *				state)
+		 void *		state)
 {
 	if (flm__IOInit (FLM_IO (stream), monitor, fd, state) == -1) {
 		return (-1);
@@ -253,7 +247,6 @@ flm__StreamInit (flm_Stream *			stream,
 
 	flm_StreamOnRead (stream, NULL);
 	flm_StreamOnWrite (stream, NULL);
-	flm_StreamOnFeed (stream, flm__StreamDefaultFeed);
 
 	return (0);
 }
@@ -275,15 +268,6 @@ flm__StreamPerfDestruct (flm_Stream * stream)
 	return ;
 }
 
-void *
-flm__StreamDefaultFeed (void * _state,
-			size_t size)
-{
-	(void) _state;
-
-	return (flm__Alloc (size));
-}
-
 void
 flm__StreamPerfRead (flm_Stream *	stream,
 		     flm_Monitor *	monitor,
@@ -300,16 +284,15 @@ flm__StreamPerfRead (flm_Stream *	stream,
 	size_t iov_read;
 
 	for (iov_count = 0; iov_count < count; iov_count++) {
-		iovec[iov_count].iov_base =
-			stream->fe.handler(FLM_IO (stream)->state,
-					   FLM_STREAM__RBUFFER_SIZE);
 
-		if (iovec[iov_count].iov_base == NULL) {
-			/* no more memory */
-			count = iov_count;
-			break ;
-		}
-		iovec[iov_count].iov_len = FLM_STREAM__RBUFFER_SIZE;
+            iovec[iov_count].iov_base = flm__Alloc(FLM_STREAM__RBUFFER_SIZE);
+
+            if (iovec[iov_count].iov_base == NULL) {
+                /* no more memory */
+                count = iov_count;
+                break ;
+            }
+            iovec[iov_count].iov_len = FLM_STREAM__RBUFFER_SIZE;
 	}
 	if (iov_count == 0) {
 		return ;

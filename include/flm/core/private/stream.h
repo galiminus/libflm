@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/stream.h"
 #include "flm/core/public/monitor.h"
 
@@ -54,9 +55,6 @@ struct flm_Stream
 	struct flm_IO				io;
 
 	struct {
-		flm_StreamFeedHandler		handler;
-	} fe;
-	struct {
 		flm_StreamReadHandler		handler;
 	} rd;
 	struct {
@@ -73,32 +71,32 @@ int
 flm__StreamInit (flm_Stream *			stream,
 		 flm_Monitor *			monitor,
 		 int				fd,
-		 void *				state);
+		 void *         	state);
 
 void
-flm__StreamPerfDestruct (flm_Stream * stream);
+flm__StreamPerfDestruct (flm_Stream *	stream);
 
 void *
-flm__StreamDefaultFeed (void * state,
-			size_t size);
+flm__StreamDefaultFeed (void *	state,
+			size_t		size);
 
 void
-flm__StreamPerfRead (flm_Stream * stream,
-		     flm_Monitor * monitor,
-		     uint8_t count);
+flm__StreamPerfRead (flm_Stream *	stream,
+		     flm_Monitor *	monitor,
+		     uint8_t		count);
 
 void
-flm__StreamPerfWrite (flm_Stream * stream,
-		      flm_Monitor * monitor,
-		      uint8_t count);
+flm__StreamPerfWrite (flm_Stream *	stream,
+		      flm_Monitor *	monitor,
+		      uint8_t		count);
 
 ssize_t
-flm__StreamWrite (flm_Stream * stream);
+flm__StreamWrite (flm_Stream *		stream);
 
 ssize_t
-flm__StreamSysWritev (flm_Stream * stream);
+flm__StreamSysWritev (flm_Stream *	stream);
 
 ssize_t
-flm__StreamSysSendFile (flm_Stream * stream);
+flm__StreamSysSendFile (flm_Stream *	stream);
 
 #endif /* !_FLM_CORE_PRIVATE_STREAM_H_ */

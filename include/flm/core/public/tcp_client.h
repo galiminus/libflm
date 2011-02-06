@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "flm/core/public/buffer.h"
+#include "flm/core/public/container.h"
 
 typedef struct flm_TCPClient flm_TCPClient;
 

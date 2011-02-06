@@ -22,6 +22,7 @@
 typedef struct flm_Stream flm_Stream;
 
 #include "flm/core/public/buffer.h"
+#include "flm/core/public/container.h"
 #include "flm/core/public/file.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
@@ -34,13 +35,10 @@ typedef void (*flm_StreamReadHandler)			\
 typedef void (*flm_StreamWriteHandler)			\
 (void * state, flm_Buffer * buffer);
 
-typedef void *(*flm_StreamFeedHandler)			\
-(void * state, size_t size);
-
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,	\
 	       int			fd,		\
-	       void *			state);
+	       void *		state);
 
 int
 flm_StreamPrintf (flm_Stream *	stream,
@@ -66,9 +64,5 @@ flm_StreamOnRead (flm_Stream *		stream,
 void
 flm_StreamOnWrite (flm_Stream *			stream,
 		   flm_StreamWriteHandler	handler);
-
-void
-flm_StreamFeed (flm_Stream *		stream,
-		flm_StreamFeedHandler	handler);
 
 #endif /* _FLM_CORE_PUBLIC_STREAM_H_ */

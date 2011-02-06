@@ -17,6 +17,7 @@
 #ifndef _FLM_CORE_PRIVATE_TCP_SERVER_H_
 # define _FLM_CORE_PRIVATE_TCP_SERVER_H_
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/tcp_server.h"
 
 #include "flm/core/private/io.h"
@@ -39,7 +40,7 @@ flm__TCPServerInit (flm_TCPServer *		tcp_server,
 		    flm_Monitor *		monitor,
 		    const char *		interface,
 		    uint16_t			port,
-		    void *			state);
+		    void *		state);
 
 int
 flm__TCPServerPerfRead (flm_TCPServer *		tcp_server,

@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/tcp_client.h"
 
 #include "flm/core/private/io.h"
@@ -40,11 +41,11 @@ struct flm_TCPClient
 };
 
 int
-flm__TCPClientInit (flm_TCPClient *			tcp_client,
-		    flm_Monitor *			monitor,
-		    const char *			host,
-		    uint16_t				port,
-		    void *				state);
+flm__TCPClientInit (flm_TCPClient *		tcp_client,
+		    flm_Monitor *		monitor,
+		    const char *		host,
+		    uint16_t			port,
+		    void *		state);
 
 void
 flm__TCPClientPerfWrite (flm_TCPClient *	tcp_client,

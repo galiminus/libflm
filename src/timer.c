@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/timer.h"
 
 #include "flm/core/private/alloc.h"
@@ -27,7 +28,7 @@
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,
-	      void *		data,
+	      void *	state,
 	      uint32_t		delay)
 {
 	flm_Timer * timer;
@@ -36,7 +37,7 @@ flm_TimerNew (flm_Monitor *	monitor,
 	if (timer == NULL) {
 		return (NULL);
 	}
-	if (flm__TimerInit (timer, monitor, handler, data, delay) == -1) {
+	if (flm__TimerInit (timer, monitor, handler, state, delay) == -1) {
 		flm__Free (timer);
 		return (NULL);
 	}
@@ -71,7 +72,7 @@ int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
-		void *			data,
+		void *		state,
 		uint32_t		delay)
 {
 	if (monitor == NULL) {
@@ -84,7 +85,7 @@ flm__TimerInit (flm_Timer *		timer,
 	FLM_OBJ (timer)->type = FLM__TYPE_TIMER;
 
 	timer->handler = handler;
-	timer->data = data;
+	timer->state = state;
 	timer->monitor = monitor;
 	timer->set = false;
 

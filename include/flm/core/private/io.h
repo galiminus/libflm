@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/io.h"
 #include "flm/core/public/monitor.h"
 
@@ -43,7 +44,7 @@ struct flm_IO
 	/* inheritance */
 	struct flm_Obj			obj;
 
-	void *				state;
+	void *  			state;
 
 	flm_Monitor *			monitor;
 
@@ -54,11 +55,13 @@ struct flm_IO
 		bool			can;
 		bool			want;
 		uint8_t			limit;
+		flm_IOReadHandler	handler;
 	} rd;
 	struct {
 		bool			can;
 		bool			want;
 		uint8_t			limit;
+		flm_IOWriteHandler	handler;
 	} wr;
 	struct {
 		bool			shutdown;
@@ -90,10 +93,10 @@ int
 flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
 	     int			fd,
-	     void *			state);
+	     void *		state);
 
 void
-flm__IOPerfDestruct (flm_IO * io);
+flm__IOPerfDestruct (flm_IO *	io);
 
 
 uint8_t
@@ -107,6 +110,16 @@ flm__IOWrite (flm_IO *		io,
 void
 flm__IOClose (flm_IO *		io,
 	      flm_Monitor *	monitor);
+
+void
+flm__IOPerfRead (flm_IO *	io,
+                 flm_Monitor *	monitor,
+                 uint8_t        count);
+
+void
+flm__IOPerfWrite (flm_IO *	io,
+		  flm_Monitor *	monitor,
+                  uint8_t       count);
 
 void
 flm__IOPerfClose (flm_IO *	io,

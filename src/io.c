@@ -19,6 +19,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "flm/core/public/container.h"
+
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/error.h"
 #include "flm/core/private/io.h"
@@ -31,91 +33,126 @@ const char * flm__IOErrors[] =
 	"Not implemented"
 };
 
+flm_IO *
+flm_IONew (flm_Monitor *	monitor,
+           int			fd,
+           void *	state)
+{
+    flm_IO * io;
+    
+    if ((io = flm__Alloc (sizeof (flm_IO))) == NULL) {
+        return (NULL);
+    }
+    if (flm__IOInit (io, monitor, fd, state) == -1) {
+        flm__Free (io);
+        return (NULL);
+    }
+    return (io);
+}
+
 void
 flm_IOShutdown (flm_IO *	io)
 {
-	io->rd.want = false;
-	io->cl.shutdown = true;
-	return ;
+    io->rd.want = false;
+    io->cl.shutdown = true;
+    return ;
 }
 
 void
 flm_IOClose (flm_IO *		io)
 {
-	io->rd.can = false;
-	io->rd.want = false;
-
-	io->wr.can = false;
-	io->wr.want = false;
-
-	io->cl.shutdown = true;
-	return ;
+    io->rd.can = false;
+    io->rd.want = false;
+    
+    io->wr.can = false;
+    io->wr.want = false;
+    
+    io->cl.shutdown = true;
+    return ;
 }
 
 int
 flm_IODescriptor (flm_IO *	io)
 {
-	return (io->sys.fd);
+    return (io->sys.fd);
+}
+
+void
+flm_IOOnRead (flm_IO *                  io,
+              flm_IOReadHandler         handler)
+{
+    io->rd.handler = handler;
+    return ;
+}
+
+void
+flm_IOOnWrite (flm_IO *                 io,
+               flm_IOWriteHandler       handler)
+{
+    io->wr.handler = handler;
+    return ;
 }
 
 void
 flm_IOOnClose (flm_IO *			io,
 	       flm_IOCloseHandler	handler)
 {
-	io->cl.handler = handler;
-	return ;
+    io->cl.handler = handler;
+    return ;
 }
 
 void
 flm_IOOnError (flm_IO *			io,
 	       flm_IOErrorHandler	handler)
 {
-	io->er.handler = handler;
-	return ;
+    io->er.handler = handler;
+    return ;
 }
 
 int
 flm__IOInit (flm_IO *			io,
 	     flm_Monitor *		monitor,
 	     int			fd,
-	     void *			state)
+	     void *		state)
 {
-	if (flm__ObjInit (FLM_OBJ (io)) == -1) {
-		return (-1);
-	}
-	FLM_OBJ (io)->type = FLM__TYPE_IO;
-
-	FLM_OBJ (io)->perf.destruct =					\
-		(flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
-
-	io->state		=	state;
-
-	io->sys.fd		=	fd;
-
-	io->rd.can		=	false;
-	io->rd.want		=	true;
-	io->rd.limit		=	4;
-
-	io->wr.can		=	false;
-	io->wr.want		=	false;
-	io->wr.limit		=	4;
-
-	io->cl.shutdown		=	false;
-	flm_IOOnClose (io, NULL);
-	flm_IOOnError (io, NULL);
-
-	io->perf.read		=	NULL;
-	io->perf.write		=	NULL;
-	io->perf.close		=	flm__IOPerfClose;
-
-	io->monitor		=	monitor;
-	if (io->monitor && flm__MonitorIOAdd (io->monitor, io) == -1) {
-		return (-1);
-	}
-
-	flm__ErrorAdd (FLM__TYPE_IO >> 16, flm__IOErrors);
-
-	return (0);
+    if (flm__ObjInit (FLM_OBJ (io)) == -1) {
+        return (-1);
+    }
+    FLM_OBJ (io)->type = FLM__TYPE_IO;
+    
+    FLM_OBJ (io)->perf.destruct =                               \
+        (flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
+    
+    io->state		=	state;
+    
+    io->sys.fd		=	fd;
+    
+    io->rd.can		=	false;
+    io->rd.want		=	true;
+    io->rd.limit		=	4;
+    
+    io->wr.can		=	false;
+    io->wr.want		=	false;
+    io->wr.limit		=	4;
+    
+    io->cl.shutdown		=	false;
+    flm_IOOnRead (io, NULL);
+    flm_IOOnWrite (io, NULL);
+    flm_IOOnClose (io, NULL);
+    flm_IOOnError (io, NULL);
+    
+    io->perf.read		=	flm__IOPerfRead;
+    io->perf.write		=	flm__IOPerfWrite;
+    io->perf.close		=	flm__IOPerfClose;
+    
+    io->monitor		=	monitor;
+    if (io->monitor && flm__MonitorIOAdd (io->monitor, io) == -1) {
+        return (-1);
+    }
+    
+    flm__ErrorAdd (FLM__TYPE_IO >> 16, flm__IOErrors);
+    
+    return (0);
 }
 
 void
@@ -190,6 +227,29 @@ flm__IOClose (flm_IO *		io,
 	return ;
 }
 
+void
+flm__IOPerfRead (flm_IO *	io,
+                 flm_Monitor *  _monitor,
+                 uint8_t        _count)
+{
+    (void) _monitor;
+    (void) _count;
+
+    FLM_IO_EVENT (io, rd);
+    return ;
+}
+
+void
+flm__IOPerfWrite (flm_IO *	io,
+                  flm_Monitor *  _monitor,
+                  uint8_t        _count)
+{
+    (void) _monitor;
+    (void) _count;
+
+    FLM_IO_EVENT (io, wr);
+    return ;
+}
 
 void
 flm__IOPerfClose (flm_IO *	io,

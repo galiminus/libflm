@@ -23,6 +23,7 @@
 
 typedef struct flm__Timer flm__Timer;
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/timer.h"
 
 #include "flm/core/private/obj.h"
@@ -36,7 +37,8 @@ struct flm_Timer
 
 	/* members */
 	flm_TimerHandler		handler;
-	void *				data;
+	void *			state;
+
 	flm_Monitor *			monitor;
 
 	bool				set;
@@ -52,7 +54,7 @@ int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
-		void *			data,
+		void *		state,
 		uint32_t		delay);
 
 void

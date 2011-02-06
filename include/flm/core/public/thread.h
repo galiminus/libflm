@@ -21,21 +21,23 @@ typedef struct flm_Thread flm_Thread;
 
 #include "flm/core/public/container.h"
 #include "flm/core/public/obj.h"
+#include "flm/core/public/monitor.h"
 
 #define FLM_THREAD(_obj) FLM_CAST(_obj, flm_Thread)
 
 typedef void (*flm_ThreadCallHandler)	\
-(flm_Container * state, flm_Container * params);
+(void * state, void * params);
 
 flm_Thread *
-flm_ThreadNew (flm_Container * state);
+flm_ThreadNew (flm_Monitor *	monitor,
+	       void * container);
 
 int
-flm_ThreadJoin (flm_Thread * thread);
+flm_ThreadJoin (flm_Thread *	thread);
 
 int
 flm_ThreadCall (flm_Thread *		thread,
 		flm_ThreadCallHandler	handler,
-		flm_Container *		params);
+		void *		params);
 
 #endif /* !_FLM_CORE_PUBLIC_THREAD_H_ */

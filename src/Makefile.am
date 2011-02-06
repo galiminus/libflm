@@ -13,6 +13,7 @@ select.c			\
 obj.c				\
 stream.c			\
 tcp_server.c			\
+thread.c			\
 thread_pool.c			\
 timer.c
 

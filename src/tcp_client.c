@@ -18,6 +18,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include "flm/core/public/container.h"
+
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/error.h"
 #include "flm/core/private/stream.h"
@@ -25,9 +27,9 @@
 #include "flm/core/private/tcp_client.h"
 
 flm_TCPClient *
-flm_TCPClientNew (flm_Monitor *	monitor,
-		  const char *	host,
-		  uint16_t	port,
+flm_TCPClientNew (flm_Monitor *		monitor,
+		  const char *		host,
+		  uint16_t		port,
 		  void *	state)
 {
 	flm_TCPClient * tcp_client;
@@ -44,11 +46,11 @@ flm_TCPClientNew (flm_Monitor *	monitor,
 }
 
 int
-flm__TCPClientInit (flm_TCPClient *			tcp_client,
-		    flm_Monitor *			monitor,
-		    const char *			host,
-		    uint16_t				port,
-		    void *				state)
+flm__TCPClientInit (flm_TCPClient *	tcp_client,
+		    flm_Monitor *	monitor,
+		    const char *	host,
+		    uint16_t		port,
+		    void *	state)
 {
 	int fd;
 	flm_TCPAddr * tcp_addr;

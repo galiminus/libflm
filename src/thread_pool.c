@@ -14,25 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <string.h>
+
+#include "flm/core/public/thread.h"
+
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/obj.h"
 #include "flm/core/private/thread_pool.h"
 
-struct flm__ThreadParams
-{
-	flm_ThreadPool *	thread_pool;
-	struct flm__Thread *	self;
-};
-
 flm_ThreadPool *
-flm_ThreadPoolNew (uint32_t count)
+flm_ThreadPoolNew ()
 {
 	flm_ThreadPool * thread_pool;
 
 	if ((thread_pool = flm__Alloc (sizeof (flm_ThreadPool))) == NULL) {
 		return (NULL);
 	}
-	if (flm__ThreadPoolInit (thread_pool, count) == -1) {
+	if (flm__ThreadPoolInit (thread_pool) == -1) {
 		flm__Free (thread_pool);
 		return (NULL);
 	}
@@ -40,118 +38,66 @@ flm_ThreadPoolNew (uint32_t count)
 }
 
 int
-flm__ThreadPoolInit (flm_ThreadPool *	thread_pool,
-		     uint32_t		count)
+flm__ThreadPoolInit (flm_ThreadPool *	thread_pool)
 {
-	uint32_t			i;
 	int				error;
-	struct flm__ThreadParams *	params;
 
 	if (flm__ObjInit (FLM_OBJ (thread_pool)) == -1) {
-		goto error;
+		return (-1);
 	}
 	FLM_OBJ (thread_pool)->type = FLM__TYPE_THREAD_POOL;
 
-	thread_pool->count = count;
+	thread_pool->count = 0;
 	thread_pool->current = 0;
 
-	thread_pool->threads =						\
-		flm__Alloc (sizeof (struct flm__Thread) * count);
+	thread_pool->threads = NULL;
 
-	if (thread_pool->threads == NULL) {
-		goto error;
+	error = pthread_mutex_init (&(thread_pool->lock), NULL);
+	if (error != 0) {
+		return (-1);
 	}
-	
-	for (i = 0; i < count; i++) {
-		params = malloc (sizeof (struct flm__ThreadParams));
-		if (params == NULL) {
-			goto kill_threads;
-		}
-		params->thread_pool = thread_pool;
-		params->self = &(thread_pool->threads[i]);
 
-		TAILQ_INIT (&(thread_pool->threads[i].msgs));
-
-		error = pthread_mutex_init (&(thread_pool->threads[i].cond),
-					    NULL);
-		if (error != 0) {
-			goto kill_threads;
-		}
-
-		error = pthread_mutex_init (&(thread_pool->threads[i].lock),
-					    NULL);
-		if (error != 0) {
-			goto kill_threads;
-		}
-
-		error = pthread_create (&(thread_pool->threads[i].pthread),
-					NULL,
-					flm__ThreadStartRoutine,
-					params);
-		if (error != 0) {
-			goto kill_threads;
-		}
-	}
 	return (0);
-
-kill_threads:
-	/* do it */
-error:
-	return (-1);
-}
-
-void *
-flm__ThreadStartRoutine (void * _params)
-{
-	struct flm__ThreadParams *	params = _params;
-	struct flm__Msg *		msg;
-	int				error;
-
-	error = pthread_mutex_lock (&(params->self->lock));
-	if (error != 0) {
-		return ((void *)(error));
-	}
-
-	TAILQ_FOREACH (msg, &(params->self->msgs), entries) {
-		if (msg->handler) {
-			msg->handler(msg->params);
-		}
-	}
-
-	error = pthread_mutex_unlock (&(params->self->lock));
-	if (error != 0) {
-		return ((void *)(error));
-	}
-
-	return ((void *)(0));
 }
 
 int
-flm__ThreadPoolCall (struct flm__Thread *	thread,
-		     flm_ThreadPoolCallHandler	handler,
-		     flm_Container *		params)
+flm_ThreadPoolAdd (flm_ThreadPool *	thread_pool,
+		   flm_Thread *		thread)
 {
-	struct flm__Msg *	msg;
+	flm_Thread **	threads;
+	int		error;
+	uint32_t	count;
 
-	if ((msg = flm__Alloc (sizeof (struct flm__Msg))) == NULL) {
+	error = pthread_mutex_lock (&(thread_pool->lock));
+	if (error != 0) {
 		goto error;
 	}
-	msg->handler = handler;
-	msg->params = flm_Retain (FLM_OBJ (params));
 
-	if (pthread_mutex_lock (&(thread->lock)) == -1) {
-		goto free_msg;
+	count = thread_pool->count + 1;
+	threads = flm__Alloc (count * sizeof (flm_Thread *));
+	if (threads == NULL) {
+		goto unlock;
+	}
+	if (thread_pool->threads) {
+		memcpy (threads,					\
+			thread_pool->threads,				\
+			thread_pool->count * sizeof(flm_Thread *));
+	}
+	flm__Free(thread_pool->threads);
+
+	threads[count - 1] = thread;
+	thread_pool->threads = threads;
+	thread_pool->count = count;
+
+	error = pthread_mutex_unlock (&(thread_pool->lock));
+	if (error != 0) {
+		goto error;
 	}
 
-	TAILQ_INSERT_TAIL (&(thread->msgs), msg, entries);
+        return (0);
 
-	if (pthread_mutex_unlock (&(thread->lock)) == -1) {
-		goto free_msg;
-	}
-	return (0);
-
-free_msg:
-	flm__Free (msg);
+unlock:
+	pthread_mutex_unlock (&(thread_pool->lock));
 error:
 	return (-1);
 }
@@ -160,11 +106,9 @@ int
 flm_ThreadPoolJoin (flm_ThreadPool * thread_pool)
 {
 	uint32_t	i;
-	int		error;
 
 	for (i = 0; i < thread_pool->count; i++) {
-		error = pthread_join (thread_pool->threads[i].pthread, NULL);
-		if (error != 0) {
+		if (flm_ThreadJoin (thread_pool->threads[i]) == -1) {
 			return (-1);
 		}
 	}
@@ -173,34 +117,38 @@ flm_ThreadPoolJoin (flm_ThreadPool * thread_pool)
 
 int
 flm_ThreadPoolCall (flm_ThreadPool *		thread_pool,
-		    flm_ThreadPoolCallHandler	handler,
-		    flm_Container *		params)
+		    flm_ThreadCallHandler	handler,
+		    void *		params)
 {
-	struct flm__Thread *	thread;
-	uint32_t		index;
+	flm_Thread *	thread;
+	uint32_t	index;
 
-	index = thread_pool->current % thread_pool->count;
-	thread = &(thread_pool->threads[index]);
-	thread_pool->current++;
-
-	if (flm__ThreadPoolCall (thread, handler, params) == -1) {
-		return (-1);
+	if (thread_pool->count == 0) {
+		return (0);
 	}
 
+	index = thread_pool->current % thread_pool->count;
+	thread = thread_pool->threads[index];
+	thread_pool->current++;
+
+	if (flm_ThreadCall (thread, handler, params) == -1) {
+		return (-1);
+	}
 	return (0);
 }
 
 int
-flm_ThreadPoolBroadcast (flm_ThreadPool *		thread_pool,
-			 flm_ThreadPoolCallHandler	handler,
-			 flm_Container *		params)
+flm_ThreadPoolBroadcast (flm_ThreadPool *	thread_pool,
+			 flm_ThreadCallHandler	handler,
+			 void *	params)
 {
-	struct flm__Thread *	thread;
-	uint32_t		index;
+	flm_Thread *	thread;
+	uint32_t	index;
 
 	for (index = 0; index < thread_pool->count; index++) {
-		thread = &(thread_pool->threads[index]);
-		if (flm__ThreadPoolCall (thread, handler, params) == -1) {
+		thread = thread_pool->threads[index];
+
+		if (flm_ThreadCall (thread, handler, params) == -1) {
 			return (-1);
 		}
 	}

@@ -21,43 +21,27 @@
 
 #include <pthread.h>
 
+#include "flm/core/public/thread.h"
 #include "flm/core/public/thread_pool.h"
 
 #define FLM__TYPE_THREAD_POOL	0x00140000
 
-struct flm__Msg {
-	flm_ThreadPoolCallHandler	handler;
-	flm_Container *			params;
-	TAILQ_ENTRY (flm__Msg)		entries;
-};
-
-struct flm__Thread {
-	pthread_t			pthread;
-	pthread_mutex_t			cond;
-	pthread_mutex_t			lock;
-	TAILQ_HEAD (msg, flm__Msg)	msgs;
-};
-
 struct flm_ThreadPool
 {
 	/* inheritance */
-	struct flm_Obj			obj;
+	struct flm_Obj		obj;
 
-	uint32_t			count;
-	uint32_t			current;
-	struct flm__Thread *		threads;
+	pthread_mutex_t		lock;
+
+	uint32_t		count;
+	uint32_t		current;
+	flm_Thread **		threads;
 };
 
 int
-flm__ThreadPoolInit (flm_ThreadPool *		thread_pool,
-		     uint32_t			count);
+flm__ThreadPoolInit (flm_ThreadPool *		thread_pool);
 
 void *
 flm__ThreadStartRoutine (void *			_params);
-
-int
-flm__ThreadPoolCall (struct flm__Thread *	thread,
-		     flm_ThreadPoolCallHandler	handler,
-		     flm_Container *		params);
 
 #endif /* !_FLM_CORE_PRIVATE_THREAD_POOL_H_ */

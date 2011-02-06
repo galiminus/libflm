@@ -21,14 +21,24 @@
 
 typedef struct flm_IO flm_IO;
 
+#include "flm/core/public/container.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
 
 #define FLM_IO(_obj) FLM_CAST(_obj, flm_IO)
 
+typedef void (*flm_IOReadHandler) (void * state);
+
+typedef void (*flm_IOWriteHandler) (void * state);
+
 typedef void (*flm_IOCloseHandler) (void * state);
 
 typedef void (*flm_IOErrorHandler) (void * state, int error);
+
+flm_IO *
+flm_IONew (flm_Monitor *	monitor,
+	   int			fd,
+	   void *	state);
 
 /**
  * \brief Close the \c flm_io object as soon as possible.
@@ -40,7 +50,7 @@ typedef void (*flm_IOErrorHandler) (void * state, int error);
  * \return Nothing, this function cannot fail.
  */
 void
-flm_IOShutdown (flm_IO * io);
+flm_IOShutdown (flm_IO *		io);
 
 /**
  * \brief Close the \c flm_io object immediatly.
@@ -52,17 +62,25 @@ flm_IOShutdown (flm_IO * io);
  * \return Nothing, this function cannot fail.
  */
 void
-flm_IOClose (flm_IO * io);
+flm_IOClose (flm_IO *			io);
 
 int
-flm_IODescriptor (flm_IO * io);
+flm_IODescriptor (flm_IO *		io);
 
 void
-flm_IOOnClose (flm_IO * io,
-	       flm_IOCloseHandler handler);
+flm_IOOnRead (flm_IO *          	io,
+              flm_IOReadHandler         handler);
 
 void
-flm_IOOnError (flm_IO * io,
-	       flm_IOErrorHandler handler);
+flm_IOOnWrite (flm_IO *			io,
+               flm_IOWriteHandler	handler);
+
+void
+flm_IOOnClose (flm_IO *			io,
+	       flm_IOCloseHandler	handler);
+
+void
+flm_IOOnError (flm_IO *			io,
+	       flm_IOErrorHandler	handler);
 
 #endif /* _FLM_CORE_PUBLIC_IO_H_ */

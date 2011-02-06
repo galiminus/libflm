@@ -150,7 +150,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
 			flm_Retain (FLM_OBJ (timer));
 			flm_TimerCancel (timer);
 			if (timer->handler) {
-				timer->handler (timer->data);
+				timer->handler (timer->state);
 			}
 			flm_Release (FLM_OBJ (timer));
 			timer = &temp;

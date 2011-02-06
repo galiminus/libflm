@@ -16,7 +16,8 @@
 
 /**
  * \file buffer.h
- * \c The buffer class is a container for chunks of memory.
+ * \c The buffer class is a container for any kind of memory chunk.
+ *
  */
 
 #ifndef _FLM_CORE_PUBLIC_BUFFER_H_
@@ -33,6 +34,10 @@ typedef void (*flm_BufferFreeContentHandler)(void * ptr);
 
 #define FLM_BUFFER(_obj) FLM_CAST(_obj, flm_Buffer)
 
+/**
+ * \brief Create a new buffer from an existing chunk of memory.
+ *
+ */
 flm_Buffer *
 flm_BufferNew (char *				content,		\
 	       size_t				len,			\

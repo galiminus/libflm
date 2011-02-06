@@ -21,13 +21,15 @@
 
 #include <pthread.h>
 
+#include "flm/core/public/io.h"
+#include "flm/core/public/monitor.h"
 #include "flm/core/public/thread.h"
 
 #define FLM__TYPE_THREAD	0x00140000
 
 struct flm__Msg {
 	flm_ThreadCallHandler	handler;
-	flm_Container *		params;
+	void *		params;
 	TAILQ_ENTRY (flm__Msg)	entries;
 };
 
@@ -36,7 +38,13 @@ struct flm_Thread
 	/* inheritance */
 	struct flm_Obj			obj;
 
-	flm_Container *			state;
+	void *			state;
+	flm_Monitor *			monitor;
+
+	struct {
+            int                         in;
+            flm_Stream *		out;
+	} pipe;
 
 	pthread_t			pthread;
 	pthread_cond_t			cond;
@@ -46,7 +54,12 @@ struct flm_Thread
 
 int
 flm__ThreadInit (flm_Thread *		thread,
-		 flm_Container *	state);
+		 flm_Monitor *		monitor,
+		 void *               state);
+
+void
+flm__ThreadEventHandler (void *         _thread,
+                         flm_Buffer *   _buffer);
 
 void *
 flm__ThreadStartRoutine (void *		_thread);

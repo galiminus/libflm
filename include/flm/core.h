@@ -31,6 +31,7 @@ extern "C" {
 #include <flm/core/public/tcp_client.h>
 #include <flm/core/public/tcp_server.h>
 #include <flm/core/public/timer.h>
+#include <flm/core/public/thread.h>
 #include <flm/core/public/thread_pool.h>
 
 #ifdef __cplusplus
