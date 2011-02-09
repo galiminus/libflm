@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,52 +21,52 @@
 #include "flm/core/private/container.h"
 
 flm_Container *
-flm_ContainerNew (void * content,
-		  flm_ContainerFreeHandler free_handler)
+flm_ContainerNew (void *                        content,
+                  flm_ContainerFreeHandler      free_handler)
 {
-	flm_Container * container;
+    flm_Container *         container;
 
-	container = flm__Alloc (sizeof (flm_Container));
-	if (container == NULL) {
-		return (NULL);
-	}
-	if (flm__ContainerInit (container, content, free_handler) == -1) {
-		flm__Free (container);
-		return (NULL);
-	}
-	return (container);
+    container = flm__Alloc (sizeof (flm_Container));
+    if (container == NULL) {
+        return (NULL);
+    }
+    if (flm__ContainerInit (container, content, free_handler) == -1) {
+        flm__Free (container);
+        return (NULL);
+    }
+    return (container);
 }
 
 void *
-flm_ContainerContent (flm_Container * container)
+flm_ContainerContent (flm_Container *           container)
 {
-	return (container->content);
+    return (container->content);
 }
 
 int
-flm__ContainerInit (flm_Container * container,
-		    void * content,
-		    flm_ContainerFreeHandler free_handler)
+flm__ContainerInit (flm_Container *             container,
+                    void *                      content,
+                    flm_ContainerFreeHandler    free_handler)
 {
-	if (flm__ObjInit (FLM_OBJ (container)) == -1) {
-		return (-1);
-	}
-	FLM_OBJ (container)->type = FLM__TYPE_CONTAINER;
+    if (flm__ObjInit (FLM_OBJ (container)) == -1) {
+        return (-1);
+    }
+    FLM_OBJ (container)->type = FLM__TYPE_CONTAINER;
 
-	FLM_OBJ (container)->perf.destruct =				\
-		(flm__ObjPerfDestruct_f) flm__ContainerPerfDestruct;
+    FLM_OBJ (container)->perf.destruct =                            \
+        (flm__ObjPerfDestruct_f) flm__ContainerPerfDestruct;
 
-	container->content = content;
-	container->fr.handler = free_handler;
+    container->content = content;
+    container->fr.handler = free_handler;
 
-	return (0);
+    return (0);
 }
 
 void
-flm__ContainerPerfDestruct (flm_Container * container)
+flm__ContainerPerfDestruct (flm_Container *     container)
 {
-	if (container->fr.handler) {
-		container->fr.handler (flm_ContainerContent (container));
-	}
-	return ;
+    if (container->fr.handler) {
+        container->fr.handler (flm_ContainerContent (container));
+    }
+    return ;
 }

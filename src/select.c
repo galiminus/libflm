@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -84,22 +84,28 @@ flm__SelectPerfAdd (flm__Select * select,
 int
 flm__SelectPerfWait (flm__Select * _select)
 {
-	flm_IO * io;
-	size_t fd;
-	int ret;
-	struct timeval delay;
+	flm_IO *                io;
+	size_t                  fd;
+	int                     ret;
+	struct timeval          delay;
+        struct timeval *        delay_ptr;
 
-	fd_set rset;
-	fd_set wset;
-	int max;
+	fd_set                  rset;
+	fd_set                  wset;
+	int                     max;
 
-	if (FLM__MONITOR_TM_RES >= 1000) {
-		delay.tv_sec = FLM__MONITOR_TM_RES / 1000;
-		delay.tv_usec = FLM__MONITOR_TM_RES % 1000;
+        if (FLM_MONITOR (_select)->tm.next == -1) {
+            delay_ptr = NULL;
+        }
+	else if (FLM_MONITOR (_select)->tm.next >= 1000) {
+            delay.tv_sec = FLM_MONITOR (_select)->tm.next / 1000;
+            delay.tv_usec = FLM_MONITOR (_select)->tm.next % 1000;
+            delay_ptr = &delay;
 	}
 	else {
-		delay.tv_sec = 0;
-		delay.tv_usec = FLM__MONITOR_TM_RES;
+            delay.tv_sec = 0;
+            delay.tv_usec = FLM_MONITOR (_select)->tm.next;
+            delay_ptr = &delay;
 	}
 
 	max = -1;
@@ -121,7 +127,7 @@ flm__SelectPerfWait (flm__Select * _select)
 	}
 
 	for (;;) {
-		ret = select (max + 1, &rset, &wset, NULL, &delay);
+		ret = select (max + 1, &rset, &wset, NULL, delay_ptr);
 		if (ret >= 0) {
 			break ;
 		}

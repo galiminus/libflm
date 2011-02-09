@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,60 +26,60 @@
 #include "flm/core/private/buffer.h"
 
 flm_Buffer *
-flm_BufferNew (char *				content,
-	       size_t				len,
-	       flm_BufferFreeContentHandler	fr_handler)
+flm_BufferNew (char *                           content,
+               size_t                           len,
+               flm_BufferFreeContentHandler     fr_handler)
 {
-	flm_Buffer * buffer;
+    flm_Buffer *        buffer;
 
-	if ((buffer = flm__Alloc (sizeof (flm_Buffer))) == NULL) {
-		return (NULL);
-	}
-	if (flm__BufferInit (buffer, content, len, fr_handler) == -1) {
-		flm__Free (buffer);
-		return (NULL);
-	}
-	return (buffer);
+    if ((buffer = flm__Alloc (sizeof (flm_Buffer))) == NULL) {
+        return (NULL);
+    }
+    if (flm__BufferInit (buffer, content, len, fr_handler) == -1) {
+        flm__Free (buffer);
+        return (NULL);
+    }
+    return (buffer);
 }
 
 size_t
-flm_BufferLength (flm_Buffer * buffer)
+flm_BufferLength (flm_Buffer *          buffer)
 {
-	return (buffer->len);
+    return (buffer->len);
 }
 
 char *
-flm_BufferContent (flm_Buffer * buffer)
+flm_BufferContent (flm_Buffer *         buffer)
 {
-	return (buffer->content);
+    return (buffer->content);
 }
 
 int
-flm__BufferInit (flm_Buffer *			buffer,
-		 char *				content,
-		 size_t				len,
-		 flm_BufferFreeContentHandler	fr_handler)
+flm__BufferInit (flm_Buffer *                   buffer,
+                 char *                         content,
+                 size_t                         len,
+                 flm_BufferFreeContentHandler   fr_handler)
 {
-	if (flm__ObjInit (FLM_OBJ (buffer)) == -1) {
-		return (-1);
-	}
-	FLM_OBJ (buffer)->type = FLM__TYPE_BUFFER;
+    if (flm__ObjInit (FLM_OBJ (buffer)) == -1) {
+        return (-1);
+    }
+    FLM_OBJ (buffer)->type = FLM__TYPE_BUFFER;
 
-	FLM_OBJ (buffer)->perf.destruct =				\
-		(flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
+    FLM_OBJ (buffer)->perf.destruct =                               \
+        (flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
 
-	buffer->len = len;
-	buffer->content = content;
+    buffer->len = len;
+    buffer->content = content;
 
-	buffer->fr.handler = fr_handler;
-	return (0);
+    buffer->fr.handler = fr_handler;
+    return (0);
 }
 
 void
-flm__BufferPerfDestruct (flm_Buffer * buffer)
+flm__BufferPerfDestruct (flm_Buffer *   buffer)
 {
-	if (buffer->fr.handler) {
-		buffer->fr.handler (buffer->content);
-	}
-	return ;
+    if (buffer->fr.handler) {
+        buffer->fr.handler (buffer->content);
+    }
+    return ;
 }

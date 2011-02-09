@@ -38,11 +38,12 @@ flm_ThreadPoolJoin (flm_ThreadPool *		thread_pool);
 int
 flm_ThreadPoolCall (flm_ThreadPool *		thread_pool,
 		    flm_ThreadCallHandler	handler,
-		    void *		params);
+		    void *                      params);
 
 int
-flm_ThreadPoolBroadcast (flm_ThreadPool *	thread_pool,
-			 flm_ThreadCallHandler	handler,
-			 void *	params);
+flm_ThreadPoolCallTo (flm_ThreadPool *          thread_pool,
+                      uint32_t                  to,
+                      flm_ThreadCallHandler	handler,
+                      void *                    params);
 
 #endif /* !_FLM_CORE_PUBLIC_THREAD_POOL_H_ */

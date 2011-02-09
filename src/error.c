@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -12,10 +12,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
-
-/*
- * Thanks to : http://blogs.ubuntu-nl.org/dennis/
  */
 
 #include <errno.h>
@@ -36,65 +32,65 @@ static void flm__ErrorInit (void);
 int
 flm_Error ()
 {
-	return (flm__Error);
+    return (flm__Error);
 }
 
 const char *
 flm_ErrorDesc ()
 {
-	const char * errno_str;
-	int error;
+    const char * errno_str;
+    int error;
 
-	error = flm_Error ();
+    error = flm_Error ();
 
-	switch (error) {
-	case FLM_ERR_ERRNO:
-		errno_str = strerror (errno);
-		if (errno_str == NULL) {
-			return (FLM__STRERR_UNKNOWN);
-		}
-		return (errno_str);
+    switch (error) {
+    case FLM_ERR_ERRNO:
+        errno_str = strerror (errno);
+        if (errno_str == NULL) {
+            return (FLM__STRERR_UNKNOWN);
+        }
+        return (errno_str);
 
-	case FLM_ERR_SUCCESS:
-		return (FLM__STRERR_SUCCESS);
-	}
-	return (flm__ErrorDesc (error >> 16, error & 0x0000ffff));
+    case FLM_ERR_SUCCESS:
+        return (FLM__STRERR_SUCCESS);
+    }
+    return (flm__ErrorDesc (error >> 16, error & 0x0000ffff));
 }
 
 void
 flm__ErrorInit ()
 {
-	pthread_key_create (&flm__ErrorLocationKey, NULL);
-	return ;
+    pthread_key_create (&flm__ErrorLocationKey, NULL);
+    return ;
 }
 
 int *
 flm__ErrorLocation ()
 {
-	int * error;
+    int * error;
 
-	if (pthread_once (&flm__ErrorInitOnce, flm__ErrorInit) == -1) {
-		return (NULL);
-	}
+    if (pthread_once (&flm__ErrorInitOnce, flm__ErrorInit) == -1) {
+        return (NULL);
+    }
 
-	if ((error = pthread_getspecific (flm__ErrorLocationKey)) == NULL) {
-		error = flm__Alloc (sizeof (int));
-		pthread_setspecific (flm__ErrorLocationKey, error);
-	}
-	return (error);
+    if ((error = pthread_getspecific (flm__ErrorLocationKey)) == NULL) {
+        error = flm__Alloc (sizeof (int));
+        pthread_setspecific (flm__ErrorLocationKey, error);
+    }
+    return (error);
 }
 
 void
 flm__ErrorAdd (int domain,
-	       const char ** errors)
+               const char ** errors)
 {
-	flm__Errors[domain] = errors;
-	return ;
+    flm__Errors[domain] = errors;
+    return ;
 }
 
 const char *
 flm__ErrorDesc (int domain,
-		int error)
+                int error)
 {
-	return (flm__Errors[domain][error]);
+    return (flm__Errors[domain][error]);
 }

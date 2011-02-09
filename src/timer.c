@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -72,7 +72,7 @@ int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
-		void *		state,
+		void *                  state,
 		uint32_t		delay)
 {
 	if (monitor == NULL) {
@@ -88,9 +88,6 @@ flm__TimerInit (flm_Timer *		timer,
 	timer->state = state;
 	timer->monitor = monitor;
 	timer->set = false;
-
-	/* round delay to the upper second */
-	delay = (delay + 1000) / 1000;
 
 	flm_TimerReset (timer, delay);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -120,7 +120,6 @@ flm__ThreadEventHandler (void *         _thread,
         return ;
     }
     
-    printf ("EXEC\n");
     /* instead of executing everything, replace me by an empty
        list and execute me later */
     TAILQ_FOREACH (msg, &(thread->msgs), entries) {

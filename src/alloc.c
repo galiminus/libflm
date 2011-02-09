@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,33 +21,33 @@
 #include "flm/core/private/alloc.h"
 
 void *
-flm__Alloc (size_t size)
+flm__Alloc (size_t      size)
 {
-	void * mem;
+    void * mem;
 
-	mem = malloc (size);
-	if (mem == NULL) {
-		flm__Error = FLM_ERR_ERRNO;
-		return (NULL);
-	}
-	return (mem);
+    mem = malloc (size);
+    if (mem == NULL) {
+        flm__Error = FLM_ERR_ERRNO;
+        return (NULL);
+    }
+    return (mem);
 }
 
 void *
-flm__ReAlloc (void * mem,
-	      size_t size)
+flm__ReAlloc (void *    mem,
+              size_t    size)
 {
-	mem = realloc (mem, size);
-	if (mem == NULL) {
-		flm__Error = FLM_ERR_ERRNO;
-		return (NULL);
- 	}
-	return (mem);
+    mem = realloc (mem, size);
+    if (mem == NULL) {
+        flm__Error = FLM_ERR_ERRNO;
+        return (NULL);
+    }
+    return (mem);
 }
 
 void
-flm__Free (void * mem)
+flm__Free (void *       mem)
 {
-	free (mem);
-	return ;
+    free (mem);
+    return ;
 }

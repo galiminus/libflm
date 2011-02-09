@@ -34,8 +34,8 @@ typedef int (*flm__MonitorDel_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorReset_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorWait_f) (flm_Monitor * monitor);
 
-#define FLM__MONITOR_TM_WHEEL_SIZE	1024
-#define FLM__MONITOR_TM_RES		1000 /* milliseconds */
+#define FLM__MONITOR_TM_WHEEL_SIZE	4096
+#define FLM__MONITOR_TM_RES		100  /* milliseconds */
 
 struct flm_Monitor
 {

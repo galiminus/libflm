@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009, Victor Goya <phorque@libflm.me>
+ * Copyright (c) 2010-2011, Victor Goya <phorque@libflm.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -85,8 +85,6 @@ flm__TCPServerInit (flm_TCPServer *	tcp_server,
 	hints.ai_canonname = NULL;
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
-
-        printf("PORT: %d\n", port);
 
 	if (snprintf (str_port, sizeof (str_port), "%d", port) < 0) {
 		goto error;
