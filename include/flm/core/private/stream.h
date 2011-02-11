@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <openssl/ssl.h>
+
 #include "flm/core/public/container.h"
 #include "flm/core/public/stream.h"
 #include "flm/core/public/monitor.h"
@@ -51,27 +53,38 @@ struct flm__StreamInput
 
 struct flm_Stream
 {
-	/* inheritance */
-	struct flm_IO				io;
-
-	struct {
-		flm_StreamReadHandler		handler;
-	} rd;
-	struct {
-		flm_StreamWriteHandler		handler;
-	} wr;
-
-	TAILQ_HEAD (flin, flm__StreamInput)	inputs;
+    /* inheritance */
+    struct flm_IO				io;
+    
+    struct {
+            flm_StreamReadHandler		handler;
+    } rd;
+    struct {
+        flm_StreamWriteHandler		handler;
+    } wr;
+    
+    struct {
+        SSL *                           obj;
+    } tls;
+    
+    TAILQ_HEAD (flin, flm__StreamInput)	inputs;
 };
 
 #define FLM_STREAM__RBUFFER_SIZE		2048
 #define FLM_STREAM__IOVEC_SIZE			8
 
 int
-flm__StreamInit (flm_Stream *			stream,
-		 flm_Monitor *			monitor,
-		 int				fd,
-		 void *         	state);
+flm__StreamInit (flm_Stream *           stream,
+		 flm_Monitor *          monitor,
+		 int                    fd,
+		 void *                 state);
+
+int
+flm__StreamInitTLS (flm_Stream *        stream,
+                    SSL_CTX *           context);
+
+void
+flm__StreamShutdownTLS (flm_Stream *    stream);
 
 void
 flm__StreamPerfDestruct (flm_Stream *	stream);

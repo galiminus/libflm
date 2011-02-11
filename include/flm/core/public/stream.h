@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 
+#include <openssl/ssl.h>
+
 typedef struct flm_Stream flm_Stream;
 
 #include "flm/core/public/buffer.h"
@@ -64,5 +66,13 @@ flm_StreamOnRead (flm_Stream *		stream,
 void
 flm_StreamOnWrite (flm_Stream *			stream,
 		   flm_StreamWriteHandler	handler);
+
+int
+flm_StreamStartTLSServer (flm_Stream *		stream,
+                          SSL_CTX *             context);
+
+int
+flm_StreamStartTLSClient (flm_Stream *		stream,
+                          SSL_CTX *             context);
 
 #endif /* _FLM_CORE_PUBLIC_STREAM_H_ */

@@ -34,6 +34,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <openssl/ssl.h>
+
 #include "flm/core/public/container.h"
 
 #include "flm/core/private/alloc.h"
@@ -224,6 +226,46 @@ flm_StreamOnWrite (flm_Stream *			stream,
 }
 
 int
+flm_StreamStartTLSServer (flm_Stream *               stream,
+                          SSL_CTX *                  context)
+{
+    if (flm__StreamInitTLS (stream, context) == -1) {
+        goto error;
+    }
+
+    if (SSL_accept (stream->tls.obj) < 0) {
+        goto shutdown_tls;
+    }
+
+    return (0);
+    
+  shutdown_tls:
+    flm__StreamShutdownTLS (stream);
+  error:
+    return (-1);
+}
+
+int
+flm_StreamStartTLSClient (flm_Stream *              stream,
+                          SSL_CTX *                 context)
+{
+    if (flm__StreamInitTLS (stream, context) == -1) {
+        goto error;
+    }
+
+    if (SSL_connect (stream->tls.obj) < 0) {
+        goto shutdown_tls;
+    }
+
+    return (0);
+    
+  shutdown_tls:
+    flm__StreamShutdownTLS (stream);
+  error:
+    return (-1);
+}
+
+int
 flm__StreamInit (flm_Stream *			stream,
 		 flm_Monitor *			monitor,
 		 int				fd,
@@ -251,6 +293,36 @@ flm__StreamInit (flm_Stream *			stream,
 	return (0);
 }
 
+int
+flm__StreamInitTLS (flm_Stream *                stream,
+                    SSL_CTX *                   context)
+{
+    stream->tls.obj = SSL_new (context);
+    if (stream->tls.obj == NULL) {
+        goto error;
+    }
+    if (!SSL_set_fd (stream->tls.obj, FLM_IO (stream)->sys.fd)) {
+        goto free_obj;
+    }
+    return (0);
+
+  free_obj:
+    SSL_free (stream->tls.obj);
+    stream->tls.obj = NULL;
+  error:
+    return (-1);
+}
+
+void
+flm__StreamShutdownTLS (flm_Stream *    stream)
+{
+    if (stream->tls.obj) {
+        SSL_free (stream->tls.obj);
+        stream->tls.obj = NULL;
+    }
+    return ;
+}
+
 void
 flm__StreamPerfDestruct (flm_Stream * stream)
 {
@@ -265,6 +337,7 @@ flm__StreamPerfDestruct (flm_Stream * stream)
 		flm__Free (input);
 		input = &temp;
 	}
+        flm__StreamShutdownTLS (stream);
 	return ;
 }
 
