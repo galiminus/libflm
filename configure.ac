@@ -7,9 +7,11 @@ AC_CONFIG_SRCDIR([src/obj.c])
 AC_CONFIG_HEADERS([config.h])
 
 AM_INIT_AUTOMAKE
+AM_PATH_CHECK()
+AM_PROG_CC_C_O
 
 # Checks for programs.
-AC_PROG_CC
+#AC_PROG_CC
 AM_PROG_AS
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -47,10 +49,11 @@ AC_CHECK_FUNCS([gettimeofday localtime_r memset])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-		 include/flm/Makefile
-		 include/flm/core/Makefile
-		 include/flm/core/public/Makefile
-		 include/flm/core/private/Makefile])
+                 include/flm/Makefile
+                 include/flm/core/Makefile
+                 include/flm/core/public/Makefile
+                 include/flm/core/private/Makefile
+                 tests/Makefile])
 
 AC_CHECK_FUNCS([memset socket])
 

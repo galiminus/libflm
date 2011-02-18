@@ -115,6 +115,8 @@ CCASDEPMODE = @CCASDEPMODE@
 CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECK_CFLAGS = @CHECK_CFLAGS@
+CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -217,11 +219,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = \
-	src				\
-	include/flm			\
-	include/flm/core		\
+	src							\
+	include/flm					\
+	include/flm/core			\
 	include/flm/core/public		\
-	include/flm/core/private
+	include/flm/core/private	\
+	tests
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
