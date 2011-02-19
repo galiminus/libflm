@@ -19,9 +19,7 @@ START_TEST(test_buffer_content)
     if ((buffer = flm_BufferNew ("test", 5, NULL)) == NULL) {
         fail ("Buffer creation failed");
     }
-    if (strcmp (flm_BufferContent (buffer), "test")) {
-        fail ("Invalid buffer content");
-    }
+    fail_unless (strcmp (flm_BufferContent (buffer), "test") == 0);
 }
 END_TEST
 
@@ -67,8 +65,21 @@ START_TEST(test_buffer_alloc_fail)
 }
 END_TEST
 
+START_TEST(test_buffer_destruct)
+{
+    flm_Buffer * buffer;
+
+    setTestAlloc (0);
+    if ((buffer = flm_BufferNew ("test", 5, NULL)) == NULL) {
+        fail ("Buffer creation failed");
+    }
+    flm_Release (FLM_OBJ (buffer));
+    fail_unless (getAllocSum () == 0);
+}
+END_TEST
+
 Suite *
-libflm_suite (void)
+buffer_suite (void)
 {
   Suite * s = suite_create ("buffer");
 
@@ -79,20 +90,8 @@ libflm_suite (void)
   tcase_add_test (tc_core, test_buffer_length);
   tcase_add_test (tc_core, test_buffer_free);
   tcase_add_test (tc_core, test_buffer_alloc_fail);
+  tcase_add_test (tc_core, test_buffer_destruct);
   suite_add_tcase (s, tc_core);
 
   return s;
-}
-
-int
-main (void)
-{
-    int number_failed;
-    Suite * s = libflm_suite ();
-    SRunner * sr = srunner_create (s);
-    
-    srunner_run_all (sr, CK_NORMAL);
-    number_failed = srunner_ntests_failed (sr);
-    srunner_free (sr);
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

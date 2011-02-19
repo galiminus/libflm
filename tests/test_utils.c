@@ -10,7 +10,6 @@ getAllocSum ()
     return (alloc_sum);
 }
 
-
 void *
 testAllocHandler (size_t size)
 {
@@ -33,8 +32,7 @@ testAllocHandler (size_t size)
     }
 
     ptr[0] = size;
-
-    return ((void *)(ptr + 1));
+    return ((void *)(&ptr[1]));
 }
 
 void
@@ -44,11 +42,11 @@ testFreeHandler (void * ptr)
     size_t size;
 
     size_ptr = ptr;
-    size = size_ptr[0];
+    size = size_ptr[-1];
 
     alloc_sum -= size;
 
-    free (size_ptr + 1);
+    free (&size_ptr[-1]);
     return ;
 }
 
@@ -72,7 +70,7 @@ setTestAlloc (uint32_t count)
 
     flm__SetAlloc (testAllocHandler);
     flm__SetRealloc (testReallocHandler);
-    flm__SetFree (testAllocHandler);
+    flm__SetFree (testFreeHandler);
 
     return ;
 }

@@ -20,12 +20,39 @@
 #include "flm/core/private/error.h"
 #include "flm/core/private/alloc.h"
 
+void * (*allocHandler)(size_t);
+void * (*reallocHandler)(void *, size_t);
+void * (*freeHandler)(void *);
+
+void
+flm__SetAlloc (void * (*handler)(size_t))
+{
+    allocHandler = handler;
+}
+
+void
+flm__SetRealloc (void * (*handler)(void *, size_t))
+{
+    reallocHandler = handler;
+}
+
+void
+flm__SetFree (void * (*handler)(void *))
+{
+    freeHandler = handler;
+}
+
 void *
 flm__Alloc (size_t      size)
 {
     void * mem;
 
-    mem = malloc (size);
+    if (allocHandler) {
+        mem = allocHandler (size);
+    }
+    else {
+        mem = malloc (size);
+    }
     if (mem == NULL) {
         flm__Error = FLM_ERR_ERRNO;
         return (NULL);
@@ -37,7 +64,12 @@ void *
 flm__ReAlloc (void *    mem,
               size_t    size)
 {
-    mem = realloc (mem, size);
+    if (reallocHandler) {
+        mem = reallocHandler (mem, size);
+    }
+    else {
+        mem = realloc (mem, size);
+    }
     if (mem == NULL) {
         flm__Error = FLM_ERR_ERRNO;
         return (NULL);
@@ -48,6 +80,11 @@ flm__ReAlloc (void *    mem,
 void
 flm__Free (void *       mem)
 {
-    free (mem);
+    if (freeHandler) {
+        freeHandler (mem);
+    }
+    else {
+        free (mem);
+    }
     return ;
 }
