@@ -59,7 +59,7 @@ flm_MonitorWait (flm_Monitor * monitor)
      * The monitor will wait until a fatal error occurs or there
      * is no more IO to wait for.
      */
-    while (monitor->wait (monitor) != -1 && monitor->count > 0) {
+    while (monitor->count > 0 && monitor->wait (monitor) != -1) {
         flm__MonitorTimerTick (monitor);
     }
     return (0);
@@ -173,7 +173,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
     monitor->tm.current = current;
     monitor->tm.pos = (curpos + diff) % FLM__MONITOR_TM_WHEEL_SIZE;
 
-    for (pos = 0; pos < diff; pos++) {
+    for (pos = 0; pos <= diff; pos++) {
         TAILQ_FOREACH (timer,
                        &(monitor->tm.wheel[(curpos + pos) %
                                            FLM__MONITOR_TM_WHEEL_SIZE]),
@@ -194,29 +194,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
             timer = &temp;
         }
     }
-
-    /**
-     * Read the wheel from now to find the next tick.
-     * XXX: optimise it
-     */
-    for (diff = 1; diff < FLM__MONITOR_TM_WHEEL_SIZE; diff++) {
-        if (TAILQ_FIRST(&(monitor->tm.wheel[(curpos + diff) %
-                                            FLM__MONITOR_TM_WHEEL_SIZE]))) {
-            break ;
-        }
-    }
-    if (diff == FLM__MONITOR_TM_WHEEL_SIZE) {
-        /**
-         * The wheel is empty, wait indefinitly
-         */
-        monitor->tm.next = -1;
-    }
-    else {
-        monitor->tm.next = diff * FLM__MONITOR_TM_RES;
-    }
-
-    printf("NEXT: %d\n", monitor->tm.next);
-
+    flm__MonitorTimerRearm (monitor);
     return (0);
 }
 
@@ -226,7 +204,6 @@ flm__MonitorTimerAdd (flm_Monitor *     monitor,
                       uint32_t          msdelay)
 {
     uint32_t    delay;
-    uint32_t    diff;
 
     /**
      * Round the delay to match FLM__MONITOR_TM_RES
@@ -252,6 +229,7 @@ flm__MonitorTimerAdd (flm_Monitor *     monitor,
 
     monitor->count++;
 
+    flm__MonitorTimerRearm (monitor);
     return ;
 }
 
@@ -262,11 +240,13 @@ flm__MonitorTimerDelete (flm_Monitor *  monitor,
     /**
      * Remove from the wheel
      */
+
     TAILQ_REMOVE (&(monitor->tm.wheel[timer->wh.pos]), timer, wh.entries);
     flm_Release (FLM_OBJ (timer));
 
     monitor->count--;
 
+    flm__MonitorTimerRearm (monitor);
     return ;
 }
 
@@ -292,3 +272,31 @@ flm__MonitorTimerReset (flm_Monitor *   monitor,
     flm_Release (FLM_OBJ (timer));
     return ;
 }
+
+void
+flm__MonitorTimerRearm (flm_Monitor * monitor)
+{
+    uint32_t            diff;
+
+    /**
+     * Read the wheel from now to find the next tick.
+     * XXX: optimise it
+     */
+    for (diff = 0; diff < FLM__MONITOR_TM_WHEEL_SIZE; diff++) {
+        if (TAILQ_FIRST(&(monitor->tm.wheel[(monitor->tm.pos + diff) %
+                                            FLM__MONITOR_TM_WHEEL_SIZE]))) {
+            break ;
+        }
+    }
+    if (diff == FLM__MONITOR_TM_WHEEL_SIZE) {
+        /**
+         * The wheel is empty, wait indefinitly
+         */
+        monitor->tm.next = -1;
+    }
+    else {
+        monitor->tm.next = diff * FLM__MONITOR_TM_RES;
+    }
+    return ;
+}
+

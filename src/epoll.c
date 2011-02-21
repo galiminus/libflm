@@ -194,6 +194,7 @@ flm__EpollPerfWait (flm__Epoll * epoll)
             flm__EpollPerfReset (epoll, io) == -1) {
             ret = -1;
         }
+
         if (io->cl.shutdown && !io->wr.want) {
             flm__IOClose (io, FLM_MONITOR (epoll));
         }

@@ -15,6 +15,9 @@ main (void)
 
     Suite * containerSuite = container_suite ();
     SRunner * containerRunner = srunner_create (containerSuite);
+
+    Suite * monitorSuite = monitor_suite ();
+    SRunner * monitorRunner = srunner_create (monitorSuite);
     
     srunner_run_all (bufferRunner, CK_NORMAL);
     number_failed = 0;
@@ -25,6 +28,11 @@ main (void)
     number_failed = 0;
     number_failed += srunner_ntests_failed (containerRunner);
     srunner_free (containerRunner);
+
+    srunner_run_all (monitorRunner, CK_NORMAL);
+    number_failed = 0;
+    number_failed += srunner_ntests_failed (monitorRunner);
+    srunner_free (monitorRunner);
 
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

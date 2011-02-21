@@ -18,4 +18,4 @@ thread_pool.c			\
 timer.c
 
 libflm_la_CFLAGS = -W -Wall -I../include/ -ggdb
-libflm_la_LDFLAGS = -lm -lrt
+libflm_la_LDFLAGS = -lm -lrt -lssl

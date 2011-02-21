@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "flm/core/private/alloc.h"
 #include "flm/core/private/error.h"
 
-#include "flm/core/private/alloc.h"
 #include "flm/core/private/obj.h"
 
 const char * flm__ObjErrors[] =

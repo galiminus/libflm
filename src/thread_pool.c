@@ -120,7 +120,6 @@ flm_ThreadPoolCall (flm_ThreadPool *            thread_pool,
                     flm_ThreadCallHandler       handler,
                     void *                      params)
 {
-    flm_Thread *    thread;
     uint32_t        index;
 
     if (thread_pool->count == 0) {

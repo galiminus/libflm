@@ -290,6 +290,8 @@ flm__StreamInit (flm_Stream *			stream,
 	flm_StreamOnRead (stream, NULL);
 	flm_StreamOnWrite (stream, NULL);
 
+        stream->tls.obj = NULL;
+
 	return (0);
 }
 
@@ -355,6 +357,8 @@ flm__StreamPerfRead (flm_Stream *	stream,
 
 	flm_Buffer * buffer;
 	size_t iov_read;
+
+        (void) monitor;
 
 	for (iov_count = 0; iov_count < count; iov_count++) {
 
@@ -441,6 +445,9 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 	ssize_t nb_write;
 	ssize_t drain;
 
+        (void) monitor;
+        (void) count;
+
 	nb_write = flm__StreamWrite (stream);
 
 	if (nb_write < 0) {
@@ -525,7 +532,6 @@ flm__StreamSysWritev (flm_Stream * stream)
 {
 	struct flm__StreamInput * input;
 
-	struct msghdr msg;
 	struct iovec iovec[FLM_STREAM__IOVEC_SIZE];
 	size_t iov_count;
 

@@ -77,6 +77,8 @@ flm__TCPServerInit (flm_TCPServer *	tcp_server,
 	int error;
 	long flags;
 
+        (void) interface;
+
 	memset (&hints, 0, sizeof (struct addrinfo));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;

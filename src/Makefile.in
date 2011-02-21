@@ -109,6 +109,8 @@ CCASDEPMODE = @CCASDEPMODE@
 CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECK_CFLAGS = @CHECK_CFLAGS@
+CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -229,7 +231,7 @@ thread_pool.c			\
 timer.c
 
 libflm_la_CFLAGS = -W -Wall -I../include/ -ggdb
-libflm_la_LDFLAGS = -lm -lrt
+libflm_la_LDFLAGS = -lm -lrt -lssl
 all: all-am
 
 .SUFFIXES:

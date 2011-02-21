@@ -28,7 +28,7 @@
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,
-	      void *	state,
+	      void *            state,
 	      uint32_t		delay)
 {
 	flm_Timer * timer;
@@ -68,7 +68,7 @@ flm_TimerCancel (flm_Timer *	timer)
 	return ;
 }
 
-int
+;int
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,

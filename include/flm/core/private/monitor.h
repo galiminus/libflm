@@ -92,4 +92,7 @@ flm__MonitorTimerReset (flm_Monitor *	monitor,
 			flm_Timer *	timer,
 			uint32_t	delay);
 
+void
+flm__MonitorTimerRearm (flm_Monitor *	monitor);
+
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_H_ */
