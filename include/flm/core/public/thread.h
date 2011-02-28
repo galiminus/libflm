@@ -26,7 +26,7 @@ typedef struct flm_Thread flm_Thread;
 #define FLM_THREAD(_obj) FLM_CAST(_obj, flm_Thread)
 
 typedef void (*flm_ThreadCallHandler)	\
-(void * state, void * params);
+(flm_Thread * thread, void * state, void * params);
 
 flm_Thread *
 flm_ThreadNew (flm_Monitor *	monitor,

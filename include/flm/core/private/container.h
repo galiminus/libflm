@@ -33,7 +33,7 @@ struct flm_Container
 	} fr;
 };
 
-int
+void
 flm__ContainerInit (flm_Container * container,
 		    void * content,
 		    flm_ContainerFreeHandler free_handler);

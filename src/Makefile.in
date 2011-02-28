@@ -225,12 +225,12 @@ epoll.c				\
 select.c			\
 obj.c				\
 stream.c			\
-tcp_server.c			\
+tcp_server.c		\
 thread.c			\
-thread_pool.c			\
+thread_pool.c		\
 timer.c
 
-libflm_la_CFLAGS = -W -Wall -I../include/ -ggdb
+libflm_la_CFLAGS = -W -Wall -fprofile-arcs -ftest-coverage -O0 -I../ -I../include/ -ggdb
 libflm_la_LDFLAGS = -lm -lrt -lssl
 all: all-am
 
@@ -570,7 +570,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
+clean-am: clean-generic clean-libLTLIBRARIES clean-libtool clean-local \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -642,7 +642,7 @@ uninstall-am: uninstall-libLTLIBRARIES
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool ctags distclean \
+	clean-libLTLIBRARIES clean-libtool clean-local ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
@@ -655,6 +655,10 @@ uninstall-am: uninstall-libLTLIBRARIES
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-libLTLIBRARIES
 
+
+clean-local:
+	rm -f *.gcda
+	rm -f *.gcno
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

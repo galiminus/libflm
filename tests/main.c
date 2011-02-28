@@ -18,21 +18,27 @@ main (void)
 
     Suite * monitorSuite = monitor_suite ();
     SRunner * monitorRunner = srunner_create (monitorSuite);
+
+    Suite * timerSuite = timer_suite ();
+    SRunner * timerRunner = srunner_create (timerSuite);
+
+    number_failed = 0;
     
     srunner_run_all (bufferRunner, CK_NORMAL);
-    number_failed = 0;
     number_failed += srunner_ntests_failed (bufferRunner);
     srunner_free (bufferRunner);
 
     srunner_run_all (containerRunner, CK_NORMAL);
-    number_failed = 0;
     number_failed += srunner_ntests_failed (containerRunner);
     srunner_free (containerRunner);
 
     srunner_run_all (monitorRunner, CK_NORMAL);
-    number_failed = 0;
     number_failed += srunner_ntests_failed (monitorRunner);
     srunner_free (monitorRunner);
+
+    srunner_run_all (timerRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (timerRunner);
+    srunner_free (timerRunner);
 
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

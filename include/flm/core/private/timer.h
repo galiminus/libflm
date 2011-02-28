@@ -37,7 +37,7 @@ struct flm_Timer
 
 	/* members */
 	flm_TimerHandler		handler;
-	void *			state;
+	void *                          state;
 
 	flm_Monitor *			monitor;
 
@@ -50,14 +50,11 @@ struct flm_Timer
 	} wh;
 };
 
-int
+void
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
-		void *		state,
+		void *                  state,
 		uint32_t		delay);
-
-void
-flm__TimerPerfDestruct (flm_Timer *	timer);
 
 #endif /* !_FLM_CORE_PRIVATE_TIMER_H_ */

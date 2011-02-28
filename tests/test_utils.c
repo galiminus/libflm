@@ -1,5 +1,7 @@
 #include "flm/flm.h"
 
+#include "flm/core/private/alloc.h"
+
 size_t alloc_sum;
 size_t alloc_count;
 size_t alloc_current;

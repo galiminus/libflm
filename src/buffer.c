@@ -35,11 +35,55 @@ flm_BufferNew (char *                           content,
     if ((buffer = flm__Alloc (sizeof (flm_Buffer))) == NULL) {
         return (NULL);
     }
-    if (flm__BufferInit (buffer, content, len, fr_handler) == -1) {
-        flm__Free (buffer);
-        return (NULL);
-    }
+    flm__BufferInit (buffer, content, len, fr_handler);
     return (buffer);
+}
+
+flm_Buffer *
+flm_BufferPrintf (const char *          format,
+		  ...)
+{
+    flm_Buffer *        buffer;
+
+    char *              content;
+    int                 len;
+    size_t              alloc;
+
+    va_list             ap;
+
+    va_start (ap, format);
+    len = vsnprintf (NULL, 0, format, ap);
+    va_end (ap);
+    
+    if (len < 0) {
+        goto error;
+    }
+    
+    alloc = len + 1;
+    
+    content = flm__Alloc (alloc * sizeof (char));
+    if (content == NULL) {
+        goto error;
+    }
+    
+    va_start (ap, format);
+    len = vsnprintf (content, alloc, format, ap);
+    va_end (ap);
+    
+    if (len < 0) {
+        goto free_content;
+    }
+    
+    if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
+        goto free_content;
+    }
+    
+    return (buffer);
+
+free_content:
+    flm__Free (content);
+error:
+    return (NULL);
 }
 
 size_t
@@ -54,15 +98,14 @@ flm_BufferContent (flm_Buffer *         buffer)
     return (buffer->content);
 }
 
-int
+void
 flm__BufferInit (flm_Buffer *                   buffer,
                  char *                         content,
                  size_t                         len,
                  flm_BufferFreeContentHandler   fr_handler)
 {
-    if (flm__ObjInit (FLM_OBJ (buffer)) == -1) {
-        return (-1);
-    }
+    flm__ObjInit (FLM_OBJ (buffer));
+
     FLM_OBJ (buffer)->type = FLM__TYPE_BUFFER;
 
     FLM_OBJ (buffer)->perf.destruct =                               \
@@ -72,7 +115,7 @@ flm__BufferInit (flm_Buffer *                   buffer,
     buffer->content = content;
 
     buffer->fr.handler = fr_handler;
-    return (0);
+    return ;
 }
 
 void

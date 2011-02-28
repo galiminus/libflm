@@ -115,9 +115,8 @@ flm__IOInit (flm_IO *                   io,
              int                        fd,
              void *                     state)
 {
-    if (flm__ObjInit (FLM_OBJ (io)) == -1) {
-        return (-1);
-    }
+    flm__ObjInit (FLM_OBJ (io));
+
     FLM_OBJ (io)->type = FLM__TYPE_IO;
     
     FLM_OBJ (io)->perf.destruct =                               \

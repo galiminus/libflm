@@ -51,7 +51,7 @@ flm_Release (flm_Obj * obj)
 	return ;
 }
 
-int
+void
 flm__ObjInit (flm_Obj * obj)
 {
 	/* base obj type, almost always overwritten by parent classes */
@@ -65,5 +65,5 @@ flm__ObjInit (flm_Obj * obj)
 
 	flm__ErrorAdd (FLM__TYPE_OBJ >> 16, flm__ObjErrors);
 
-	return (0);
+	return ;
 }

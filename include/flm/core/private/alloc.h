@@ -62,4 +62,13 @@ flm__ReAlloc (void * mem, unsigned int size);
 void
 flm__Free (void * mem);
 
+void
+flm__SetAlloc (void * (*handler)(size_t));
+
+void
+flm__SetRealloc (void * (*handler)(void *, size_t));
+
+void
+flm__SetFree (void (*handler)(void *));
+
 #endif /* !_FLM_CORE_PRIVATE_ALLOC_H_ */

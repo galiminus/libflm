@@ -17,13 +17,6 @@
 #ifndef _FLM_CORE_PUBLIC_MONITOR_H_
 # define _FLM_CORE_PUBLIC_MONITOR_H_
 
-#define FLM_MONITOR_BACKEND_ENV	"FLM_MONITOR_BACKEND"
-
-#define	FLM_MONITOR_EPOLL	"epoll"
-#define FLM_MONITOR_POLL	"poll"
-#define FLM_MONITOR_SELECT	"select"
-
-
 typedef struct flm_Monitor flm_Monitor;
 
 #include "flm/core/public/obj.h"

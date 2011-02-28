@@ -66,6 +66,9 @@ struct flm_Monitor
 int
 flm__MonitorInit (flm_Monitor * monitor);
 
+void
+flm__MonitorPerfDestruct (flm_Monitor * monitor);
+
 int
 flm__MonitorIOAdd (flm_Monitor * monitor, flm_IO * io);
 

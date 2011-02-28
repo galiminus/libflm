@@ -37,10 +37,7 @@ flm_TimerNew (flm_Monitor *	monitor,
 	if (timer == NULL) {
 		return (NULL);
 	}
-	if (flm__TimerInit (timer, monitor, handler, state, delay) == -1) {
-		flm__Free (timer);
-		return (NULL);
-	}
+	flm__TimerInit (timer, monitor, handler, state, delay);
 	return (timer);
 }
 
@@ -68,20 +65,15 @@ flm_TimerCancel (flm_Timer *	timer)
 	return ;
 }
 
-;int
+void
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,
 		flm_TimerHandler	handler,
 		void *                  state,
 		uint32_t		delay)
 {
-	if (monitor == NULL) {
-		return (-1);
-	}
+	flm__ObjInit (FLM_OBJ (timer));
 
-	if (flm__ObjInit (FLM_OBJ (timer)) == -1) {
-		return (-1);
-	}
 	FLM_OBJ (timer)->type = FLM__TYPE_TIMER;
 
 	timer->handler = handler;
@@ -91,5 +83,5 @@ flm__TimerInit (flm_Timer *		timer,
 
 	flm_TimerReset (timer, delay);
 
-	return (0);
+	return ;
 }

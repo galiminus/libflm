@@ -27,6 +27,7 @@ int _has_freed;
 
 void
 _container_free_handler (void * content) {
+    fail_unless (content == (void *)42);
     _has_freed = 1;
 }
 
@@ -35,7 +36,7 @@ START_TEST(test_container_free)
     flm_Container * container;
     
     _has_freed = 0;
-    if ((container = flm_ContainerNew (NULL, _container_free_handler)) == NULL) {
+    if ((container = flm_ContainerNew ((void *) 42, _container_free_handler)) == NULL) {
         fail ("Container creation failed");
     }
     flm_Release (FLM_OBJ (container));
@@ -45,8 +46,6 @@ END_TEST
 
 START_TEST(test_container_alloc_fail)
 {
-    flm_Container * container;
-
     setTestAlloc (1);
     fail_if (flm_ContainerNew (NULL, NULL) != NULL);
 }

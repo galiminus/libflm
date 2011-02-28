@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <pthread.h>
 #include <string.h>
@@ -74,7 +75,15 @@ flm__ErrorLocation ()
     }
 
     if ((error = pthread_getspecific (flm__ErrorLocationKey)) == NULL) {
-        error = flm__Alloc (sizeof (int));
+        error = malloc (sizeof (int));
+
+        /**
+         * This is the only assertion in libflm, if the library cannot even
+         * take some memory to store the error value, there is no point to
+         * continue.
+         */
+        assert (error != NULL);
+
         pthread_setspecific (flm__ErrorLocationKey, error);
     }
     return (error);

@@ -30,10 +30,7 @@ flm_ContainerNew (void *                        content,
     if (container == NULL) {
         return (NULL);
     }
-    if (flm__ContainerInit (container, content, free_handler) == -1) {
-        flm__Free (container);
-        return (NULL);
-    }
+    flm__ContainerInit (container, content, free_handler);
     return (container);
 }
 
@@ -43,14 +40,13 @@ flm_ContainerContent (flm_Container *           container)
     return (container->content);
 }
 
-int
+void
 flm__ContainerInit (flm_Container *             container,
                     void *                      content,
                     flm_ContainerFreeHandler    free_handler)
 {
-    if (flm__ObjInit (FLM_OBJ (container)) == -1) {
-        return (-1);
-    }
+    flm__ObjInit (FLM_OBJ (container));
+
     FLM_OBJ (container)->type = FLM__TYPE_CONTAINER;
 
     FLM_OBJ (container)->perf.destruct =                            \
@@ -59,7 +55,7 @@ flm__ContainerInit (flm_Container *             container,
     container->content = content;
     container->fr.handler = free_handler;
 
-    return (0);
+    return ;
 }
 
 void

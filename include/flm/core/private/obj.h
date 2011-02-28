@@ -41,7 +41,7 @@ struct flm_Obj
 	} perf;
 };
 
-int
+void
 flm__ObjInit (flm_Obj * obj);
 
 #endif /* !_FLM_CORE_PRIVATE_OBJ_H_ */

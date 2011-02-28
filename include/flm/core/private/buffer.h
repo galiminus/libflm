@@ -40,7 +40,7 @@ struct flm_Buffer
 	} fr;
 };
 
-int
+void
 flm__BufferInit (flm_Buffer *			buffer,			\
 		 char *				content,		\
 		 size_t				len,			\

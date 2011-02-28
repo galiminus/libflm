@@ -50,9 +50,8 @@ flm__ThreadInit (flm_Thread *		thread,
     int         error;
     int         thread_pipe[2];
 
-    if (flm__ObjInit (FLM_OBJ (thread)) == -1) {
-        goto error;
-    }
+    flm__ObjInit (FLM_OBJ (thread));
+
     FLM_OBJ (thread)->type = FLM__TYPE_THREAD;
     
     thread->state = state;
@@ -94,18 +93,20 @@ flm__ThreadInit (flm_Thread *		thread,
     close (thread_pipe[1]);
   release_monitor:
     flm_Release (FLM_OBJ (thread->monitor));
-  error:
     return (-1);
 }
 
 void
-flm__ThreadEventHandler (void *         _thread,
+flm__ThreadEventHandler (flm_Stream *   _stream,
+                         void *         _thread,
                          flm_Buffer *   buffer)
 {
     flm_Thread *        thread;
     struct flm__Msg *	msg;
     struct flm__Msg     temp;
     int			error;
+
+    (void) _stream;
 
     thread = (flm_Thread *)_thread;
 
@@ -121,7 +122,7 @@ flm__ThreadEventHandler (void *         _thread,
     TAILQ_FOREACH (msg, &(thread->msgs), entries) {
         if (msg->handler) {
             temp.entries = msg->entries;
-            msg->handler(thread->state, msg->params);
+            msg->handler(thread, thread->state, msg->params);
             TAILQ_REMOVE (&(thread->msgs), msg, entries);
             flm__Free (msg);
             msg = &temp;

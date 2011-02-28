@@ -81,12 +81,12 @@ struct flm_IO
 
 #define FLM_IO_EVENT(io, type)				\
 	if (io->type.handler) {				\
-		io->type.handler (FLM_IO (io)->state);	\
+            io->type.handler (io, FLM_IO (io)->state);	\
 	}
 
 #define FLM_IO_EVENT_WITH(io, type, ...)				\
 	if (io->type.handler) {						\
-		io->type.handler (FLM_IO(io)->state, __VA_ARGS__);	\
+            io->type.handler (io, FLM_IO(io)->state, __VA_ARGS__);	\
 	}
 
 int

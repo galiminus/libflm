@@ -1,5 +1,5 @@
 size_t
-get_AllocSum ();
+getAllocSum ();
 
 void
 setTestAlloc (uint32_t count);

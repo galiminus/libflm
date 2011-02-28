@@ -58,7 +58,8 @@ flm__ThreadInit (flm_Thread *		thread,
 		 void *               state);
 
 void
-flm__ThreadEventHandler (void *         _thread,
+flm__ThreadEventHandler (flm_Stream *   pipe,
+                         void *         _thread,
                          flm_Buffer *   _buffer);
 
 void *

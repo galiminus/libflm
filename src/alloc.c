@@ -22,7 +22,7 @@
 
 void * (*allocHandler)(size_t);
 void * (*reallocHandler)(void *, size_t);
-void * (*freeHandler)(void *);
+void   (*freeHandler)(void *);
 
 void
 flm__SetAlloc (void * (*handler)(size_t))
@@ -37,7 +37,7 @@ flm__SetRealloc (void * (*handler)(void *, size_t))
 }
 
 void
-flm__SetFree (void * (*handler)(void *))
+flm__SetFree (void (*handler)(void *))
 {
     freeHandler = handler;
 }

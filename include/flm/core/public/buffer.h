@@ -43,6 +43,10 @@ flm_BufferNew (char *				content,		\
 	       size_t				len,			\
 	       flm_BufferFreeContentHandler	fr_handler);
 
+flm_Buffer *
+flm_BufferPrintf (const char *                  format,                 \
+                  ...);
+
 size_t
 flm_BufferLength (flm_Buffer * buffer);
 

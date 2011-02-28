@@ -55,6 +55,6 @@ AC_CONFIG_FILES([Makefile
                  include/flm/core/private/Makefile
                  tests/Makefile])
 
-AC_CHECK_FUNCS([memset socket])
+AC_CHECK_FUNCS([memset socket select epoll_ctl epoll_wait])
 
 AC_OUTPUT

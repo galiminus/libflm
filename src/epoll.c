@@ -100,6 +100,7 @@ flm__EpollPerfDestruct (flm__Epoll * epoll)
 {
     close (epoll->epfd);
     flm__Free (epoll->events);
+    flm__MonitorPerfDestruct (FLM_MONITOR (epoll));
     return ;
 }
 

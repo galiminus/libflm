@@ -30,7 +30,7 @@ typedef struct flm_TCPClient flm_TCPClient;
 #define FLM_TCP_CLIENT(_obj) FLM_CAST(_obj, flm_TCPClient)
 
 typedef void (*flm_TCPClientConnectHandler)	\
-(void * state, int fd);
+(flm_TCPClient * tcp_client, void * state, int fd);
 
 /**
  * \brief Create a new TCPClient object and connect it to \c host:port.

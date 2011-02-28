@@ -20,32 +20,31 @@
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/monitor.h"
 #include "flm/core/private/epoll.h"
+#include "flm/core/private/obj.h"
 #include "flm/core/private/select.h"
 #include "flm/core/private/timer.h"
+
+#include "config.h"
 
 flm_Monitor *
 flm_MonitorNew ()
 {
     flm_Monitor * monitor;
-    const char * backend;
 
-    /**
-     * Select the best available backend, or the one
-     * specified in FLM_MONITOR_BACKEND_ENV
-     */
-    backend = getenv (FLM_MONITOR_BACKEND_ENV);
-
-    if ((!backend || !strcmp (backend, "epoll")) &&
-        (monitor = FLM_MONITOR (flm__EpollNew ()))) {
-        return (monitor);
+    if (HAVE_EPOLL_CTL) {
+        monitor = FLM_MONITOR (flm__EpollNew ());
+    }
+    else if (HAVE_SELECT) {
+        monitor = FLM_MONITOR (flm__SelectNew ());
+    }
+    else {
+        monitor = NULL;
     }
 
-    if ((!backend || !strcmp (backend, "select")) &&
-        (monitor = FLM_MONITOR (flm__SelectNew ()))) {
-        return (monitor);
+    if (monitor == NULL) {
+        return (NULL);
     }
-
-    return (NULL);
+    return (monitor);
 }
 
 int
@@ -70,10 +69,12 @@ flm__MonitorInit (flm_Monitor * monitor)
 {
     size_t count;
 
-    if (flm__ObjInit (FLM_OBJ (monitor)) == -1) {
-        return (-1);
-    }
+    flm__ObjInit (FLM_OBJ (monitor));
+
     FLM_OBJ (monitor)->type = FLM__TYPE_MONITOR;
+
+    FLM_OBJ (monitor)->perf.destruct =                  \
+        (flm__ObjPerfDestruct_f) flm__MonitorPerfDestruct;
 
     /**
      * Action callbacks
@@ -112,6 +113,20 @@ flm__MonitorInit (flm_Monitor * monitor)
         TAILQ_INIT (&(monitor->tm.wheel[count]));
     }
     return (0);
+}
+
+void
+flm__MonitorPerfDestruct (flm_Monitor * monitor)
+{
+    size_t      pos;
+    flm_Timer * timer;
+
+    for (pos = 0; pos < FLM__MONITOR_TM_WHEEL_SIZE; pos++) {
+        TAILQ_FOREACH (timer, &(monitor->tm.wheel[pos]), wh.entries) {
+            flm__MonitorTimerDelete (monitor, timer);
+        }
+    }
+    return ;
 }
 
 int
@@ -188,7 +203,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
             flm_Retain (FLM_OBJ (timer));
             flm_TimerCancel (timer);
             if (timer->handler) {
-                timer->handler (timer->state);
+                timer->handler (timer, timer->state);
             }
             flm_Release (FLM_OBJ (timer));
             timer = &temp;

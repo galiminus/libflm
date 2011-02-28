@@ -28,7 +28,7 @@ typedef struct flm_TCPServer flm_TCPServer;
 #define FLM_TCP_SERVER(_obj) FLM_CAST(_obj, flm_TCPServer)
 
 typedef void (*flm_TCPServerAcceptHandler)	\
-(void * state, int fd);
+(flm_TCPServer * tcp_server, void * state, int fd);
 
 flm_TCPServer *
 flm_TCPServerNew (flm_Monitor *		monitor,

@@ -8,3 +8,6 @@ container_suite (void);
 
 Suite *
 monitor_suite (void);
+
+Suite *
+timer_suite (void);
