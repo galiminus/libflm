@@ -26,6 +26,14 @@
 
 #include "config.h"
 
+int     (*clockGettimeHandler)(clockid_t, struct timespec *);
+
+void
+flm__setClockGettime (int (*handler)(clockid_t, struct timespec *))
+{
+    clockGettimeHandler = handler;
+}
+
 flm_Monitor *
 flm_MonitorNew ()
 {
@@ -50,16 +58,18 @@ flm_MonitorNew ()
 int
 flm_MonitorWait (flm_Monitor * monitor)
 {
-    if (monitor->wait == NULL) {
-        return (0);
-    }
-
     /**
      * The monitor will wait until a fatal error occurs or there
      * is no more IO to wait for.
      */
-    while (monitor->count > 0 && monitor->wait (monitor) != -1) {
-        flm__MonitorTimerTick (monitor);
+    while (monitor->count > 0) {
+        if (monitor->wait && monitor->wait (monitor)) {
+            return (-1);
+        }
+
+        if (flm__MonitorTimerTick (monitor) == -1) {
+            return (-1);
+        }
     }
     return (0);
 }
@@ -90,9 +100,16 @@ flm__MonitorInit (flm_Monitor * monitor)
     monitor->count          =       0;
 
     /**
+     * Set default clock_gettime()
+     */
+    if (clockGettimeHandler == NULL) {
+        flm__setClockGettime (clock_gettime);
+    }
+
+    /**
      * Set the current time for the timer wheel
      */
-    if (clock_gettime (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
+    if (clockGettimeHandler (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
         return (-1);
     }
 
@@ -174,7 +191,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
     flm_Timer *         timer;
     struct flm_Timer    temp;
 
-    if (clock_gettime (CLOCK_MONOTONIC, &current) == -1) {
+    if (clockGettimeHandler (CLOCK_MONOTONIC, &current) == -1) {
         return (-1);
     }
 

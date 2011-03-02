@@ -6,6 +6,8 @@ size_t alloc_sum;
 size_t alloc_count;
 size_t alloc_current;
 
+#define DEBUG 1
+
 size_t
 getAllocSum ()
 {
@@ -24,6 +26,10 @@ testAllocHandler (size_t size)
     }
 
     total_size = size + sizeof (size);
+
+    if (DEBUG) {
+        printf ("Alloc: %d\n", size);
+    }
 
     alloc_current++;
     alloc_sum += size;
@@ -45,6 +51,10 @@ testFreeHandler (void * ptr)
 
     size_ptr = ptr;
     size = size_ptr[-1];
+
+    if (DEBUG) {
+        printf ("Free: %d\n", size);
+    }
 
     alloc_sum -= size;
 
@@ -73,6 +83,10 @@ setTestAlloc (uint32_t count)
     flm__SetAlloc (testAllocHandler);
     flm__SetRealloc (testReallocHandler);
     flm__SetFree (testFreeHandler);
+
+    if (DEBUG) {
+        printf ("---\n");
+    }
 
     return ;
 }

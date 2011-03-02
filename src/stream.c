@@ -113,6 +113,7 @@ flm_StreamPrintf (flm_Stream *	stream,
 	if (flm_StreamPushBuffer (stream, buffer, 0, 0) == -1) {
 		goto release_buffer;
 	}
+        flm_Release (FLM_OBJ (buffer));
 
 	return (0);
 
@@ -465,12 +466,13 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 			/* fatal error */
 			flm__Error = FLM_ERR_ERRNO;
 			flm_IOClose (FLM_IO (stream));
-			FLM_IO_EVENT_WITH (FLM_IO (stream), er, flm_Error());
+			FLM_IO_EVENT_WITH (FLM_IO (stream), er, flm_Error ());
 			return ;
 		}
 	}
 
 	/* write event */
+        FLM_IO_EVENT_WITH (stream, wr, nb_write);
 
 	drain = nb_write;
 	FLM_IO (stream)->wr.can = 1;
@@ -488,6 +490,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 		drain -= input->tried;
 
 		temp.entries = input->entries;
+                printf("RELEASE\n");
 		flm_Release (input->class.obj);
 		TAILQ_REMOVE (&(stream->inputs), input, entries);
 		flm__Free (input);

@@ -39,28 +39,28 @@ typedef int (*flm__MonitorWait_f) (flm_Monitor * monitor);
 
 struct flm_Monitor
 {
-	struct flm_Obj				obj;
-
-	flm__MonitorAdd_f			add;
-	flm__MonitorDel_f			del;
-	flm__MonitorReset_f			reset;
-	flm__MonitorWait_f			wait;
-
-	uint32_t				count;
-
-	struct {
-		/* current time */
-		struct timespec			current;
-
-		/* milliseconds before next timeout */
-		int				next;
-
-		/* current position in the timer wheel */
-		size_t				pos;
-
-		/* simple timer wheel */
-		TAILQ_HEAD (tmwh, flm_Timer)	wheel[FLM__MONITOR_TM_WHEEL_SIZE];
-	} tm;
+    struct flm_Obj				obj;
+    
+    flm__MonitorAdd_f			add;
+    flm__MonitorDel_f			del;
+    flm__MonitorReset_f			reset;
+    flm__MonitorWait_f			wait;
+    
+    uint32_t				count;
+    
+    struct {
+        /* current time */
+        struct timespec			current;
+        
+        /* milliseconds before next timeout */
+        int				next;
+        
+        /* current position in the timer wheel */
+        size_t				pos;
+        
+        /* simple timer wheel */
+        TAILQ_HEAD (tmwh, flm_Timer)	wheel[FLM__MONITOR_TM_WHEEL_SIZE];
+    } tm;
 };
 
 int
@@ -97,5 +97,8 @@ flm__MonitorTimerReset (flm_Monitor *	monitor,
 
 void
 flm__MonitorTimerRearm (flm_Monitor *	monitor);
+
+void
+flm__setClockGettime (int (*handler)(clockid_t, struct timespec *));
 
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_H_ */
