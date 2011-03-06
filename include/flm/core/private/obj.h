@@ -24,24 +24,61 @@
 
 #include "flm/core/public/obj.h"
 
+#define FLM_CAST(_obj,_type) ((_type *)_obj)
+#define FLM_OBJ(_obj) FLM_CAST(_obj, flm_Obj)
+
 #define FLM__TYPE_OBJ	0x00010000
 
+typedef void *		(*flm__ObjPerfRetain_f) (flm_Obj *);
+typedef void		(*flm__ObjPerfRelease_f) (flm_Obj *);
 typedef void		(*flm__ObjPerfDestruct_f) (flm_Obj *);
 
 struct flm_Obj
 {
-	int				type;
+    int                         type;
 
-	struct {
-		uint32_t		refcount;
-	} stat;
-
-	struct {
-		flm__ObjPerfDestruct_f	destruct;
-	} perf;
+    struct {
+        uint32_t		refcount;
+    } stat;
+    
+    struct {
+        flm__ObjPerfRetain_f    retain;
+        flm__ObjPerfRelease_f   release;
+        flm__ObjPerfDestruct_f	destruct;
+    } perf;
 };
 
 void
 flm__ObjInit (flm_Obj * obj);
+
+/**
+ * \brief Increment the reference counter
+ *
+ * You should take a look to flm_retain().
+ *
+ * \param obj A pointer to an obj.
+ * \return The pointer given to the function.
+ */
+void *
+flm__Retain (flm_Obj * obj);
+
+/**
+ * \brief Decrement the reference counter
+ *
+ * If the reference counter reaches 0 the obj is automaticaly freed.
+ * You should never use an obj after a call to flm_obj_release, you
+ * cannot know if another reference exists.
+ *
+ * \param obj A pointer to an obj to dereference.
+ * \return Nothing.
+ */
+void
+flm__Release (flm_Obj * obj);
+
+void *
+flm__PerfRetain (flm_Obj * obj);
+
+void
+flm__PerfRelease (flm_Obj * obj);
 
 #endif /* !_FLM_CORE_PRIVATE_OBJ_H_ */

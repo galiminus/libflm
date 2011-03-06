@@ -46,4 +46,10 @@ flm_ThreadPoolCallTo (flm_ThreadPool *          thread_pool,
                       flm_ThreadCallHandler	handler,
                       void *                    params);
 
+flm_ThreadPool *
+flm_ThreadPoolRetain (flm_ThreadPool *          thread_pool);
+
+void
+flm_ThreadPoolRelease (flm_ThreadPool *         thread_pool);
+
 #endif /* !_FLM_CORE_PUBLIC_THREAD_POOL_H_ */

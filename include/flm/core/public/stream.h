@@ -29,8 +29,6 @@ typedef struct flm_Stream flm_Stream;
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
 
-#define FLM_STREAM(_obj) FLM_CAST(_obj, flm_Stream)
-
 typedef void (*flm_StreamReadHandler)			\
 (flm_Stream * stream, void * state, flm_Buffer * buffer);
 
@@ -74,5 +72,11 @@ flm_StreamStartTLSServer (flm_Stream *		stream,
 int
 flm_StreamStartTLSClient (flm_Stream *		stream,
                           SSL_CTX *             context);
+
+flm_Stream *
+flm_StreamRetain (flm_Stream * stream);
+
+void
+flm_StreamRelease (flm_Stream * stream);
 
 #endif /* _FLM_CORE_PUBLIC_STREAM_H_ */

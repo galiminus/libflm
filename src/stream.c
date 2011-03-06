@@ -113,12 +113,12 @@ flm_StreamPrintf (flm_Stream *	stream,
 	if (flm_StreamPushBuffer (stream, buffer, 0, 0) == -1) {
 		goto release_buffer;
 	}
-        flm_Release (FLM_OBJ (buffer));
+        flm_BufferRelease (buffer);
 
 	return (0);
 
 release_buffer:
-	flm_Release (FLM_OBJ (buffer));
+	flm_BufferRelease (buffer);
 	return (-1);
 free_content:
 	flm__Free (content);
@@ -154,7 +154,7 @@ flm_StreamPushBuffer (flm_Stream *	stream,
 		goto free_input;
 	}
 
-	input->class.buffer = flm_Retain (FLM_OBJ (buffer));
+	input->class.buffer = flm_BufferRetain (buffer);
 	input->type = FLM__STREAM_TYPE_BUFFER;
 	input->off = off;
 	input->count = count;
@@ -195,7 +195,7 @@ flm_StreamPushFile (flm_Stream *	stream,
 		goto free_input;
 	}	
 
-	input->class.file = flm_Retain (FLM_OBJ (file));
+	input->class.file = flm_FileRetain (file);
 	input->type = FLM__STREAM_TYPE_BUFFER;
 	input->off = off;
 	input->count = count;
@@ -264,6 +264,19 @@ flm_StreamStartTLSClient (flm_Stream *              stream,
     flm__StreamShutdownTLS (stream);
   error:
     return (-1);
+}
+
+flm_Stream *
+flm_StreamRetain (flm_Stream * stream)
+{
+    return (flm__Retain ((flm_Obj *) stream));
+}
+
+void
+flm_StreamRelease (flm_Stream * stream)
+{
+    flm__Release ((flm_Obj *) stream);
+    return ;
 }
 
 int
@@ -335,7 +348,7 @@ flm__StreamPerfDestruct (flm_Stream * stream)
 	/* remove remaining stuff to write */
 	TAILQ_FOREACH (input, &stream->inputs, entries) {
 		temp.entries = input->entries;
-		flm_Release (input->class.obj);
+		flm__Release (input->class.obj);
 		TAILQ_REMOVE (&stream->inputs, input, entries);
 		flm__Free (input);
 		input = &temp;
@@ -490,8 +503,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 		drain -= input->tried;
 
 		temp.entries = input->entries;
-                printf("RELEASE\n");
-		flm_Release (input->class.obj);
+		flm__Release (input->class.obj);
 		TAILQ_REMOVE (&(stream->inputs), input, entries);
 		flm__Free (input);
 		input = &temp;

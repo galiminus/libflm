@@ -25,8 +25,45 @@ const char * flm__ObjErrors[] =
 	"Not implemented"
 };
 
+void
+flm__ObjInit (flm_Obj * obj)
+{
+    /* basic type */
+    obj->type = FLM__TYPE_OBJ;
+
+    /* methods */
+    obj->perf.retain = flm__PerfRetain;
+    obj->perf.release = flm__PerfRelease;
+    obj->perf.destruct = NULL;
+    
+    /* reference counter */
+    obj->stat.refcount = 1;
+    
+    flm__ErrorAdd (FLM__TYPE_OBJ >> 16, flm__ObjErrors);
+    
+    return ;
+}
+
 void *
-flm_Retain (flm_Obj * obj)
+flm__Retain (flm_Obj * obj)
+{
+    if (obj->perf.retain) {
+        return (obj->perf.retain (obj));
+    }
+    return (obj);
+}
+
+void
+flm__Release (flm_Obj * obj)
+{
+    if (obj->perf.release) {
+        return (obj->perf.release (obj));
+    }
+    return ;
+}
+
+void *
+flm__PerfRetain (flm_Obj * obj)
 {
 	if (obj == NULL) {
 		return (NULL);
@@ -36,7 +73,7 @@ flm_Retain (flm_Obj * obj)
 }
 
 void
-flm_Release (flm_Obj * obj)
+flm__PerfRelease (flm_Obj * obj)
 {
 	if (obj == NULL) {
 		return ;
@@ -48,22 +85,5 @@ flm_Release (flm_Obj * obj)
 		}
 		flm__Free (obj);
 	}
-	return ;
-}
-
-void
-flm__ObjInit (flm_Obj * obj)
-{
-	/* base obj type, almost always overwritten by parent classes */
-	obj->type = FLM__TYPE_OBJ;
-
-	/* methods */
-	obj->perf.destruct = NULL;
-
-	/* reference counter */
-	obj->stat.refcount = 1;
-
-	flm__ErrorAdd (FLM__TYPE_OBJ >> 16, flm__ObjErrors);
-
 	return ;
 }

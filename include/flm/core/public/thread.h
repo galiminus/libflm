@@ -23,8 +23,6 @@ typedef struct flm_Thread flm_Thread;
 #include "flm/core/public/obj.h"
 #include "flm/core/public/monitor.h"
 
-#define FLM_THREAD(_obj) FLM_CAST(_obj, flm_Thread)
-
 typedef void (*flm_ThreadCallHandler)	\
 (flm_Thread * thread, void * state, void * params);
 
@@ -39,5 +37,11 @@ int
 flm_ThreadCall (flm_Thread *		thread,
 		flm_ThreadCallHandler	handler,
 		void *		params);
+
+flm_Thread *
+flm_ThreadRetain (flm_Thread * thread);
+
+void
+flm_ThreadRelease (flm_Thread * thread);
 
 #endif /* !_FLM_CORE_PUBLIC_THREAD_H_ */

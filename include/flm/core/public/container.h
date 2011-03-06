@@ -21,8 +21,6 @@ typedef struct flm_Container flm_Container;
 
 #include "flm/core/public/obj.h"
 
-#define FLM_CONTAINER(_obj) FLM_CAST(_obj, flm_Container)
-
 typedef void (*flm_ContainerFreeHandler)	\
 (void * container);
 
@@ -32,5 +30,11 @@ flm_ContainerNew (void * content,
 
 void *
 flm_ContainerContent (flm_Container * container);
+
+flm_Container *
+flm_ContainerRetain (flm_Container * container);
+
+void
+flm_ContainerRelease (flm_Container * container);
 
 #endif /* !_FLM_CORE_PUBLIC_CONTAINER_H_ */

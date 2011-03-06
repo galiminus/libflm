@@ -83,4 +83,10 @@ void
 flm_IOOnError (flm_IO *			io,
 	       flm_IOErrorHandler	handler);
 
+flm_IO *
+flm_IORetain (flm_IO *                  io);
+
+void
+flm_IORelease (flm_IO *                 io);
+
 #endif /* _FLM_CORE_PUBLIC_IO_H_ */

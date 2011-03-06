@@ -109,6 +109,19 @@ flm_IOOnError (flm_IO *                 io,
     return ;
 }
 
+flm_IO *
+flm_IORetain (flm_IO *                  io)
+{
+    return (flm__Retain ((flm_Obj *) io));
+}
+
+void
+flm_IORelease (flm_IO *                 io)
+{
+    flm__Release ((flm_Obj *) io);
+    return ;
+}
+
 int
 flm__IOInit (flm_IO *                   io,
              flm_Monitor *              monitor,
@@ -117,8 +130,6 @@ flm__IOInit (flm_IO *                   io,
 {
     flm__ObjInit (FLM_OBJ (io));
 
-    FLM_OBJ (io)->type = FLM__TYPE_IO;
-    
     FLM_OBJ (io)->perf.destruct =                               \
         (flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
     

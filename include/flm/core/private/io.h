@@ -30,6 +30,8 @@
 
 #define FLM__TYPE_IO	0x000A0000
 
+#define FLM_IO(_obj) FLM_CAST(_obj, flm_IO)
+
 typedef void	(*flm__IOSysRead_f)			\
 (flm_IO * io, flm_Monitor * monitor, uint8_t count);
 
@@ -41,53 +43,56 @@ typedef void	(*flm__IOSysClose_f)			\
 
 struct flm_IO
 {
-	/* inheritance */
-	struct flm_Obj			obj;
+    /* inheritance */
+    struct flm_Obj              obj;
 
-	void *  			state;
+    void *  			state;
 
-	flm_Monitor *			monitor;
+    flm_Monitor *		monitor;
+    
+    struct {
+        int			fd;
+    } sys;
 
-	struct {
-		int			fd;
-	} sys;
-	struct {
-		bool			can;
-		bool			want;
-		uint8_t			limit;
-		flm_IOReadHandler	handler;
-	} rd;
-	struct {
-		bool			can;
-		bool			want;
-		uint8_t			limit;
-		flm_IOWriteHandler	handler;
-	} wr;
-	struct {
-		bool			shutdown;
-		flm_IOCloseHandler	handler;
-	} cl;
-	struct {
-		flm_IOErrorHandler	handler;
-	} er;
+    struct {
+        bool			can;
+        bool			want;
+        uint8_t			limit;
+        flm_IOReadHandler	handler;
+    } rd;
+    struct {
+        bool			can;
+        bool			want;
+        uint8_t			limit;
+        flm_IOWriteHandler	handler;
+    } wr;
+    struct {
+        bool			shutdown;
+        flm_IOCloseHandler	handler;
+    } cl;
+    struct {
+        flm_IOErrorHandler	handler;
+    } er;
 
-	/* IO methods */
-	struct {
-		flm__IOSysRead_f	read;
-		flm__IOSysWrite_f	write;
-		flm__IOSysClose_f	close;
-	} perf;
+    /* IO methods */
+    struct {
+        flm__IOSysRead_f	read;
+        flm__IOSysWrite_f	write;
+        flm__IOSysClose_f	close;
+    } perf;
+
+    TAILQ_ENTRY (flm_IO)		entries;
 };
 
 #define FLM_IO_EVENT(io, type)				\
-	if (io->type.handler) {				\
-            io->type.handler (io, FLM_IO (io)->state);	\
-	}
+    if (io->type.handler) {				\
+        io->type.handler (io, FLM_IO (io)->state);	\
+    }
 
-#define FLM_IO_EVENT_WITH(io, type, ...)				\
-	if (io->type.handler) {						\
-            io->type.handler (io, FLM_IO(io)->state, __VA_ARGS__);	\
-	}
+#define FLM_IO_EVENT_WITH(io, type, ...)                        \
+    if (io->type.handler) {                                     \
+        io->type.handler (io, FLM_IO(io)->state, __VA_ARGS__);	\
+    }
 
 int
 flm__IOInit (flm_IO *			io,

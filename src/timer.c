@@ -65,6 +65,19 @@ flm_TimerCancel (flm_Timer *	timer)
 	return ;
 }
 
+flm_Timer *
+flm_TimerRetain (flm_Timer *    timer)
+{
+    return (flm__Retain ((flm_Obj *) timer));
+}
+
+void
+flm_TimerRelease (flm_Timer *    timer)
+{
+    flm__Release ((flm_Obj *) timer);
+    return ;
+}
+
 void
 flm__TimerInit (flm_Timer *		timer,
 		flm_Monitor *		monitor,

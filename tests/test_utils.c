@@ -6,7 +6,7 @@ size_t alloc_sum;
 size_t alloc_count;
 size_t alloc_current;
 
-#define DEBUG 1
+#define DEBUG 0
 
 size_t
 getAllocSum ()

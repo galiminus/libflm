@@ -38,6 +38,29 @@ flm__EpollPerfReset (flm__Epoll * epoll, flm_IO * io);
 static int
 flm__EpollPerfWait (flm__Epoll * epoll);
 
+int (*epollCreateHandler) (int);
+int (*epollCtlHandler) (int, int, int, struct epoll_event *);
+int (*epollWaitHandler) (int, struct epoll_event *, int, int);
+
+void
+flm__setEpollCreateHandler (int (*handler)(int))
+{
+    epollCreateHandler = handler;
+}
+
+void
+flm__setEpollCtlHandler (int (*handler)(int, int, int, struct epoll_event *))
+{
+    epollCtlHandler = handler;
+}
+
+void
+flm__setEpollWaitHandler (int (*handler) (int, struct epoll_event *, int, int))
+{
+    epollWaitHandler = handler;
+}
+
+
 flm__Epoll *
 flm__EpollNew ()
 {
@@ -78,7 +101,19 @@ flm__EpollInit (flm__Epoll * epoll)
 
     epoll->size = FLM__EPOLL_MAXEVENTS_DEFAULT;
 
-    if ((epoll->epfd = epoll_create (epoll->size)) == -1) {
+    if (epollCreateHandler == NULL) {
+        flm__setEpollCreateHandler (epoll_create);
+    }
+
+    if (epollCtlHandler == NULL) {
+        flm__setEpollCtlHandler (epoll_ctl);
+    }
+
+    if (epollWaitHandler == NULL) {
+        flm__setEpollWaitHandler (epoll_wait);
+    }
+
+    if ((epoll->epfd = epollCreateHandler (epoll->size)) == -1) {
         goto error;
     }
 
@@ -115,7 +150,7 @@ flm__EpollCtl (flm__Epoll * epoll,
     event.data.ptr = io;
 
     event.events = EPOLLET | EPOLLIN | EPOLLRDHUP | EPOLLOUT;
-    if (epoll_ctl (epoll->epfd, op, io->sys.fd, &event) == -1) {
+    if (epollCtlHandler (epoll->epfd, op, io->sys.fd, &event) == -1) {
         return (-1);
     }
     return (0);
@@ -162,10 +197,10 @@ flm__EpollPerfWait (flm__Epoll * epoll)
     int ret;
 
     for (;;) {
-        ev_max = epoll_wait (epoll->epfd,                       \
-                             epoll->events,                     \
-                             epoll->size,                       \
-                             FLM_MONITOR(epoll)->tm.next);
+        ev_max = epollWaitHandler (epoll->epfd,                       \ 
+                                   epoll->events,                     \
+                                   epoll->size,                       \
+                                   FLM_MONITOR(epoll)->tm.next);
         if (ev_max >= 0) {
             break ;
         }

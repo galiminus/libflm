@@ -29,6 +29,8 @@
 
 #define FLM__TYPE_MONITOR	0x000D0000
 
+#define FLM_MONITOR(_obj) FLM_CAST(_obj, flm_Monitor)
+
 typedef int (*flm__MonitorAdd_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorDel_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorReset_f) (flm_Monitor * monitor, flm_IO * io);
@@ -37,29 +39,47 @@ typedef int (*flm__MonitorWait_f) (flm_Monitor * monitor);
 #define FLM__MONITOR_TM_WHEEL_SIZE	4096
 #define FLM__MONITOR_TM_RES		100  /* milliseconds */
 
+enum flm__MonitorBackend {
+    FLM__MONITOR_BACKEND_AUTO,
+    FLM__MONITOR_BACKEND_SELECT,
+    FLM__MONITOR_BACKEND_EPOLL,
+    FLM__MONITOR_BACKEND_NONE
+};
+
 struct flm_Monitor
 {
-    struct flm_Obj				obj;
+    struct flm_Obj			obj;
     
     flm__MonitorAdd_f			add;
     flm__MonitorDel_f			del;
     flm__MonitorReset_f			reset;
     flm__MonitorWait_f			wait;
     
-    uint32_t				count;
-    
     struct {
+        uint32_t                        count;
+        TAILQ_HEAD (iolt, flm_IO)	list;
+    } io;
+
+    struct {
+        uint32_t                        count;
+
         /* current time */
         struct timespec			current;
         
         /* milliseconds before next timeout */
         int				next;
+
+        /* size of the timer wheel */
+        size_t                          size;
+
+        /* resolution of the timer wheel (in ms) */
+        uint32_t                        res;
         
         /* current position in the timer wheel */
         size_t				pos;
         
         /* simple timer wheel */
-        TAILQ_HEAD (tmwh, flm_Timer)	wheel[FLM__MONITOR_TM_WHEEL_SIZE];
+        TAILQ_HEAD (tmwh, flm_Timer) *	wheel;
     } tm;
 };
 
@@ -99,6 +119,15 @@ void
 flm__MonitorTimerRearm (flm_Monitor *	monitor);
 
 void
-flm__setClockGettime (int (*handler)(clockid_t, struct timespec *));
+flm__setMonitorDefaultTmSize (size_t tm_size);
+
+void
+flm__setMonitorDefaultTmRes (uint32_t tm_res);
+
+void
+flm__setMonitorClockGettime (int (*handler)(clockid_t, struct timespec *));
+
+void
+flm__setMonitorBackend (enum flm__MonitorBackend backend);
 
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_H_ */

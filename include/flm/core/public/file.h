@@ -23,8 +23,6 @@ typedef struct flm_File flm_File;
 
 #include "flm/core/public/obj.h"
 
-#define FLM_FILE(_obj) FLM_CAST(_obj, flm_File)
-
 flm_File *
 flm_FileNew (int fd);
 
@@ -42,5 +40,11 @@ flm_FileNew (int fd);
  */
 flm_File *
 flm_FileOpen (const char * root, const char * path, const char * mode);
+
+flm_File *
+flm_FileRetain (flm_File * file);
+
+void
+flm_FileRelease (flm_File * file);
 
 #endif /* _FLM_CORE_PUBLIC_FILE_H_ */

@@ -56,6 +56,19 @@ flm_FileOpen (const char *      root,
     return (file);
 }
 
+flm_File *
+flm_FileRetain (flm_File * file)
+{
+    return (flm__Retain ((flm_Obj *) file));
+}
+
+void
+flm_FileRelease (flm_File * file)
+{
+    flm__Release ((flm_Obj *) file);
+    return ;
+}
+
 int
 flm__FileInit (flm_File *       file,
                int              fd)

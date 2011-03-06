@@ -12,8 +12,20 @@ START_TEST(test_monitor_create)
     if ((monitor = flm_MonitorNew ()) == NULL) {
         fail ("Monitor creation failed");
     }
-    fail_unless (monitor->count == 0);
+    fail_unless (monitor->io.count == 0);
+    fail_unless (monitor->tm.count == 0);
     fail_unless (monitor->tm.pos == 0);
+}
+END_TEST
+
+START_TEST(test_monitor_bad_backend)
+{
+    flm_Monitor * monitor;
+
+    setTestAlloc (0);
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_NONE);
+    fail_if (flm_MonitorNew () != NULL);
+    fail_unless (getAllocSum () == 0);
 }
 END_TEST
 
@@ -42,7 +54,7 @@ _gettime_handler (int                   type,
 START_TEST(test_monitor_gettime_fail)
 {
     setTestAlloc (0);
-    flm__setClockGettime (_gettime_handler);
+    flm__setMonitorClockGettime (_gettime_handler);
     fail_if (flm_MonitorNew () != NULL);
     fail_unless (getAllocSum () == 0);    
 }
@@ -56,7 +68,7 @@ START_TEST(test_monitor_destruct)
     if ((monitor = flm_MonitorNew ()) == NULL) {
         fail ("Monitor creation failed");
     }
-    flm_Release (FLM_OBJ (monitor));
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 }
 END_TEST
@@ -72,7 +84,7 @@ START_TEST(test_monitor_wait_nothing)
     if (flm_MonitorWait (monitor) == -1) {
         fail ("Monitor wait failed");
     }
-    flm_Release (FLM_OBJ (monitor));
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 }
 END_TEST
@@ -93,8 +105,8 @@ START_TEST(test_monitor_wait)
     if (timer == NULL) {
         fail ("Timer creation failed");
     }
-    fail_unless (monitor->count == 1);
-    flm_Release (FLM_OBJ (timer));
+    fail_unless (monitor->tm.count == 1);
+    flm_TimerRelease (timer);
 
     if (gettimeofday (&start, NULL) == -1) {
         fail ("gettimeofday() failed");
@@ -103,7 +115,7 @@ START_TEST(test_monitor_wait)
     if (flm_MonitorWait (monitor) == -1) {
         fail ("Monitor wait failed");
     }
-    flm_Release (FLM_OBJ (monitor));
+    flm_MonitorRelease (monitor);
 
     if (gettimeofday (&end, NULL) == -1) {
         fail ("gettimeofday() failed");
@@ -131,17 +143,17 @@ START_TEST(test_monitor_wait_gettime_fail)
     if (timer == NULL) {
         fail ("Timer creation failed");
     }
-    fail_unless (monitor->count == 1);
-    flm_Release (FLM_OBJ (timer));
+    fail_unless (monitor->tm.count == 1);
+    flm_TimerRelease (timer);
 
     if (gettimeofday (&start, NULL) == -1) {
         fail ("gettimeofday() failed");
     }
 
-    flm__setClockGettime (_gettime_handler);
+    flm__setMonitorClockGettime (_gettime_handler);
 
     fail_unless (flm_MonitorWait (monitor) == -1);
-    flm_Release (FLM_OBJ (monitor));
+    flm_MonitorRelease (monitor);
 
     if (gettimeofday (&end, NULL) == -1) {
         fail ("gettimeofday() failed");
@@ -160,7 +172,7 @@ _stream_read_handler (flm_Stream *  stream,
     fail_unless (state == (void *) 42);
     fail_unless (flm_BufferLength (buffer) == 1);
     fail_unless (flm_BufferContent (buffer)[0] == 'a');
-    flm_Release (buffer);
+    flm_BufferRelease (buffer);
     flm_IOClose (FLM_IO (stream));
     return ;
 }
@@ -199,8 +211,8 @@ START_TEST(test_monitor_wait_io)
 
     flm_StreamOnRead (read, _stream_read_handler);
 
-    fail_unless (monitor->count == 1);
-    flm_Release (FLM_OBJ (read));
+    fail_unless (monitor->io.count == 1);
+    flm_StreamRelease (read);
 
     write = flm_StreamNew (monitor, fds[1], (void *) 42);
     if (write == NULL) {
@@ -210,15 +222,14 @@ START_TEST(test_monitor_wait_io)
     flm_StreamOnWrite (write, _stream_write_handler);
     flm_StreamPrintf (write, "a");
 
-    fail_unless (monitor->count == 2);
-    flm_Release (FLM_OBJ (write));
+    fail_unless (monitor->io.count == 2);
+    flm_StreamRelease (write);
 
     if (flm_MonitorWait (monitor) == -1) {
         fail ("Monitor wait failed");
     }
-    flm_Release (FLM_OBJ (monitor));
+    flm_MonitorRelease (monitor);
 
-    printf("SUM: %d\n", getAllocSum ());
     fail_unless (getAllocSum () == 0);
 }
 END_TEST
@@ -231,6 +242,7 @@ monitor_suite (void)
   /* Core test case */
   TCase *tc_core = tcase_create ("Core");
   tcase_add_test (tc_core, test_monitor_create);
+  tcase_add_test (tc_core, test_monitor_bad_backend);
   tcase_add_test (tc_core, test_monitor_alloc_fail);
   tcase_add_test (tc_core, test_monitor_gettime_fail);
   tcase_add_test (tc_core, test_monitor_destruct);

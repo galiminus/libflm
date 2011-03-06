@@ -40,6 +40,19 @@ flm_ContainerContent (flm_Container *           container)
     return (container->content);
 }
 
+flm_Container *
+flm_ContainerRetain (flm_Container * container)
+{
+    return (flm__Retain ((flm_Obj *) container));
+}
+
+void
+flm_ContainerRelease (flm_Container * container)
+{
+    flm__Release ((flm_Obj *) container);
+    return ;
+}
+
 void
 flm__ContainerInit (flm_Container *             container,
                     void *                      content,

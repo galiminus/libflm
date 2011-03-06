@@ -19,9 +19,6 @@
 
 typedef struct flm_Obj flm_Obj;
 
-#define FLM_CAST(_obj,_type) ((_type *)_obj)
-#define FLM_OBJ(_obj) FLM_CAST(_obj, flm_Obj)
-
 enum flm_ObjError
 {
 	/**
@@ -34,29 +31,5 @@ enum flm_ObjError
 	 */
 	FLM_ERR_NOIMP
 };
-
-/**
- * \brief Increment the reference counter
- *
- * You should take a look to flm_retain().
- *
- * \param obj A pointer to an obj.
- * \return The pointer given to the function.
- */
-void *
-flm_Retain (flm_Obj * obj);
-
-/**
- * \brief Decrement the reference counter
- *
- * If the reference counter reaches 0 the obj is automaticaly freed.
- * You should never use an obj after a call to flm_obj_release, you
- * cannot know if another reference exists.
- *
- * \param obj A pointer to an obj to dereference.
- * \return Nothing.
- */
-void
-flm_Release (flm_Obj * obj);
 
 #endif /* !_FLM_CORE_PUBLIC_OBJ_H_ */

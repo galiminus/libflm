@@ -98,6 +98,19 @@ flm_BufferContent (flm_Buffer *         buffer)
     return (buffer->content);
 }
 
+flm_Buffer *
+flm_BufferRetain (flm_Buffer *          buffer)
+{
+    return (flm__Retain ((flm_Obj *) buffer));
+}
+
+void
+flm_BufferRelease (flm_Buffer *         buffer)
+{
+    flm__Release ((flm_Obj *) buffer);
+    return ;
+}
+
 void
 flm__BufferInit (flm_Buffer *                   buffer,
                  char *                         content,

@@ -27,6 +27,8 @@
 
 #define FLM__TYPE_THREAD	0x00140000
 
+#define FLM_THREAD(_obj) FLM_CAST(_obj, flm_Thread)
+
 struct flm__Msg {
 	flm_ThreadCallHandler	handler;
 	void *		params;
@@ -38,7 +40,7 @@ struct flm_Thread
 	/* inheritance */
 	struct flm_Obj			obj;
 
-	void *			state;
+	void *                          state;
 	flm_Monitor *			monitor;
 
 	struct {
@@ -58,11 +60,22 @@ flm__ThreadInit (flm_Thread *		thread,
 		 void *               state);
 
 void
+flm__ThreadPerfDestruct (flm_Thread * thread);
+
+void
+flm__ThreadExit (flm_Thread *   thread,
+                 void *         _state,
+                 void *         _params);
+
+void
 flm__ThreadEventHandler (flm_Stream *   pipe,
                          void *         _thread,
                          flm_Buffer *   _buffer);
 
 void *
 flm__ThreadStartRoutine (void *		_thread);
+
+void
+flm__ThreadPerfRelease (flm_Thread * thread);
 
 #endif /* !_FLM_CORE_PRIVATE_THREAD_H_ */

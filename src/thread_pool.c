@@ -158,3 +158,16 @@ flm_ThreadPoolCallTo (flm_ThreadPool *          thread_pool,
 
     return (0);
 }
+
+flm_ThreadPool *
+flm_ThreadPoolRetain (flm_ThreadPool *          thread_pool)
+{
+    return (flm__Retain ((flm_Obj *) thread_pool));
+}
+
+void
+flm_ThreadPoolRelease (flm_ThreadPool *         thread_pool)
+{
+    flm__Release ((flm_Obj *) thread_pool);
+    return ;
+}

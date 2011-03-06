@@ -50,6 +50,7 @@ am_check_libflm_OBJECTS = check_libflm-main.$(OBJEXT) \
 	check_libflm-container_test.$(OBJEXT) \
 	check_libflm-monitor_test.$(OBJEXT) \
 	check_libflm-timer_test.$(OBJEXT) \
+	check_libflm-thread_test.$(OBJEXT) \
 	check_libflm-test_utils.$(OBJEXT)
 check_libflm_OBJECTS = $(am_check_libflm_OBJECTS)
 check_libflm_DEPENDENCIES = $(top_builddir)/src/libflm.la
@@ -197,6 +198,7 @@ check_libflm_SOURCES = main.c				\
 						container_test.c	\
 						monitor_test.c		\
 						timer_test.c		\
+						thread_test.c		\
 						test_utils.c
 
 check_libflm_CFLAGS = @CHECK_CFLAGS@ -W -Wall -I../include/
@@ -259,6 +261,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-monitor_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-test_utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-thread_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-timer_test.Po@am__quote@
 
 .c.o:
@@ -351,6 +354,20 @@ check_libflm-timer_test.obj: timer_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='timer_test.c' object='check_libflm-timer_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-timer_test.obj `if test -f 'timer_test.c'; then $(CYGPATH_W) 'timer_test.c'; else $(CYGPATH_W) '$(srcdir)/timer_test.c'; fi`
+
+check_libflm-thread_test.o: thread_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-thread_test.o -MD -MP -MF $(DEPDIR)/check_libflm-thread_test.Tpo -c -o check_libflm-thread_test.o `test -f 'thread_test.c' || echo '$(srcdir)/'`thread_test.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-thread_test.Tpo $(DEPDIR)/check_libflm-thread_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread_test.c' object='check_libflm-thread_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-thread_test.o `test -f 'thread_test.c' || echo '$(srcdir)/'`thread_test.c
+
+check_libflm-thread_test.obj: thread_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-thread_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-thread_test.Tpo -c -o check_libflm-thread_test.obj `if test -f 'thread_test.c'; then $(CYGPATH_W) 'thread_test.c'; else $(CYGPATH_W) '$(srcdir)/thread_test.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-thread_test.Tpo $(DEPDIR)/check_libflm-thread_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread_test.c' object='check_libflm-thread_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-thread_test.obj `if test -f 'thread_test.c'; then $(CYGPATH_W) 'thread_test.c'; else $(CYGPATH_W) '$(srcdir)/thread_test.c'; fi`
 
 check_libflm-test_utils.o: test_utils.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-test_utils.o -MD -MP -MF $(DEPDIR)/check_libflm-test_utils.Tpo -c -o check_libflm-test_utils.o `test -f 'test_utils.c' || echo '$(srcdir)/'`test_utils.c
@@ -668,6 +685,8 @@ uninstall-am:
 check:
 	mv -f ../src/.libs/*.gcno ../src/.libs/*.gcda ../src/. ; \
 	cd ../src && gcov *.gcno >& /dev/null && echo "gcov output files created"
+	rm -f ../src/*.gcno
+	rm -f ../src/*.gcda
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

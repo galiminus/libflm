@@ -11,3 +11,6 @@ monitor_suite (void);
 
 Suite *
 timer_suite (void);
+
+Suite *
+thread_suite (void);

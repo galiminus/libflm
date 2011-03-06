@@ -21,12 +21,16 @@ typedef struct flm_Monitor flm_Monitor;
 
 #include "flm/core/public/obj.h"
 
-#define FLM_MONITOR(_obj) FLM_CAST(_obj, flm_Monitor)
-
 flm_Monitor *
 flm_MonitorNew ();
 
 int
 flm_MonitorWait (flm_Monitor * monitor);
+
+flm_Monitor *
+flm_MonitorRetain (flm_Monitor * monitor);
+
+void
+flm_MonitorRelease (flm_Monitor * monitor);
 
 #endif /* !_FLM_CORE_PUBLIC_MONITOR_H_ */

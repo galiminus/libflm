@@ -53,12 +53,18 @@ flm__ThreadInit (flm_Thread *		thread,
     flm__ObjInit (FLM_OBJ (thread));
 
     FLM_OBJ (thread)->type = FLM__TYPE_THREAD;
+
+    FLM_OBJ (thread)->perf.destruct =                           \
+        (flm__ObjPerfDestruct_f) flm__ThreadPerfDestruct;
+
+    FLM_OBJ (thread)->perf.release =                            \
+        (flm__ObjPerfRelease_f) flm__ThreadPerfRelease;
     
     thread->state = state;
     
     TAILQ_INIT (&(thread->msgs));
     
-    thread->monitor = flm_Retain (FLM_OBJ (monitor));
+    thread->monitor = flm_MonitorRetain (monitor);
     
     if (pipe (thread_pipe) == -1) {
         goto release_monitor;
@@ -68,8 +74,9 @@ flm__ThreadInit (flm_Thread *		thread,
                                       thread_pipe[0],
                                       thread);
     
-    flm_StreamOnRead(thread->pipe.out, flm__ThreadEventHandler);
-    
+    flm_StreamOnRead (thread->pipe.out, flm__ThreadEventHandler);
+    flm_StreamRelease (thread->pipe.out);
+
     thread->pipe.in = thread_pipe[1];
     
     error = pthread_mutex_init (&(thread->lock), NULL);
@@ -89,11 +96,28 @@ flm__ThreadInit (flm_Thread *		thread,
   destroy_lock:
     pthread_mutex_destroy(&(thread->lock));
   close_pipe:
-    close (thread_pipe[0]);
     close (thread_pipe[1]);
   release_monitor:
-    flm_Release (FLM_OBJ (thread->monitor));
+    flm_MonitorRelease (thread->monitor);
     return (-1);
+}
+
+void
+flm__ThreadPerfDestruct (flm_Thread * thread)
+{
+    flm_ThreadCall (thread, flm__ThreadExit, NULL);
+}
+
+void
+flm__ThreadExit (flm_Thread *   thread,
+                 void *         _state,
+                 void *         _params)
+{
+    (void) _state;
+    (void) _params;
+
+    flm_IOClose (FLM_IO (thread->pipe.out));
+    close (thread->pipe.in);
 }
 
 void
@@ -110,7 +134,7 @@ flm__ThreadEventHandler (flm_Stream *   _stream,
 
     thread = (flm_Thread *)_thread;
 
-    flm_Release (FLM_OBJ (buffer));
+    flm_BufferRelease (buffer);
 
     error = pthread_mutex_lock (&(thread->lock));
     if (error != 0) {
@@ -144,8 +168,26 @@ flm__ThreadStartRoutine (void *	_thread)
     flm_Thread *        thread = _thread;
 
     flm_MonitorWait (thread->monitor);
+    flm_MonitorRelease (thread->monitor);
 
     return ((void *)(0));
+}
+
+void
+flm__ThreadPerfRelease (flm_Thread * thread)
+{
+    if (thread == NULL) {
+        return ;
+    }
+    FLM_OBJ (thread)->stat.refcount--;
+    if (FLM_OBJ (thread)->stat.refcount == 0) {
+        if (FLM_OBJ (thread)->perf.destruct) {
+            FLM_OBJ (thread)->perf.destruct (FLM_OBJ (thread));
+        }
+        flm_ThreadJoin (thread);
+        flm__Free (thread);
+    }
+    return ;
 }
 
 int
@@ -167,6 +209,14 @@ flm_ThreadCall (flm_Thread *		thread,
 {
     struct flm__Msg *	msg;
     int			error;
+
+    /**
+     * Refuse the call if the thread is not the only
+     * owner of its monitor to avoid some race conditions
+     */
+    if (FLM_OBJ (thread)->stat.refcount > 1) {
+        return (-1);
+    }
 
     if ((msg = flm__Alloc (sizeof (struct flm__Msg))) == NULL) {
         goto error;
@@ -199,4 +249,16 @@ flm_ThreadCall (flm_Thread *		thread,
     flm__Free (msg);
   error:
     return (-1);
+}
+
+flm_Thread *
+flm_ThreadRetain (flm_Thread * thread)
+{
+    return (flm__Retain ((flm_Obj *) thread));
+}
+
+void
+flm_ThreadRelease (flm_Thread * thread)
+{
+    flm__Release ((flm_Obj *) thread);
 }

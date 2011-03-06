@@ -39,7 +39,7 @@ START_TEST(test_container_free)
     if ((container = flm_ContainerNew ((void *) 42, _container_free_handler)) == NULL) {
         fail ("Container creation failed");
     }
-    flm_Release (FLM_OBJ (container));
+    flm_ContainerRelease (container);
     fail_if(_has_freed == 0);
 }
 END_TEST
@@ -59,7 +59,7 @@ START_TEST(test_container_destruct)
     if ((container = flm_ContainerNew (NULL, NULL)) == NULL) {
         fail ("Container creation failed");
     }
-    flm_Release (FLM_OBJ (container));
+    flm_ContainerRelease (container);
     fail_unless (getAllocSum () == 0);
 }
 END_TEST

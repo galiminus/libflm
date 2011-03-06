@@ -99,12 +99,12 @@ flm__SelectPerfWait (flm__Select * _select)
         }
 	else if (FLM_MONITOR (_select)->tm.next >= 1000) {
             delay.tv_sec = FLM_MONITOR (_select)->tm.next / 1000;
-            delay.tv_usec = FLM_MONITOR (_select)->tm.next % 1000;
+            delay.tv_usec = (FLM_MONITOR (_select)->tm.next * 1000) % 1000;
             delay_ptr = &delay;
 	}
 	else {
             delay.tv_sec = 0;
-            delay.tv_usec = FLM_MONITOR (_select)->tm.next;
+            delay.tv_usec = FLM_MONITOR (_select)->tm.next * 1000;
             delay_ptr = &delay;
 	}
 

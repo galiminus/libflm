@@ -3,6 +3,7 @@
 #include "flm/flm.h"
 
 #include "flm/core/private/monitor.h"
+#include "flm/core/private/timer.h"
 
 #include "test_utils.h"
 
@@ -44,8 +45,8 @@ START_TEST(test_timer_destruct)
     if ((timer = flm_TimerNew (monitor, NULL, NULL, 10)) == NULL) {
         fail ("Timer creation failed");
     }
-    flm_Release (FLM_OBJ (timer));
-    flm_Release (FLM_OBJ (monitor));
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 }
 END_TEST
@@ -94,8 +95,8 @@ START_TEST(test_timer_cancel)
         fail ("gettimeofday() failed");
     }
 
-    flm_Release (FLM_OBJ (timer));
-    flm_Release (FLM_OBJ (monitor));
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 
     diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
@@ -124,7 +125,7 @@ START_TEST(test_timer_short)
     if ((timer = flm_TimerNew (monitor,
                                _timer_handler,
                                (void *) 42,
-                               FLM__MONITOR_TM_RES * 2)) == NULL) {
+                               monitor->tm.res * 2)) == NULL) {
         fail ("Timer creation failed");
     }
 
@@ -138,15 +139,15 @@ START_TEST(test_timer_short)
         fail ("gettimeofday() failed");
     }
 
-    flm_Release (FLM_OBJ (timer));
-    flm_Release (FLM_OBJ (monitor));
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 
     diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
             ((start.tv_sec * 1000) + start.tv_usec / 1000));
 
-    fail_if (diff < (FLM__MONITOR_TM_RES * 1.90));
-    fail_if (diff > (FLM__MONITOR_TM_RES * 2.10));
+    fail_if (diff < (monitor->tm.res * 1.90));
+    fail_if (diff > (monitor->tm.res * 2.10));
 
     fail_if (_elapsed != 1);
 }
@@ -169,7 +170,7 @@ START_TEST(test_timer_long)
     if ((timer = flm_TimerNew (monitor,
                                _timer_handler,
                                (void *) 42,
-                               FLM__MONITOR_TM_RES * 10)) == NULL) {
+                               monitor->tm.res * 10)) == NULL) {
         fail ("Timer creation failed");
     }
 
@@ -183,15 +184,62 @@ START_TEST(test_timer_long)
         fail ("gettimeofday() failed");
     }
 
-    flm_Release (FLM_OBJ (timer));
-    flm_Release (FLM_OBJ (monitor));
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 
     diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
             ((start.tv_sec * 1000) + start.tv_usec / 1000));
 
-    fail_if (diff < (FLM__MONITOR_TM_RES * 9.5));
-    fail_if (diff > (FLM__MONITOR_TM_RES * 11.1));
+    fail_if (diff < (monitor->tm.res * 9.5));
+    fail_if (diff > (monitor->tm.res * 11.1));
+
+    fail_if (_elapsed != 1);
+}
+END_TEST
+
+START_TEST(test_timer_longer_than_wheel)
+{
+    flm_Monitor *       monitor;
+    flm_Timer *         timer;
+    struct timeval      start;
+    struct timeval      end;
+    int                 diff;
+
+    fail_if (_elapsed != 0);
+
+    setTestAlloc (0);
+    flm__setMonitorDefaultTmSize (3);
+    if ((monitor = flm_MonitorNew ()) == NULL) {
+        fail ("Monitor creation failed");
+    }
+    if ((timer = flm_TimerNew (monitor,
+                               _timer_handler,
+                               (void *) 42,
+                               monitor->tm.res * 10)) == NULL) {
+        fail ("Timer creation failed");
+    }
+    fail_unless (timer->wh.rounds == 3);
+
+    if (gettimeofday (&start, NULL) == -1) {
+        fail ("gettimeofday() failed");
+    }
+
+    flm_MonitorWait (monitor);
+
+    if (gettimeofday (&end, NULL) == -1) {
+        fail ("gettimeofday() failed");
+    }
+
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
+    fail_unless (getAllocSum () == 0);
+
+    diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
+            ((start.tv_sec * 1000) + start.tv_usec / 1000));
+
+    fail_if (diff < (monitor->tm.res * 9.5));
+    fail_if (diff > (monitor->tm.res * 11.1));
 
     fail_if (_elapsed != 1);
 }
@@ -214,11 +262,11 @@ START_TEST(test_timer_reset)
     if ((timer = flm_TimerNew (monitor,
                                _timer_handler,
                                (void *) 42,
-                               FLM__MONITOR_TM_RES * 2)) == NULL) {
+                               monitor->tm.res * 2)) == NULL) {
         fail ("Timer creation failed");
     }
 
-    flm_TimerReset (timer, FLM__MONITOR_TM_RES * 4);
+    flm_TimerReset (timer, monitor->tm.res * 4);
 
     if (gettimeofday (&start, NULL) == -1) {
         fail ("gettimeofday() failed");
@@ -230,15 +278,15 @@ START_TEST(test_timer_reset)
         fail ("gettimeofday() failed");
     }
 
-    flm_Release (FLM_OBJ (timer));
-    flm_Release (FLM_OBJ (monitor));
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 
     diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
             ((start.tv_sec * 1000) + start.tv_usec / 1000));
 
-    fail_if (diff < (FLM__MONITOR_TM_RES * 3.90));
-    fail_if (diff > (FLM__MONITOR_TM_RES * 4.10));
+    fail_if (diff < (monitor->tm.res * 3.90));
+    fail_if (diff > (monitor->tm.res * 4.10));
 
     fail_if (_elapsed != 1);
 }
@@ -269,10 +317,10 @@ START_TEST(test_timer_multiple)
         if ((timer = flm_TimerNew (monitor,
                                    _timer_handler,
                                    (void *) 42,
-                                   FLM__MONITOR_TM_RES * 2)) == NULL) {
+                                   monitor->tm.res * 2)) == NULL) {
             fail ("Timer creation failed");
         }
-        flm_Release (FLM_OBJ (timer));
+        flm_TimerRelease (timer);
     }
 
     flm_MonitorWait (monitor);
@@ -281,14 +329,14 @@ START_TEST(test_timer_multiple)
         fail ("gettimeofday() failed");
     }
 
-    flm_Release (FLM_OBJ (monitor));
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 
     diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
             ((start.tv_sec * 1000) + start.tv_usec / 1000));
 
-    fail_if (diff < (FLM__MONITOR_TM_RES * 1.50) + 200);
-    fail_if (diff > (FLM__MONITOR_TM_RES * 2.50) + 200);
+    fail_if (diff < (monitor->tm.res * 1.50) + 200);
+    fail_if (diff > (monitor->tm.res * 2.50) + 200);
 
     fail_if (_elapsed != count);
 }
@@ -296,11 +344,12 @@ END_TEST
 
 void
 _timer_handler_reset (flm_Timer * timer,
-                      void * _state) {
-    fail_unless (_state == (void*)42);
+                      void * _monitor)
+{
+    flm_Monitor * monitor = _monitor;
 
     if (_elapsed == 0) {
-        flm_TimerReset (timer, FLM__MONITOR_TM_RES * 2);
+        flm_TimerReset (timer, monitor->tm.res * 2);
     }
     _elapsed++;
 }
@@ -321,8 +370,8 @@ START_TEST(test_timer_reset_in_handler)
     }
     if ((timer = flm_TimerNew (monitor,
                                _timer_handler_reset,
-                               (void *) 42,
-                               FLM__MONITOR_TM_RES * 2)) == NULL) {
+                               monitor, /* state */
+                               monitor->tm.res * 2)) == NULL) {
         fail ("Timer creation failed");
     }
 
@@ -336,15 +385,15 @@ START_TEST(test_timer_reset_in_handler)
         fail ("gettimeofday() failed");
     }
 
-    flm_Release (FLM_OBJ (timer));
-    flm_Release (FLM_OBJ (monitor));
+    flm_TimerRelease (timer);
+    flm_MonitorRelease (monitor);
     fail_unless (getAllocSum () == 0);
 
     diff = (((end.tv_sec * 1000) + end.tv_usec / 1000) -
             ((start.tv_sec * 1000) + start.tv_usec / 1000));
 
-    fail_if (diff < (FLM__MONITOR_TM_RES * 3.90));
-    fail_if (diff > (FLM__MONITOR_TM_RES * 4.10));
+    fail_if (diff < (monitor->tm.res * 3.90));
+    fail_if (diff > (monitor->tm.res * 4.10));
 
     fail_if (_elapsed != 2);
 }
@@ -363,6 +412,7 @@ timer_suite (void)
   tcase_add_test (tc_core, test_timer_cancel);
   tcase_add_test (tc_core, test_timer_short);
   tcase_add_test (tc_core, test_timer_long);
+  tcase_add_test (tc_core, test_timer_longer_than_wheel);
   tcase_add_test (tc_core, test_timer_multiple);
   tcase_add_test (tc_core, test_timer_reset);
   tcase_add_test (tc_core, test_timer_reset_in_handler);

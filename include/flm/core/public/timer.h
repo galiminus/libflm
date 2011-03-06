@@ -43,4 +43,10 @@ flm_TimerReset (flm_Timer *	timer,
 void
 flm_TimerCancel (flm_Timer *	timer);
 
+flm_Timer *
+flm_TimerRetain (flm_Timer *    timer);
+
+void
+flm_TimerRelease (flm_Timer *   timer);
+
 #endif /* !_FLM_CORE_PUBLIC_TIMER_H_ */

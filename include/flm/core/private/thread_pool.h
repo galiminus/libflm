@@ -26,6 +26,8 @@
 
 #define FLM__TYPE_THREAD_POOL	0x00140000
 
+#define FLM_THREAD_POOL(_obj) FLM_CAST(_obj, flm_ThreadPool)
+
 struct flm_ThreadPool
 {
 	/* inheritance */

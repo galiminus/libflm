@@ -27,8 +27,6 @@ typedef struct flm_TCPClient flm_TCPClient;
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
 
-#define FLM_TCP_CLIENT(_obj) FLM_CAST(_obj, flm_TCPClient)
-
 typedef void (*flm_TCPClientConnectHandler)	\
 (flm_TCPClient * tcp_client, void * state, int fd);
 

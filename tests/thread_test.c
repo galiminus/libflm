@@ -6,61 +6,94 @@
 
 START_TEST(test_thread_create)
 {
-    if (flm_ThreadNew (NULL, NULL) == NULL) {
+    flm_Monitor * monitor;
+    flm_Thread * thread;
+    
+    if ((monitor = flm_MonitorNew ()) == NULL) {
+        fail ("Monitor creation failed");
+    }
+    if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
 }
 END_TEST
 
-START_TEST(test_thread_content)
+START_TEST(test_thread_release)
 {
+    flm_Monitor * monitor;
     flm_Thread * thread;
-    
-    if ((thread = flm_ThreadNew ((void*)42, NULL)) == NULL) {
+
+    setTestAlloc (0);
+    if ((monitor = flm_MonitorNew ()) == NULL) {
+        fail ("Monitor creation failed");
+    }
+    if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
-    fail_unless (flm_ThreadContent (thread) == ((void*)42));
-}
-END_TEST
+    flm_MonitorRelease (monitor);
+    flm_ThreadRelease (thread);
 
-int _has_freed;
+    /**
+     * Give the thread enough time to quit
+     */
+    sleep(1);
 
-void
-_thread_free_handler (void * content) {
-    _has_freed = 1;
-}
-
-START_TEST(test_thread_free)
-{
-    flm_Thread * thread;
-    
-    _has_freed = 0;
-    if ((thread = flm_ThreadNew (NULL, _thread_free_handler)) == NULL) {
-        fail ("Thread creation failed");
-    }
-    flm_Release (FLM_OBJ (thread));
-    fail_if(_has_freed == 0);
+    fail_unless (getAllocSum () == 0);
 }
 END_TEST
 
 START_TEST(test_thread_alloc_fail)
 {
-    flm_Thread * thread;
-
     setTestAlloc (1);
     fail_if (flm_ThreadNew (NULL, NULL) != NULL);
+    fail_unless (getAllocSum () == 0);
 }
 END_TEST
 
-START_TEST(test_thread_destruct)
+int _called = 0;
+
+void
+_thread_call_handler (flm_Thread * thread,
+                      void * state,
+                      void * params)
 {
+    fail_unless (state == (void *)42);
+    fail_unless (params == (void *)21);
+    _called = 1;
+}
+
+START_TEST(test_thread_call)
+{
+    flm_Monitor * monitor;
     flm_Thread * thread;
 
     setTestAlloc (0);
-    if ((thread = flm_ThreadNew (NULL, NULL)) == NULL) {
+    if ((monitor = flm_MonitorNew ()) == NULL) {
+        fail ("Monitor creation failed");
+    }
+    if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
-    flm_Release (FLM_OBJ (thread));
+
+    if (flm_ThreadCall (thread, _thread_call_handler, (void *) 21) == -1) {
+        fail ("Thread call failed");
+    }
+
+    /**
+     * Give the thread enough time to execute the callback
+     */
+    sleep(1);
+
+    fail_if (_called != 1);
+
+    flm_MonitorRelease (monitor);
+    flm_ThreadRelease (thread);
+
+    /**
+     * Give the thread enough time to quit
+     */
+    sleep(1);
+
     fail_unless (getAllocSum () == 0);
 }
 END_TEST
@@ -74,10 +107,9 @@ thread_suite (void)
   TCase *tc_core = tcase_create ("Thread");
 
   tcase_add_test (tc_core, test_thread_create);
-  tcase_add_test (tc_core, test_thread_content);
-  tcase_add_test (tc_core, test_thread_free);
+  tcase_add_test (tc_core, test_thread_release);
   tcase_add_test (tc_core, test_thread_alloc_fail);
-  tcase_add_test (tc_core, test_thread_destruct);
+  tcase_add_test (tc_core, test_thread_call);
   suite_add_tcase (s, tc_core);
 
   return s;
