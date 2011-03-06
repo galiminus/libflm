@@ -71,12 +71,6 @@ flm_IOClose (flm_IO *           io)
     return ;
 }
 
-int
-flm_IODescriptor (flm_IO *      io)
-{
-    return (io->sys.fd);
-}
-
 void
 flm_IOOnRead (flm_IO *                  io,
               flm_IOReadHandler         handler)
@@ -128,9 +122,9 @@ flm__IOInit (flm_IO *                   io,
              int                        fd,
              void *                     state)
 {
-    flm__ObjInit (FLM_OBJ (io));
+    flm__ObjInit ((flm_Obj *) io);
 
-    FLM_OBJ (io)->perf.destruct =                               \
+    ((flm_Obj *)(io))->perf.destruct =                  \
         (flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
     
     io->state           =       state;
@@ -245,7 +239,9 @@ flm__IOPerfRead (flm_IO *       io,
     (void) _monitor;
     (void) _count;
 
-    FLM_IO_EVENT (io, rd);
+    if (io->rd.handler) {
+        io->rd.handler (io, io->state);
+    }
     return ;
 }
 
@@ -257,7 +253,9 @@ flm__IOPerfWrite (flm_IO *      io,
     (void) _monitor;
     (void) _count;
 
-    FLM_IO_EVENT (io, wr);
+    if (io->wr.handler) {
+        io->wr.handler (io, io->state);
+    }
     return ;
 }
 
@@ -265,7 +263,9 @@ void
 flm__IOPerfClose (flm_IO *      io,
                   flm_Monitor * monitor)
 {
-    FLM_IO_EVENT (io, cl);
+    if (io->cl.handler) {
+        io->cl.handler (io, io->state);
+    }
     flm__MonitorIODelete (monitor, io);
     return ;
 }

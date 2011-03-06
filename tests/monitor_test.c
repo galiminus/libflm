@@ -20,8 +20,6 @@ END_TEST
 
 START_TEST(test_monitor_bad_backend)
 {
-    flm_Monitor * monitor;
-
     setTestAlloc (0);
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_NONE);
     fail_if (flm_MonitorNew () != NULL);
@@ -173,7 +171,7 @@ _stream_read_handler (flm_Stream *  stream,
     fail_unless (flm_BufferLength (buffer) == 1);
     fail_unless (flm_BufferContent (buffer)[0] == 'a');
     flm_BufferRelease (buffer);
-    flm_IOClose (FLM_IO (stream));
+    flm_StreamClose (stream);
     return ;
 }
 
@@ -184,7 +182,7 @@ _stream_write_handler (flm_Stream *  stream,
 {
     fail_unless (state == (void *) 42);
     fail_unless (size == 1);
-    flm_IOClose (FLM_IO (stream));
+    flm_StreamClose (stream);
     return ;
 }
 

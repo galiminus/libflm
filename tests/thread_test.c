@@ -57,6 +57,8 @@ _thread_call_handler (flm_Thread * thread,
                       void * state,
                       void * params)
 {
+    (void) thread;
+
     fail_unless (state == (void *)42);
     fail_unless (params == (void *)21);
     _called = 1;
@@ -74,6 +76,7 @@ START_TEST(test_thread_call)
     if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
+    flm_MonitorRelease (monitor);
 
     if (flm_ThreadCall (thread, _thread_call_handler, (void *) 21) == -1) {
         fail ("Thread call failed");
@@ -86,7 +89,6 @@ START_TEST(test_thread_call)
 
     fail_if (_called != 1);
 
-    flm_MonitorRelease (monitor);
     flm_ThreadRelease (thread);
 
     /**

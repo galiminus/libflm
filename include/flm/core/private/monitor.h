@@ -29,8 +29,6 @@
 
 #define FLM__TYPE_MONITOR	0x000D0000
 
-#define FLM_MONITOR(_obj) FLM_CAST(_obj, flm_Monitor)
-
 typedef int (*flm__MonitorAdd_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorDel_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorReset_f) (flm_Monitor * monitor, flm_IO * io);

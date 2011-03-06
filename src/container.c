@@ -58,11 +58,11 @@ flm__ContainerInit (flm_Container *             container,
                     void *                      content,
                     flm_ContainerFreeHandler    free_handler)
 {
-    flm__ObjInit (FLM_OBJ (container));
+    flm__ObjInit ((flm_Obj *) container);
 
-    FLM_OBJ (container)->type = FLM__TYPE_CONTAINER;
+    ((flm_Obj *)(container))->type = FLM__TYPE_CONTAINER;
 
-    FLM_OBJ (container)->perf.destruct =                            \
+    ((flm_Obj *)(container))->perf.destruct =                   \
         (flm__ObjPerfDestruct_f) flm__ContainerPerfDestruct;
 
     container->content = content;

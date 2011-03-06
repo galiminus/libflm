@@ -27,8 +27,6 @@
 
 #define FLM__TYPE_TCP_CLIENT	0x00150000
 
-#define FLM_TCP_CLIENT(_obj) FLM_CAST(_obj, flm_TCPClient)
-
 struct flm_TCPClient
 {
 	/* inheritance */

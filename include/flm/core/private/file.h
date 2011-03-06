@@ -26,8 +26,6 @@
 
 #define FLM__TYPE_FILE	0x00030000
 
-#define FLM_FILE(_obj) FLM_CAST(_obj, flm_File)
-
 struct flm_File
 {
 	/* inheritance */

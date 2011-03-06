@@ -24,9 +24,6 @@
 
 #include "flm/core/public/obj.h"
 
-#define FLM_CAST(_obj,_type) ((_type *)_obj)
-#define FLM_OBJ(_obj) FLM_CAST(_obj, flm_Obj)
-
 #define FLM__TYPE_OBJ	0x00010000
 
 typedef void *		(*flm__ObjPerfRetain_f) (flm_Obj *);

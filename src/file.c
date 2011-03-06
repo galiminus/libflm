@@ -73,10 +73,10 @@ int
 flm__FileInit (flm_File *       file,
                int              fd)
 {
-    if (flm__IOInit (FLM_IO (file), NULL, fd, NULL) == -1) {
+    if (flm__IOInit ((flm_IO *) file, NULL, fd, NULL) == -1) {
         return (-1);
     }
-    FLM_OBJ (file)->type = FLM__TYPE_FILE;
+    ((flm_Obj *)(file))->type = FLM__TYPE_FILE;
     return (0);
 }
 

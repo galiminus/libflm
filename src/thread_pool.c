@@ -42,9 +42,9 @@ flm__ThreadPoolInit (flm_ThreadPool *   thread_pool)
 {
     int         error;
 
-    flm__ObjInit (FLM_OBJ (thread_pool));
+    flm__ObjInit ((flm_Obj *) thread_pool);
 
-    FLM_OBJ (thread_pool)->type = FLM__TYPE_THREAD_POOL;
+    ((flm_Obj *)(thread_pool))->type = FLM__TYPE_THREAD_POOL;
 
     thread_pool->count = 0;
     thread_pool->current = 0;

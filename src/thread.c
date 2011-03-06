@@ -50,14 +50,14 @@ flm__ThreadInit (flm_Thread *		thread,
     int         error;
     int         thread_pipe[2];
 
-    flm__ObjInit (FLM_OBJ (thread));
+    flm__ObjInit ((flm_Obj *) thread);
 
-    FLM_OBJ (thread)->type = FLM__TYPE_THREAD;
+    ((flm_Obj *)(thread))->type = FLM__TYPE_THREAD;
 
-    FLM_OBJ (thread)->perf.destruct =                           \
+    ((flm_Obj *)(thread))->perf.destruct =                      \
         (flm__ObjPerfDestruct_f) flm__ThreadPerfDestruct;
 
-    FLM_OBJ (thread)->perf.release =                            \
+    ((flm_Obj *)(thread))->perf.release =               \
         (flm__ObjPerfRelease_f) flm__ThreadPerfRelease;
     
     thread->state = state;
@@ -116,7 +116,7 @@ flm__ThreadExit (flm_Thread *   thread,
     (void) _state;
     (void) _params;
 
-    flm_IOClose (FLM_IO (thread->pipe.out));
+    flm_StreamClose (thread->pipe.out);
     close (thread->pipe.in);
 }
 
@@ -179,10 +179,10 @@ flm__ThreadPerfRelease (flm_Thread * thread)
     if (thread == NULL) {
         return ;
     }
-    FLM_OBJ (thread)->stat.refcount--;
-    if (FLM_OBJ (thread)->stat.refcount == 0) {
-        if (FLM_OBJ (thread)->perf.destruct) {
-            FLM_OBJ (thread)->perf.destruct (FLM_OBJ (thread));
+    ((flm_Obj *)(thread))->stat.refcount--;
+    if (((flm_Obj *)(thread))->stat.refcount == 0) {
+        if (((flm_Obj *)(thread))->perf.destruct) {
+            ((flm_Obj *)(thread))->perf.destruct ((flm_Obj *) thread);
         }
         flm_ThreadJoin (thread);
         flm__Free (thread);
@@ -214,7 +214,7 @@ flm_ThreadCall (flm_Thread *		thread,
      * Refuse the call if the thread is not the only
      * owner of its monitor to avoid some race conditions
      */
-    if (FLM_OBJ (thread)->stat.refcount > 1) {
+    if (((flm_Obj *)(thread->monitor))->stat.refcount > 1) {
         return (-1);
     }
 

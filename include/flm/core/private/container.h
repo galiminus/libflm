@@ -23,8 +23,6 @@
 
 #define FLM__TYPE_CONTAINER	0x00AA0000
 
-#define FLM_CONTAINER(_obj) FLM_CAST(_obj, flm_Container)
-
 struct flm_Container
 {
 	struct flm_Obj				obj;

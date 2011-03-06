@@ -27,8 +27,6 @@
 
 #define FLM__TYPE_THREAD	0x00140000
 
-#define FLM_THREAD(_obj) FLM_CAST(_obj, flm_Thread)
-
 struct flm__Msg {
 	flm_ThreadCallHandler	handler;
 	void *		params;

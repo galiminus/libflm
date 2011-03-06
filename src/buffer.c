@@ -117,11 +117,11 @@ flm__BufferInit (flm_Buffer *                   buffer,
                  size_t                         len,
                  flm_BufferFreeContentHandler   fr_handler)
 {
-    flm__ObjInit (FLM_OBJ (buffer));
+    flm__ObjInit ((flm_Obj *) buffer);
 
-    FLM_OBJ (buffer)->type = FLM__TYPE_BUFFER;
+    ((flm_Obj *)(buffer))->type = FLM__TYPE_BUFFER;
 
-    FLM_OBJ (buffer)->perf.destruct =                               \
+    ((flm_Obj *)(buffer))->perf.destruct =                      \
         (flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
 
     buffer->len = len;

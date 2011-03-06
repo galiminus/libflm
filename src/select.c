@@ -39,127 +39,127 @@ flm__SelectPerfWait (flm__Select * select);
 flm__Select *
 flm__SelectNew ()
 {
-	flm__Select * select;
+    flm__Select * select;
 
-	select = flm__Alloc (sizeof (flm__Select));
-	if (select == NULL) {
-		return (NULL);
-	}
-	if (flm__SelectInit (select) == -1) {
-		flm__Free (select);
-		return (NULL);
-	}
-	return (select);
+    select = flm__Alloc (sizeof (flm__Select));
+    if (select == NULL) {
+        return (NULL);
+    }
+    if (flm__SelectInit (select) == -1) {
+        flm__Free (select);
+        return (NULL);
+    }
+    return (select);
 }
 
 int
 flm__SelectInit (flm__Select * select)
 {
-	if (flm__MonitorInit (FLM_MONITOR (select)) == -1) {
-		return (-1);
-	}
+    if (flm__MonitorInit ((flm_Monitor *) select) == -1) {
+        return (-1);
+    }
 
-	FLM_MONITOR (select)->add	=				\
-		(flm__MonitorAdd_f) flm__SelectPerfAdd;
-
-	FLM_MONITOR (select)->wait	=				\
-		(flm__MonitorWait_f) flm__SelectPerfWait;
-
-	memset (select->ios, 0, sizeof (select->ios));
-
-	return (0);
+    ((flm_Monitor *)(select))->add	=       \
+        (flm__MonitorAdd_f) flm__SelectPerfAdd;
+    
+    ((flm_Monitor *)(select))->wait	=       \
+        (flm__MonitorWait_f) flm__SelectPerfWait;
+    
+    memset (select->ios, 0, sizeof (select->ios));
+    
+    return (0);
 }
 
 int
 flm__SelectPerfAdd (flm__Select * select,
 		    flm_IO * io)
 {
-	if (io->sys.fd >= FD_SETSIZE) {
-		return (-1);
-	}
-	select->ios[io->sys.fd] = io;
-	return (0);
+    if (io->sys.fd >= FD_SETSIZE) {
+        return (-1);
+    }
+    select->ios[io->sys.fd] = io;
+    return (0);
 }
 
 int
 flm__SelectPerfWait (flm__Select * _select)
 {
-	flm_IO *                io;
-	size_t                  fd;
-	int                     ret;
-	struct timeval          delay;
-        struct timeval *        delay_ptr;
+    flm_IO *                io;
+    size_t                  fd;
+    int                     ret;
+    struct timeval          delay;
+    struct timeval *        delay_ptr;
 
-	fd_set                  rset;
-	fd_set                  wset;
-	int                     max;
+    fd_set                  rset;
+    fd_set                  wset;
+    int                     max;
 
-        if (FLM_MONITOR (_select)->tm.next == -1) {
-            delay_ptr = NULL;
+    if (((flm_Monitor *)(_select))->tm.next == -1) {
+        delay_ptr = NULL;
+    }
+    else if (((flm_Monitor *)(_select))->tm.next >= 1000) {
+        delay.tv_sec = ((flm_Monitor *)(_select))->tm.next / 1000;
+        delay.tv_usec = (((flm_Monitor *)(_select))->tm.next * 1000) % 1000;
+        delay_ptr = &delay;
+    }
+    else {
+        delay.tv_sec = 0;
+        delay.tv_usec = ((flm_Monitor *)(_select))->tm.next * 1000;
+        delay_ptr = &delay;
+    }
+
+    max = -1;
+    FD_ZERO (&rset);
+    FD_ZERO (&wset);
+    for (fd = 0; fd < FD_SETSIZE; fd++) {
+        if ((io = _select->ios[fd]) == NULL) {
+            continue ;
         }
-	else if (FLM_MONITOR (_select)->tm.next >= 1000) {
-            delay.tv_sec = FLM_MONITOR (_select)->tm.next / 1000;
-            delay.tv_usec = (FLM_MONITOR (_select)->tm.next * 1000) % 1000;
-            delay_ptr = &delay;
-	}
-	else {
-            delay.tv_sec = 0;
-            delay.tv_usec = FLM_MONITOR (_select)->tm.next * 1000;
-            delay_ptr = &delay;
-	}
+        if (io->rd.want) {
+            FD_SET (io->sys.fd, &rset);
+        }
+        if (io->wr.want) {
+            FD_SET (io->sys.fd, &wset);
+        }
+        if (io->sys.fd > max) {
+            max = io->sys.fd;
+        }
+    }
 
-	max = -1;
-	FD_ZERO (&rset);
-	FD_ZERO (&wset);
-	for (fd = 0; fd < FD_SETSIZE; fd++) {
-		if ((io = _select->ios[fd]) == NULL) {
-			continue ;
-		}
-		if (io->rd.want) {
-			FD_SET (io->sys.fd, &rset);
-		}
-		if (io->wr.want) {
-			FD_SET (io->sys.fd, &wset);
-		}
-		if (io->sys.fd > max) {
-			max = io->sys.fd;
-		}
-	}
+    for (;;) {
+        ret = select (max + 1, &rset, &wset, NULL, delay_ptr);
+        if (ret >= 0) {
+            break ;
+        }
+        if (errno == EINTR) {
+            continue ;
+        }
+        return (-1); /* fatal error */
+    }
 
-	for (;;) {
-		ret = select (max + 1, &rset, &wset, NULL, delay_ptr);
-		if (ret >= 0) {
-			break ;
-		}
-		if (errno == EINTR) {
-			continue ;
-		}
-		return (-1); /* fatal error */
-	}
+    for (fd = 0; fd < FD_SETSIZE; fd++) {
+        if ((io = _select->ios[fd]) == NULL) {
+            continue ;
+        }
 
-	for (fd = 0; fd < FD_SETSIZE; fd++) {
-		if ((io = _select->ios[fd]) == NULL) {
-			continue ;
-		}
+        if ((int)fd > max) {
+            break ;
+        }
 
-		if ((int)fd > max) {
-			break ;
-		}
+        if (fd >= FD_SETSIZE) {
+            break ;
+        }
 
-		if (fd >= FD_SETSIZE) {
-			break ;
-		}
-
-		if (FD_ISSET (fd, &rset)) {
-			flm__IORead (io, FLM_MONITOR (_select));
-		}
-		if (FD_ISSET (fd, &wset)) {
-			flm__IOWrite (io, FLM_MONITOR (_select));
-		}
-		if (io->cl.shutdown && !io->wr.want) {
-			flm__IOClose (io, FLM_MONITOR (_select));
-			break ;
-		}
-	}
-	return (0);
+        if (FD_ISSET (fd, &rset)) {
+            flm__IORead (io, (flm_Monitor *) _select);
+        }
+        if (FD_ISSET (fd, &wset)) {
+            flm__IOWrite (io, (flm_Monitor *) _select);
+        }
+        if (io->cl.shutdown && !io->wr.want) {
+            flm__IOClose (io, (flm_Monitor *) _select);
+            break ;
+        }
+    }
+    return (0);
 }

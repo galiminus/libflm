@@ -25,8 +25,6 @@ typedef struct flm_IO flm_IO;
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
 
-#define FLM_IO(_obj) FLM_CAST(_obj, flm_IO)
-
 typedef void (*flm_IOReadHandler) (flm_IO * io, void * state);
 
 typedef void (*flm_IOWriteHandler) (flm_IO * io, void * state);

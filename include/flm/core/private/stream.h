@@ -33,8 +33,6 @@
 
 #define FLM__TYPE_STREAM	0x000F0000
 
-#define FLM_STREAM(_obj) FLM_CAST(_obj, flm_Stream)
-
 struct flm__StreamInput
 {
 	union {

@@ -25,8 +25,6 @@
 
 #define FLM__TYPE_TCP_SERVER	0x00150000
 
-#define FLM_TCP_SERVER(_obj) FLM_CAST(_obj, flm_TCPServer)
-
 struct flm_TCPServer
 {
 	/* inheritance */

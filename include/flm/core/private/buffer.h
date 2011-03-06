@@ -26,8 +26,6 @@
 
 #define FLM__TYPE_BUFFER	0x00020000
 
-#define FLM_BUFFER(_obj) FLM_CAST((_obj), flm_Buffer)
-
 struct flm_Buffer
 {
 	/* inheritance */

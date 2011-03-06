@@ -30,8 +30,6 @@
 
 #define FLM__TYPE_IO	0x000A0000
 
-#define FLM_IO(_obj) FLM_CAST(_obj, flm_IO)
-
 typedef void	(*flm__IOSysRead_f)			\
 (flm_IO * io, flm_Monitor * monitor, uint8_t count);
 
@@ -83,16 +81,6 @@ struct flm_IO
 
     TAILQ_ENTRY (flm_IO)		entries;
 };
-
-#define FLM_IO_EVENT(io, type)				\
-    if (io->type.handler) {				\
-        io->type.handler (io, FLM_IO (io)->state);	\
-    }
-
-#define FLM_IO_EVENT_WITH(io, type, ...)                        \
-    if (io->type.handler) {                                     \
-        io->type.handler (io, FLM_IO(io)->state, __VA_ARGS__);	\
-    }
 
 int
 flm__IOInit (flm_IO *			io,

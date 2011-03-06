@@ -31,38 +31,38 @@ flm_TimerNew (flm_Monitor *	monitor,
 	      void *            state,
 	      uint32_t		delay)
 {
-	flm_Timer * timer;
+    flm_Timer * timer;
 
-	timer = flm__Alloc (sizeof (flm_Timer));
-	if (timer == NULL) {
-		return (NULL);
-	}
-	flm__TimerInit (timer, monitor, handler, state, delay);
-	return (timer);
+    timer = flm__Alloc (sizeof (flm_Timer));
+    if (timer == NULL) {
+        return (NULL);
+    }
+    flm__TimerInit (timer, monitor, handler, state, delay);
+    return (timer);
 }
 
 void
 flm_TimerReset (flm_Timer *	timer,
 		uint32_t	delay)
 {
-	if (timer->set) {
-		flm__MonitorTimerReset (timer->monitor, timer, delay);
-	}
-	else {
-		timer->set = true;
-		flm__MonitorTimerAdd (timer->monitor, timer, delay);
-	}
-	return ;
+    if (timer->set) {
+        flm__MonitorTimerReset (timer->monitor, timer, delay);
+    }
+    else {
+        timer->set = true;
+        flm__MonitorTimerAdd (timer->monitor, timer, delay);
+    }
+    return ;
 }
 
 void
 flm_TimerCancel (flm_Timer *	timer)
 {
-	if (timer->set) {
-		timer->set = false;
-		flm__MonitorTimerDelete (timer->monitor, timer);
-	}
-	return ;
+    if (timer->set) {
+        timer->set = false;
+        flm__MonitorTimerDelete (timer->monitor, timer);
+    }
+    return ;
 }
 
 flm_Timer *
@@ -85,16 +85,16 @@ flm__TimerInit (flm_Timer *		timer,
 		void *                  state,
 		uint32_t		delay)
 {
-	flm__ObjInit (FLM_OBJ (timer));
+    flm__ObjInit ((flm_Obj *) timer);
 
-	FLM_OBJ (timer)->type = FLM__TYPE_TIMER;
+    ((flm_Obj *)(timer))->type = FLM__TYPE_TIMER;
 
-	timer->handler = handler;
-	timer->state = state;
-	timer->monitor = monitor;
-	timer->set = false;
+    timer->handler = handler;
+    timer->state = state;
+    timer->monitor = monitor;
+    timer->set = false;
 
-	flm_TimerReset (timer, delay);
+    flm_TimerReset (timer, delay);
 
-	return ;
+    return ;
 }

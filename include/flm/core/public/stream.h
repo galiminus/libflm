@@ -35,6 +35,12 @@ typedef void (*flm_StreamReadHandler)			\
 typedef void (*flm_StreamWriteHandler)			\
 (flm_Stream * stream, void * state, size_t size);
 
+typedef void (*flm_StreamCloseHandler)                  \
+(flm_Stream * stream, void * state);
+
+typedef void (*flm_StreamErrorHandler)                  \
+(flm_Stream * stream, void * state, int error);
+
 flm_Stream *
 flm_StreamNew (flm_Monitor *	monitor,	\
 	       int		fd,		\
@@ -58,12 +64,26 @@ flm_StreamPushFile (flm_Stream *	stream,
 		    size_t		count);
 
 void
+flm_StreamShutdown (flm_Stream *        stream);
+
+void
+flm_StreamClose (flm_Stream *           stream);
+
+void
 flm_StreamOnRead (flm_Stream *		stream,
 		  flm_StreamReadHandler	handler);
 
 void
 flm_StreamOnWrite (flm_Stream *			stream,
 		   flm_StreamWriteHandler	handler);
+
+void
+flm_StreamOnClose (flm_Stream *                 stream,
+                   flm_StreamCloseHandler       handler);
+
+void
+flm_StreamOnError (flm_Stream *                 stream,
+                   flm_StreamErrorHandler       handler);
 
 int
 flm_StreamStartTLSServer (flm_Stream *		stream,

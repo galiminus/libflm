@@ -76,10 +76,10 @@ flm_MonitorNew ()
 
     switch (_flm__MonitorBackend) {
     case FLM__MONITOR_BACKEND_EPOLL:
-        monitor = FLM_MONITOR (flm__EpollNew ());
+        monitor = ((flm_Monitor *)(flm__EpollNew ()));
         break ;
     case FLM__MONITOR_BACKEND_SELECT:
-        monitor = FLM_MONITOR (flm__SelectNew ());
+        monitor = ((flm_Monitor *)(flm__SelectNew ()));
         break ;
     default:
         monitor = NULL;
@@ -125,11 +125,11 @@ flm__MonitorInit (flm_Monitor * monitor)
 {
     size_t count;
 
-    flm__ObjInit (FLM_OBJ (monitor));
+    flm__ObjInit ((flm_Obj *) monitor);
 
-    FLM_OBJ (monitor)->type = FLM__TYPE_MONITOR;
+    ((flm_Obj *)(monitor))->type = FLM__TYPE_MONITOR;
 
-    FLM_OBJ (monitor)->perf.destruct =                  \
+    ((flm_Obj *)(monitor))->perf.destruct =                     \
         (flm__ObjPerfDestruct_f) flm__MonitorPerfDestruct;
 
     /**
