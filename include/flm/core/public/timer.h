@@ -28,8 +28,6 @@ typedef void (*flm_TimerHandler) (flm_Timer * timer, void * state);
 
 #include "flm/core/public/obj.h"
 
-#define FLM_TIMER(_obj) FLM_CAST(_obj, flm_Timer)
-
 flm_Timer *
 flm_TimerNew (flm_Monitor *	monitor,
 	      flm_TimerHandler	handler,

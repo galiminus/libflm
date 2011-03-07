@@ -23,8 +23,6 @@ typedef struct flm_ThreadPool flm_ThreadPool;
 #include "flm/core/public/obj.h"
 #include "flm/core/public/thread.h"
 
-#define FLM_THREAD_POOL(_obj) FLM_CAST(_obj, flm_ThreadPool)
-
 flm_ThreadPool *
 flm_ThreadPoolNew ();
 
