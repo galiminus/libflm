@@ -17,12 +17,15 @@
 #ifndef _FLM_CORE_PUBLIC_TIMER_H_
 # define _FLM_CORE_PUBLIC_TIMER_H_
 
+#ifndef _FLM__SKIP
+
 #include <stdint.h>
 
 typedef struct flm_Timer flm_Timer;
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/monitor.h"
+
+#endif /* !_FLM__SKIP */
 
 typedef void (*flm_TimerHandler) (flm_Timer * timer, void * state);
 

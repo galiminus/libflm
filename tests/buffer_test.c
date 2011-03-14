@@ -4,6 +4,10 @@
 
 #include "test_utils.h"
 
+/**
+ * \example buffer_test.c
+ */
+
 START_TEST(test_buffer_create)
 {
     if (flm_BufferNew ("", 0, NULL) == NULL) {
@@ -88,14 +92,17 @@ START_TEST(test_buffer_alloc_fail)
     setTestAlloc (1);
     fail_if (flm_BufferNew ("test", 5, NULL) != NULL);
     fail_unless (getAllocSum () == 0);
+    fail_unless (flm_Error () == FLM_ERR_NOMEM);
 
     setTestAlloc (1);
     fail_if (flm_BufferPrintf ("test") != NULL);
     fail_unless (getAllocSum () == 0);
+    fail_unless (flm_Error () == FLM_ERR_NOMEM);
 
     setTestAlloc (2);
     fail_if (flm_BufferPrintf ("test") != NULL);
     fail_unless (getAllocSum () == 0);
+    fail_unless (flm_Error () == FLM_ERR_NOMEM);
 }
 END_TEST
 
@@ -137,3 +144,4 @@ buffer_suite (void)
 
   return s;
 }
+

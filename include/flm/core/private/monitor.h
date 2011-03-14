@@ -27,7 +27,7 @@
 #include "flm/core/private/obj.h"
 #include "flm/core/private/io.h"
 
-#define FLM__TYPE_MONITOR	0x000D0000
+#define FLM__TYPE_MONITOR	0x00070000
 
 typedef int (*flm__MonitorAdd_f) (flm_Monitor * monitor, flm_IO * io);
 typedef int (*flm__MonitorDel_f) (flm_Monitor * monitor, flm_IO * io);

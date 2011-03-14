@@ -25,7 +25,7 @@
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/thread.h"
 
-#define FLM__TYPE_THREAD	0x00140000
+#define FLM__TYPE_THREAD	0x00090000
 
 struct flm__Msg {
 	flm_ThreadCallHandler	handler;

@@ -18,8 +18,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "flm/core/public/container.h"
-
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/error.h"
 #include "flm/core/private/stream.h"

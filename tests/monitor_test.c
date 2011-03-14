@@ -24,6 +24,7 @@ START_TEST(test_monitor_bad_backend)
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_NONE);
     fail_if (flm_MonitorNew () != NULL);
     fail_unless (getAllocSum () == 0);
+    fail_unless (flm_Error () == FLM_ERR_NOSYS);
 }
 END_TEST
 
@@ -32,10 +33,12 @@ START_TEST(test_monitor_alloc_fail)
     setTestAlloc (1);
     fail_if (flm_MonitorNew () != NULL);
     fail_unless (getAllocSum () == 0);
+    fail_unless (flm_Error () == FLM_ERR_NOMEM);
 
     setTestAlloc (2);
     fail_if (flm_MonitorNew () != NULL);
     fail_unless (getAllocSum () == 0);
+    fail_unless (flm_Error () == FLM_ERR_NOMEM);
 }
 END_TEST
 
@@ -54,7 +57,7 @@ START_TEST(test_monitor_gettime_fail)
     setTestAlloc (0);
     flm__setMonitorClockGettime (_gettime_handler);
     fail_if (flm_MonitorNew () != NULL);
-    fail_unless (getAllocSum () == 0);    
+    fail_unless (getAllocSum () == 0);
 }
 END_TEST
 
@@ -151,6 +154,7 @@ START_TEST(test_monitor_wait_gettime_fail)
     flm__setMonitorClockGettime (_gettime_handler);
 
     fail_unless (flm_MonitorWait (monitor) == -1);
+    fail_unless (flm_Error () == FLM_ERR_ERRNO);
     flm_MonitorRelease (monitor);
 
     if (gettimeofday (&end, NULL) == -1) {

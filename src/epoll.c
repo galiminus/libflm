@@ -22,6 +22,7 @@
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/io.h"
 #include "flm/core/private/epoll.h"
+#include "flm/core/private/error.h"
 
 static int
 flm__EpollCtl (flm__Epoll * epoll, flm_IO * io, int op);
@@ -68,6 +69,7 @@ flm__EpollNew ()
 
     epoll = flm__Alloc (sizeof (flm__Epoll));
     if (epoll == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
         return (NULL);
     }
     if (flm__EpollInit (epoll) == -1) {
@@ -114,11 +116,13 @@ flm__EpollInit (flm__Epoll * epoll)
     }
 
     if ((epoll->epfd = epollCreateHandler (epoll->size)) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         goto error;
     }
 
     epoll->events = flm__Alloc (epoll->size * sizeof (struct epoll_event));
     if (epoll->events == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
         goto close_epfd;
     }
 
@@ -151,6 +155,7 @@ flm__EpollCtl (flm__Epoll * epoll,
 
     event.events = EPOLLET | EPOLLIN | EPOLLRDHUP | EPOLLOUT;
     if (epollCtlHandler (epoll->epfd, op, io->sys.fd, &event) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
     return (0);
@@ -161,6 +166,7 @@ flm__EpollPerfAdd (flm__Epoll * epoll,
                    flm_IO * io)
 {
     if (flm__EpollCtl (epoll, io, EPOLL_CTL_ADD) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
     return (0);
@@ -171,6 +177,7 @@ flm__EpollPerfDel (flm__Epoll * epoll,
                    flm_IO * io)
 {
     if (flm__EpollCtl (epoll, io, EPOLL_CTL_DEL) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
     return (0);
@@ -181,6 +188,7 @@ flm__EpollPerfReset (flm__Epoll * epoll,
                      flm_IO * io)
 {
     if (flm__EpollCtl (epoll, io, EPOLL_CTL_MOD) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
     return (0);
@@ -197,7 +205,7 @@ flm__EpollPerfWait (flm__Epoll * epoll)
     int ret;
 
     for (;;) {
-        ev_max = epollWaitHandler (epoll->epfd,                       \ 
+        ev_max = epollWaitHandler (epoll->epfd,                       \
                                    epoll->events,                     \
                                    epoll->size,                       \
                                    ((flm_Monitor *)(epoll))->tm.next);
@@ -209,6 +217,7 @@ flm__EpollPerfWait (flm__Epoll * epoll)
             errno == EWOULDBLOCK) {
             continue ;
         }
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
 

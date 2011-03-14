@@ -23,6 +23,7 @@
 #include "flm/core/public/file.h"
 
 #include "flm/core/private/alloc.h"
+#include "flm/core/private/error.h"
 #include "flm/core/private/buffer.h"
 
 flm_Buffer *
@@ -33,6 +34,7 @@ flm_BufferNew (char *                           content,
     flm_Buffer *        buffer;
 
     if ((buffer = flm__Alloc (sizeof (flm_Buffer))) == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
         return (NULL);
     }
     flm__BufferInit (buffer, content, len, fr_handler);
@@ -63,6 +65,7 @@ flm_BufferPrintf (const char *          format,
     
     content = flm__Alloc (alloc * sizeof (char));
     if (content == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
         goto error;
     }
     
@@ -71,13 +74,17 @@ flm_BufferPrintf (const char *          format,
     va_end (ap);
     
     if (len < 0) {
+        /**
+         * The content was truncated, this should never happen
+         */
+        flm__Error = FLM_ERR_BUG;
         goto free_content;
     }
     
     if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
         goto free_content;
     }
-    
+
     return (buffer);
 
 free_content:

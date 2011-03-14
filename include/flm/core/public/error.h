@@ -20,26 +20,31 @@
 enum flm_error
 {
 	/**
-	 * Everything went fine.
-	 */
-	FLM_ERR_SUCCESS	=	0x0000,
-
-	/**
 	 * System error, you should take a look at errno.
 	 */
-	FLM_ERR_ERRNO,
+	FLM_ERR_ERRNO =         0x0000,
 
-	/**
-	 * Default value, but this should never happen :)
-	 */
-	FLM_ERR_UNKNOWN
+        /**
+         * No more memory available.
+         */
+        FLM_ERR_NOMEM,
+
+        /**
+         * The needed syscalls are not avaible on your system
+         */
+        FLM_ERR_NOSYS,
+
+        /**
+         * A bug was discovered, it would be very nice of you to send a report :)
+         */
+        FLM_ERR_BUG
 };
 
 /**
  * \brief Return last error code.
  *
  * All error codes are defined in the documentation.
- * The error code depends of the last operation performed, note that
+ * The error code depends on the last operation performed, note that
  * the function is fully threadsafe and use per-thread variable.
  *
  * \return The last error code, this function itself cannot fail.

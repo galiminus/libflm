@@ -19,9 +19,6 @@ main (void)
     Suite * bufferSuite = buffer_suite ();
     SRunner * bufferRunner = srunner_create (bufferSuite);
 
-    Suite * containerSuite = container_suite ();
-    SRunner * containerRunner = srunner_create (containerSuite);
-
     Suite * monitorSuite = monitor_suite ();
     SRunner * monitorRunner = srunner_create (monitorSuite);
 
@@ -36,10 +33,6 @@ main (void)
     srunner_run_all (bufferRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (bufferRunner);
     srunner_free (bufferRunner);
-
-    srunner_run_all (containerRunner, CK_NORMAL);
-    number_failed += srunner_ntests_failed (containerRunner);
-    srunner_free (containerRunner);
 
     printf (">> Switch to the Epoll backend\n");
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);

@@ -15,6 +15,10 @@
  */
 
 /**
+ * \brief A special container for chunks of memory.
+ */
+
+/**
  * \file buffer.h
  * \c The buffer class is a simple container for memory chunks, it
  * holds the content of this chunk, its length, and a handler to free
@@ -26,27 +30,52 @@
 #ifndef _FLM_CORE_PUBLIC_BUFFER_H_
 # define _FLM_CORE_PUBLIC_BUFFER_H_
 
+#ifndef _FLM__SKIP
+
 #include <unistd.h>
 #include <stdarg.h>
 
 typedef struct flm_Buffer flm_Buffer;
 
-typedef void (*flm_BufferFreeContentHandler)(void * ptr);
-
 #include "flm/core/public/obj.h"
+
+#endif /* _FLM__SKIP */
+
+/**
+ * A pointer to simple 'free' handler, the libc's free() function can be
+ * used directly if the content of the buffer was created with malloc().
+ */
+typedef void (*flm_BufferFreeContentHandler)(void * ptr);
 
 /**
  * \brief Create a new buffer from an existing chunk of memory.
  *
- * \param content A pointer to any array of characters
- * \param length The lenght (in bytes) of this array
- * \param fr_handler A pointer to a desallocation function
+ * \param content A pointer to any array of characters.
+ * \param length The lenght (in bytes) of this array.
+ * \param fr_handler A pointer to a desallocation function.
  *
- * \return A pointer to a new buffer object
+ * \return A pointer to a new buffer object.
+ *
+ * \par Example with static string:
+ * \code
+ * flm_Buffer * buffer;
+ * 
+ * buffer = flm_BufferNew ("test", 5, NULL);
+ * \endcode
+ *
+ * \par Example with dynamic string:
+ * \code
+ * flm_Buffer * buffer;
+ * char *       string;
+ *
+ * string = strdup ("test");
+ * buffer = flm_BufferNew (string, 5, free);
+ * \endcode
+ *
  */
 flm_Buffer *
-flm_BufferNew (char *				content,		\
-	       size_t				length,			\
+flm_BufferNew (char *				content,
+	       size_t				length,
 	       flm_BufferFreeContentHandler	fr_handler);
 
 /**
@@ -57,49 +86,79 @@ flm_BufferNew (char *				content,		\
  * buffers. Internally, it uses the vsnprintf() function so all the
  * formatting rules are the same.
  *
- * You should never use an user input as format string, see the BUGS
+ * \remark You should never use an user input as format string, see the BUGS
  * section of the printf() manual page.
  *
- * \param format A printf()-style format string
+ * \param format A printf()-style format string.
  *
- * \return A pointer to a new buffer object
+ * \return A pointer to a new buffer object.
+ *
+ * \par Example:
+ * \code
+ *
+ *  flm_Buffer * buffer;
+ *
+ *  buffer = flm_BufferPrintf ("TEST %d %s ", 42, "coucou");
+ *  assert (strcmp (flm_BufferContent (buffer), "TEST 42 coucou ") == 0);
+ * 
+ * \endcode
  */
 flm_Buffer *
-flm_BufferPrintf (const char *                  format,                 \
-                  ...);
+flm_BufferPrintf (const char *                  format, ...);
 
 /**
- * Returns the length (in bytes) of the buffer.
+ * \brief Returns the length (in bytes) of the buffer.
  *
- * Note that buffers created with flm_BufferPrintf() do not count the
+ * \remark Note that buffers created with flm_BufferPrintf() do not count the
  * ending \0 in the total length, even if this character is present at
  * the end of the buffer content.
  *
- * \param A buffer object
+ * \param buffer A buffer object.
  *
- * \return The length of the buffer in bytes
+ * \return The length of the buffer in bytes.
  */
 size_t
 flm_BufferLength (flm_Buffer * buffer);
 
 /**
- * Returns the content of the buffer.
+ * \brief Returns the content of the buffer.
  *
- * Note that buffers created with flm_BufferPrintf() will have an
+ * \remark Note that buffers created with flm_BufferPrintf() will have an
  * ending \0, even is this character is not included in the total
  * length.
  *
- * \param A buffer object
+ * \param buffer A buffer object.
  *
- * \return The content of the buffer
+ * \return The content of the buffer.
  */
 char *
 flm_BufferContent (flm_Buffer * buffer);
 
+/**
+ * \brief Increase the reference counter.
+ *
+ * \param buffer A buffer object.
+ *
+ * \return The same buffer object, this function cannot fail.
+ */
 flm_Buffer *
 flm_BufferRetain (flm_Buffer *  buffer);
 
+/**
+ * \brief Decrease the reference counter.
+ *
+ * When the counter reaches zero, the 'free' handler will be called to
+ * free the memory consumed by the buffer content, then the buffer
+ * object itself will be freed.
+ *
+ * \param buffer A buffer object.
+ */
 void
 flm_BufferRelease (flm_Buffer * buffer);
+
+/**
+ * \example "Buffer unit tests"
+ * \include buffer_test.c
+ */
 
 #endif /* !_FLM_CORE_PUBLIC_BUFFER_H_ */

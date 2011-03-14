@@ -17,18 +17,21 @@
 #ifndef _FLM_CORE_PUBLIC_THREAD_H_
 # define _FLM_CORE_PUBLIC_THREAD_H_
 
+#ifndef _FLM__SKIP
+
 typedef struct flm_Thread flm_Thread;
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/obj.h"
 #include "flm/core/public/monitor.h"
+
+#endif /* !_FLM__SKIP */
 
 typedef void (*flm_ThreadCallHandler)	\
 (flm_Thread * thread, void * state, void * params);
 
 flm_Thread *
 flm_ThreadNew (flm_Monitor *	monitor,
-	       void * container);
+	       void *           state);
 
 int
 flm_ThreadJoin (flm_Thread *	thread);
@@ -36,7 +39,7 @@ flm_ThreadJoin (flm_Thread *	thread);
 int
 flm_ThreadCall (flm_Thread *		thread,
 		flm_ThreadCallHandler	handler,
-		void *		params);
+		void *                  params);
 
 flm_Thread *
 flm_ThreadRetain (flm_Thread * thread);

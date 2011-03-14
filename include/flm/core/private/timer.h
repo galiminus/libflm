@@ -23,12 +23,11 @@
 
 typedef struct flm__Timer flm__Timer;
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/timer.h"
 
 #include "flm/core/private/obj.h"
 
-#define FLM__TYPE_TIMER	0x00110000
+#define FLM__TYPE_TIMER	0x00080000
 
 struct flm_Timer
 {

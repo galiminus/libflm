@@ -21,15 +21,14 @@
 
 const char * flm__ObjErrors[] =
 {
-	"Object is not shared",
-	"Not implemented"
+    "No more memory avaible."
 };
 
 void
 flm__ObjInit (flm_Obj * obj)
 {
     /* basic type */
-    obj->type = FLM__TYPE_OBJ;
+    obj->type = FLM_TYPE_OBJ;
 
     /* methods */
     obj->perf.retain = flm__PerfRetain;
@@ -39,7 +38,7 @@ flm__ObjInit (flm_Obj * obj)
     /* reference counter */
     obj->stat.refcount = 1;
     
-    flm__ErrorAdd (FLM__TYPE_OBJ >> 16, flm__ObjErrors);
+    flm__ErrorAdd (FLM_TYPE_OBJ >> 16, flm__ObjErrors);
     
     return ;
 }

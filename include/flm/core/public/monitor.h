@@ -17,10 +17,30 @@
 #ifndef _FLM_CORE_PUBLIC_MONITOR_H_
 # define _FLM_CORE_PUBLIC_MONITOR_H_
 
+#ifndef _FLM__SKIP
+
 typedef struct flm_Monitor flm_Monitor;
 
 #include "flm/core/public/obj.h"
 
+#endif /* !_FLM__SKIP */
+
+/**
+ * \brief The main event loop object
+ */
+
+/**
+ * \brief Create a new event loop.
+ *
+ * The function will take the best IO monitoring system available on
+ * the host. Currently, epoll(7) and select(2) backends are available.
+ *
+ * Monitors are not thread-safe, using the same monitor in
+ * multiple will probably lead to an application crash. But it is
+ * possible to create as many monitor as needed, one for each thread.
+ *
+ *
+ */
 flm_Monitor *
 flm_MonitorNew ();
 

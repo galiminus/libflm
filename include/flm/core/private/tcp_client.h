@@ -19,13 +19,12 @@
 
 #include <stdbool.h>
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/tcp_client.h"
 
 #include "flm/core/private/io.h"
 #include "flm/core/private/monitor.h"
 
-#define FLM__TYPE_TCP_CLIENT	0x00150000
+#define FLM__TYPE_TCP_CLIENT	0x000B0000
 
 struct flm_TCPClient
 {

@@ -3,7 +3,6 @@ lib_LTLIBRARIES = libflm.la
 libflm_la_SOURCES =	\
 alloc.c				\
 buffer.c			\
-container.c			\
 error.c				\
 file.c				\
 io.c				\

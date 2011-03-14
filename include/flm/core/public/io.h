@@ -17,13 +17,16 @@
 #ifndef _FLM_CORE_PUBLIC_IO_H_
 # define _FLM_CORE_PUBLIC_IO_H_
 
+#ifndef _FLM__SKIP
+
 #include <stdint.h>
 
 typedef struct flm_IO flm_IO;
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
+
+#endif /* !_FLM__SKIP */
 
 typedef void (*flm_IOReadHandler) (flm_IO * io, void * state);
 

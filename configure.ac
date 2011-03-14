@@ -10,6 +10,9 @@ AM_INIT_AUTOMAKE
 AM_PATH_CHECK()
 AM_PROG_CC_C_O
 
+# Doxygen
+DX_INIT_DOXYGEN($PACKAGE_NAME, doxygen.cfg)
+
 # Checks for programs.
 #AC_PROG_CC
 AM_PROG_AS

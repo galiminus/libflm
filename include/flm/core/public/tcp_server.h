@@ -17,13 +17,16 @@
 #ifndef _FLM_CORE_PUBLIC_TCP_SERVER_H_
 # define _FLM_CORE_PUBLIC_TCP_SERVER_H_
 
+#ifndef _FLM__SKIP
+
 #include <stdint.h>
 
 typedef struct flm_TCPServer flm_TCPServer;
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
+
+#endif /* !_FLM__SKIP */
 
 typedef void (*flm_TCPServerAcceptHandler)	\
 (flm_TCPServer * tcp_server, void * state, int fd);

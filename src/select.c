@@ -26,6 +26,7 @@
 #include <errno.h>
 
 #include "flm/core/private/alloc.h"
+#include "flm/core/private/error.h"
 #include "flm/core/private/io.h"
 #include "flm/core/private/monitor.h"
 #include "flm/core/private/select.h"
@@ -43,6 +44,7 @@ flm__SelectNew ()
 
     select = flm__Alloc (sizeof (flm__Select));
     if (select == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
         return (NULL);
     }
     if (flm__SelectInit (select) == -1) {
@@ -134,6 +136,7 @@ flm__SelectPerfWait (flm__Select * _select)
         if (errno == EINTR) {
             continue ;
         }
+        flm__Error = FLM_ERR_ERRNO;
         return (-1); /* fatal error */
     }
 

@@ -22,13 +22,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/io.h"
 #include "flm/core/public/monitor.h"
 
 #include "flm/core/private/obj.h"
 
-#define FLM__TYPE_IO	0x000A0000
+#define FLM__TYPE_IO	0x00050000
 
 typedef void	(*flm__IOSysRead_f)			\
 (flm_IO * io, flm_Monitor * monitor, uint8_t count);

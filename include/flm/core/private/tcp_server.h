@@ -17,13 +17,12 @@
 #ifndef _FLM_CORE_PRIVATE_TCP_SERVER_H_
 # define _FLM_CORE_PRIVATE_TCP_SERVER_H_
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/tcp_server.h"
 
 #include "flm/core/private/io.h"
 #include "flm/core/private/monitor.h"
 
-#define FLM__TYPE_TCP_SERVER	0x00150000
+#define FLM__TYPE_TCP_SERVER	0x000C0000
 
 struct flm_TCPServer
 {

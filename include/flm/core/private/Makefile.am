@@ -3,7 +3,6 @@ includedir=$(prefix)/include/flm/core/private
 include_HEADERS =			\
 alloc.h					\
 buffer.h				\
-container.h				\
 error.h					\
 file.h					\
 io.h					\

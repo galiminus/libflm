@@ -37,7 +37,8 @@ host_triplet = @host@
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -69,11 +70,11 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libflm_la_LIBADD =
 am_libflm_la_OBJECTS = libflm_la-alloc.lo libflm_la-buffer.lo \
-	libflm_la-container.lo libflm_la-error.lo libflm_la-file.lo \
-	libflm_la-io.lo libflm_la-monitor.lo libflm_la-epoll.lo \
-	libflm_la-select.lo libflm_la-obj.lo libflm_la-stream.lo \
-	libflm_la-tcp_server.lo libflm_la-thread.lo \
-	libflm_la-thread_pool.lo libflm_la-timer.lo
+	libflm_la-error.lo libflm_la-file.lo libflm_la-io.lo \
+	libflm_la-monitor.lo libflm_la-epoll.lo libflm_la-select.lo \
+	libflm_la-obj.lo libflm_la-stream.lo libflm_la-tcp_server.lo \
+	libflm_la-thread.lo libflm_la-thread_pool.lo \
+	libflm_la-timer.lo
 libflm_la_OBJECTS = $(am_libflm_la_OBJECTS)
 libflm_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libflm_la_CFLAGS) \
@@ -116,8 +117,33 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DOXYGEN_PAPER_SIZE = @DOXYGEN_PAPER_SIZE@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
+DX_CONFIG = @DX_CONFIG@
+DX_DOCDIR = @DX_DOCDIR@
+DX_DOT = @DX_DOT@
+DX_DOXYGEN = @DX_DOXYGEN@
+DX_DVIPS = @DX_DVIPS@
+DX_EGREP = @DX_EGREP@
+DX_ENV = @DX_ENV@
+DX_FLAG_DX_CURRENT_FEATURE = @DX_FLAG_DX_CURRENT_FEATURE@
+DX_FLAG_chi = @DX_FLAG_chi@
+DX_FLAG_chm = @DX_FLAG_chm@
+DX_FLAG_doc = @DX_FLAG_doc@
+DX_FLAG_dot = @DX_FLAG_dot@
+DX_FLAG_html = @DX_FLAG_html@
+DX_FLAG_man = @DX_FLAG_man@
+DX_FLAG_pdf = @DX_FLAG_pdf@
+DX_FLAG_ps = @DX_FLAG_ps@
+DX_FLAG_rtf = @DX_FLAG_rtf@
+DX_FLAG_xml = @DX_FLAG_xml@
+DX_HHC = @DX_HHC@
+DX_LATEX = @DX_LATEX@
+DX_MAKEINDEX = @DX_MAKEINDEX@
+DX_PDFLATEX = @DX_PDFLATEX@
+DX_PERL = @DX_PERL@
+DX_PROJECT = @DX_PROJECT@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -216,7 +242,6 @@ lib_LTLIBRARIES = libflm.la
 libflm_la_SOURCES = \
 alloc.c				\
 buffer.c			\
-container.c			\
 error.c				\
 file.c				\
 io.c				\
@@ -308,7 +333,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-buffer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-container.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-epoll.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libflm_la-file.Plo@am__quote@
@@ -356,13 +380,6 @@ libflm_la-buffer.lo: buffer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='buffer.c' object='libflm_la-buffer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-buffer.lo `test -f 'buffer.c' || echo '$(srcdir)/'`buffer.c
-
-libflm_la-container.lo: container.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-container.lo -MD -MP -MF $(DEPDIR)/libflm_la-container.Tpo -c -o libflm_la-container.lo `test -f 'container.c' || echo '$(srcdir)/'`container.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libflm_la-container.Tpo $(DEPDIR)/libflm_la-container.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='container.c' object='libflm_la-container.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -c -o libflm_la-container.lo `test -f 'container.c' || echo '$(srcdir)/'`container.c
 
 libflm_la-error.lo: error.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libflm_la_CFLAGS) $(CFLAGS) -MT libflm_la-error.lo -MD -MP -MF $(DEPDIR)/libflm_la-error.Tpo -c -o libflm_la-error.lo `test -f 'error.c' || echo '$(srcdir)/'`error.c

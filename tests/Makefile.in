@@ -38,7 +38,8 @@ check_PROGRAMS = check_libflm$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -47,7 +48,6 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am_check_libflm_OBJECTS = check_libflm-main.$(OBJEXT) \
 	check_libflm-buffer_test.$(OBJEXT) \
-	check_libflm-container_test.$(OBJEXT) \
 	check_libflm-monitor_test.$(OBJEXT) \
 	check_libflm-timer_test.$(OBJEXT) \
 	check_libflm-thread_test.$(OBJEXT) \
@@ -97,8 +97,33 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DOXYGEN_PAPER_SIZE = @DOXYGEN_PAPER_SIZE@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
+DX_CONFIG = @DX_CONFIG@
+DX_DOCDIR = @DX_DOCDIR@
+DX_DOT = @DX_DOT@
+DX_DOXYGEN = @DX_DOXYGEN@
+DX_DVIPS = @DX_DVIPS@
+DX_EGREP = @DX_EGREP@
+DX_ENV = @DX_ENV@
+DX_FLAG_DX_CURRENT_FEATURE = @DX_FLAG_DX_CURRENT_FEATURE@
+DX_FLAG_chi = @DX_FLAG_chi@
+DX_FLAG_chm = @DX_FLAG_chm@
+DX_FLAG_doc = @DX_FLAG_doc@
+DX_FLAG_dot = @DX_FLAG_dot@
+DX_FLAG_html = @DX_FLAG_html@
+DX_FLAG_man = @DX_FLAG_man@
+DX_FLAG_pdf = @DX_FLAG_pdf@
+DX_FLAG_ps = @DX_FLAG_ps@
+DX_FLAG_rtf = @DX_FLAG_rtf@
+DX_FLAG_xml = @DX_FLAG_xml@
+DX_HHC = @DX_HHC@
+DX_LATEX = @DX_LATEX@
+DX_MAKEINDEX = @DX_MAKEINDEX@
+DX_PDFLATEX = @DX_PDFLATEX@
+DX_PERL = @DX_PERL@
+DX_PROJECT = @DX_PROJECT@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -195,7 +220,6 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 check_libflm_SOURCES = main.c				\
 						buffer_test.c 		\
-						container_test.c	\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\
@@ -257,7 +281,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-buffer_test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-container_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-monitor_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-test_utils.Po@am__quote@
@@ -312,20 +335,6 @@ check_libflm-buffer_test.obj: buffer_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='buffer_test.c' object='check_libflm-buffer_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-buffer_test.obj `if test -f 'buffer_test.c'; then $(CYGPATH_W) 'buffer_test.c'; else $(CYGPATH_W) '$(srcdir)/buffer_test.c'; fi`
-
-check_libflm-container_test.o: container_test.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-container_test.o -MD -MP -MF $(DEPDIR)/check_libflm-container_test.Tpo -c -o check_libflm-container_test.o `test -f 'container_test.c' || echo '$(srcdir)/'`container_test.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-container_test.Tpo $(DEPDIR)/check_libflm-container_test.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='container_test.c' object='check_libflm-container_test.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-container_test.o `test -f 'container_test.c' || echo '$(srcdir)/'`container_test.c
-
-check_libflm-container_test.obj: container_test.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-container_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-container_test.Tpo -c -o check_libflm-container_test.obj `if test -f 'container_test.c'; then $(CYGPATH_W) 'container_test.c'; else $(CYGPATH_W) '$(srcdir)/container_test.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-container_test.Tpo $(DEPDIR)/check_libflm-container_test.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='container_test.c' object='check_libflm-container_test.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-container_test.obj `if test -f 'container_test.c'; then $(CYGPATH_W) 'container_test.c'; else $(CYGPATH_W) '$(srcdir)/container_test.c'; fi`
 
 check_libflm-monitor_test.o: monitor_test.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-monitor_test.o -MD -MP -MF $(DEPDIR)/check_libflm-monitor_test.Tpo -c -o check_libflm-monitor_test.o `test -f 'monitor_test.c' || echo '$(srcdir)/'`monitor_test.c

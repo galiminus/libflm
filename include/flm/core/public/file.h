@@ -17,11 +17,15 @@
 #ifndef _FLM_CORE_PUBLIC_FILE_H_
 # define _FLM_CORE_PUBLIC_FILE_H_
 
+#ifndef _FLM__SKIP
+
 typedef struct flm_File flm_File;
 
 #include <sys/types.h>
 
 #include "flm/core/public/obj.h"
+
+#endif /* !_FLM__SKIP */
 
 flm_File *
 flm_FileNew (int fd);

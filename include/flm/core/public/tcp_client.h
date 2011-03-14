@@ -17,15 +17,17 @@
 #ifndef _FLM_CORE_PUBLIC_TCP_CLIENT_H_
 # define _FLM_CORE_PUBLIC_TCP_CLIENT_H_
 
-#include <stdint.h>
+#ifndef _FLM__SKIP
 
-#include "flm/core/public/buffer.h"
-#include "flm/core/public/container.h"
+#include <stdint.h>
 
 typedef struct flm_TCPClient flm_TCPClient;
 
+#include "flm/core/public/buffer.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
+
+#endif /* !_FLM__SKIP */
 
 typedef void (*flm_TCPClientConnectHandler)	\
 (flm_TCPClient * tcp_client, void * state, int fd);

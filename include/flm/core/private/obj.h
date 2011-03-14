@@ -24,8 +24,6 @@
 
 #include "flm/core/public/obj.h"
 
-#define FLM__TYPE_OBJ	0x00010000
-
 typedef void *		(*flm__ObjPerfRetain_f) (flm_Obj *);
 typedef void		(*flm__ObjPerfRelease_f) (flm_Obj *);
 typedef void		(*flm__ObjPerfDestruct_f) (flm_Obj *);

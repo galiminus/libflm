@@ -2,7 +2,6 @@ includedir=$(prefix)/include/flm/core/public
 
 include_HEADERS =			\
 buffer.h				\
-container.h				\
 error.h					\
 file.h					\
 io.h					\

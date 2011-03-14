@@ -25,13 +25,12 @@
 
 #include <openssl/ssl.h>
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/stream.h"
 #include "flm/core/public/monitor.h"
 
 #include "flm/core/private/io.h"
 
-#define FLM__TYPE_STREAM	0x000F0000
+#define FLM__TYPE_STREAM	0x00060000
 
 struct flm__StreamInput
 {

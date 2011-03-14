@@ -17,6 +17,8 @@
 #ifndef _FLM_CORE_PUBLIC_STREAM_H_
 # define _FLM_CORE_PUBLIC_STREAM_H_
 
+#ifndef _FLM__SKIP
+
 #include <stdint.h>
 
 #include <openssl/ssl.h>
@@ -24,10 +26,11 @@
 typedef struct flm_Stream flm_Stream;
 
 #include "flm/core/public/buffer.h"
-#include "flm/core/public/container.h"
 #include "flm/core/public/file.h"
 #include "flm/core/public/monitor.h"
 #include "flm/core/public/obj.h"
+
+#endif /* !_FLM__SKIP */
 
 typedef void (*flm_StreamReadHandler)			\
 (flm_Stream * stream, void * state, flm_Buffer * buffer);

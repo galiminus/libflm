@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "flm/core/public/error.h"
 #include "flm/core/private/error.h"
@@ -40,7 +41,7 @@ const char *
 flm_ErrorDesc ()
 {
     const char * errno_str;
-    int error;
+    uint32_t error;
 
     error = flm_Error ();
 
@@ -51,9 +52,10 @@ flm_ErrorDesc ()
             return (FLM__STRERR_UNKNOWN);
         }
         return (errno_str);
-
-    case FLM_ERR_SUCCESS:
-        return (FLM__STRERR_SUCCESS);
+    case FLM_ERR_NOMEM:
+        return (FLM__STRERR_NOMEM);
+    case FLM_ERR_NOSYS:
+        return (FLM__STRERR_NOSYS);
     }
     return (flm__ErrorDesc (error >> 16, error & 0x0000ffff));
 }

@@ -17,11 +17,14 @@
 #ifndef _FLM_CORE_PUBLIC_THREAD_POOL_H_
 # define _FLM_CORE_PUBLIC_THREAD_POOL_H_
 
+#ifndef _FLM__SKIP
+
 typedef struct flm_ThreadPool flm_ThreadPool;
 
-#include "flm/core/public/container.h"
 #include "flm/core/public/obj.h"
 #include "flm/core/public/thread.h"
+
+#endif /* !_FLM__SKIP */
 
 flm_ThreadPool *
 flm_ThreadPoolNew ();

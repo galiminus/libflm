@@ -19,8 +19,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "flm/core/public/container.h"
-
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/error.h"
 #include "flm/core/private/io.h"

@@ -36,8 +36,6 @@
 
 #include <openssl/ssl.h>
 
-#include "flm/core/public/container.h"
-
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/buffer.h"
 #include "flm/core/private/error.h"

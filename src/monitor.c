@@ -20,6 +20,7 @@
 #include "flm/core/private/alloc.h"
 #include "flm/core/private/monitor.h"
 #include "flm/core/private/epoll.h"
+#include "flm/core/private/error.h"
 #include "flm/core/private/obj.h"
 #include "flm/core/private/select.h"
 #include "flm/core/private/timer.h"
@@ -82,7 +83,8 @@ flm_MonitorNew ()
         monitor = ((flm_Monitor *)(flm__SelectNew ()));
         break ;
     default:
-        monitor = NULL;
+        flm__Error = FLM_ERR_NOSYS;
+        return (NULL);
     }
 
     return (monitor);
@@ -161,6 +163,7 @@ flm__MonitorInit (flm_Monitor * monitor)
      * Set the current time for the timer wheel
      */
     if (clockGettimeHandler (CLOCK_MONOTONIC, &(monitor->tm.current)) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
 
@@ -190,6 +193,7 @@ flm__MonitorInit (flm_Monitor * monitor)
     monitor->tm.wheel   =       flm__Alloc (sizeof (*monitor->tm.wheel) *
                                             monitor->tm.size);
     if (monitor->tm.wheel == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
         return (-1);
     }
 
@@ -279,6 +283,7 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
     struct flm_Timer    temp;
 
     if (clockGettimeHandler (CLOCK_MONOTONIC, &current) == -1) {
+        flm__Error = FLM_ERR_ERRNO;
         return (-1);
     }
 
@@ -425,4 +430,3 @@ flm__MonitorTimerRearm (flm_Monitor * monitor)
     }
     return ;
 }
-

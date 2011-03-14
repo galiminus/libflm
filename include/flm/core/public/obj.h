@@ -17,19 +17,12 @@
 #ifndef _FLM_CORE_PUBLIC_OBJ_H_
 # define _FLM_CORE_PUBLIC_OBJ_H_
 
+#ifndef _FLM__SKIP
+
 typedef struct flm_Obj flm_Obj;
 
-enum flm_ObjError
-{
-	/**
-	 * Object is not shared
-	 */
-	FLM_ERR_NOSHR	=	0x00010000,
+#define FLM_TYPE_OBJ	0x00010000
 
-	/**
-	 * not implemented
-	 */
-	FLM_ERR_NOIMP
-};
+#endif /* !_FLM__SKIP */
 
 #endif /* !_FLM_CORE_PUBLIC_OBJ_H_ */

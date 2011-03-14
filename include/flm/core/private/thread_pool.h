@@ -24,7 +24,7 @@
 #include "flm/core/public/thread.h"
 #include "flm/core/public/thread_pool.h"
 
-#define FLM__TYPE_THREAD_POOL	0x00140000
+#define FLM__TYPE_THREAD_POOL	0x000A0000
 
 struct flm_ThreadPool
 {
