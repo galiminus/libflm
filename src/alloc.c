@@ -21,19 +21,12 @@
 #include "flm/core/private/alloc.h"
 
 void * (*allocHandler)(size_t);
-void * (*reallocHandler)(void *, size_t);
 void   (*freeHandler)(void *);
 
 void
 flm__SetAlloc (void * (*handler)(size_t))
 {
     allocHandler = handler;
-}
-
-void
-flm__SetRealloc (void * (*handler)(void *, size_t))
-{
-    reallocHandler = handler;
 }
 
 void
@@ -52,23 +45,6 @@ flm__Alloc (size_t      size)
     }
     else {
         mem = malloc (size);
-    }
-    if (mem == NULL) {
-        flm__Error = FLM_ERR_ERRNO;
-        return (NULL);
-    }
-    return (mem);
-}
-
-void *
-flm__ReAlloc (void *    mem,
-              size_t    size)
-{
-    if (reallocHandler) {
-        mem = reallocHandler (mem, size);
-    }
-    else {
-        mem = realloc (mem, size);
     }
     if (mem == NULL) {
         flm__Error = FLM_ERR_ERRNO;

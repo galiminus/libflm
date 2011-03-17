@@ -17,7 +17,7 @@
 /**
  * \file alloc.h
  * Like many other libraries, libflm provides some wrappers around the
- * most commons memory-management functions (malloc(3), realloc(3) and free(3)),
+ * most commons memory-management functions (malloc(3) and free(3)),
  * the main purpose is to implement a tracing system above these function
  * keep track of allocations and desallocations.
  */
@@ -37,20 +37,6 @@
  */
 void *
 flm__Alloc (unsigned int size);
-
-/**
- * \brief Simple wrapper around realloc(3)
- *
- * \param mem A pointer to a memory area allocated with flm__malloc(3)
- *   or flm_realloc(3).
- * \param size Size to allocate (in byte), this size has to be greater than 1
- *   and lower than INT_MAX.
- * \return A pointer, possibly the same than the pointer provided,
- *   to the memory area.
- * \retval NULL in case of error.
- */
-void *
-flm__ReAlloc (void * mem, unsigned int size);
 
 /**
  * \brief Simple wrapper around flm__free(3).

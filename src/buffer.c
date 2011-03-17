@@ -57,10 +57,6 @@ flm_BufferPrintf (const char *          format,
     len = vsnprintf (NULL, 0, format, ap);
     va_end (ap);
     
-    if (len < 0) {
-        goto error;
-    }
-    
     alloc = len + 1;
     
     content = flm__Alloc (alloc * sizeof (char));
@@ -70,16 +66,8 @@ flm_BufferPrintf (const char *          format,
     }
     
     va_start (ap, format);
-    len = vsnprintf (content, alloc, format, ap);
+    vsnprintf (content, alloc, format, ap);
     va_end (ap);
-    
-    if (len < 0) {
-        /**
-         * The content was truncated, this should never happen
-         */
-        flm__Error = FLM_ERR_BUG;
-        goto free_content;
-    }
     
     if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
         goto free_content;

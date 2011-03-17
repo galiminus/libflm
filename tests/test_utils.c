@@ -62,17 +62,6 @@ testFreeHandler (void * ptr)
     return ;
 }
 
-void *
-testReallocHandler (void * ptr, size_t size)
-{
-    void * new_ptr;
-
-    new_ptr = testAllocHandler (size);
-    memcpy (new_ptr, ptr, size);
-    testFreeHandler (ptr);
-    return (new_ptr);
-}
-
 void
 setTestAlloc (uint32_t count)
 {
@@ -81,7 +70,6 @@ setTestAlloc (uint32_t count)
     alloc_sum = 0;
 
     flm__SetAlloc (testAllocHandler);
-    flm__SetRealloc (testReallocHandler);
     flm__SetFree (testFreeHandler);
 
     if (DEBUG) {
