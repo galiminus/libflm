@@ -14,6 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/**
+ * \brief Delayed function execution.
+ */
+
+/**
+ * \file timer.h
+ * \c Timers are simple objects that will call a function after a
+ * specified delay.
+ */
+
 #ifndef _FLM_CORE_PUBLIC_TIMER_H_
 # define _FLM_CORE_PUBLIC_TIMER_H_
 

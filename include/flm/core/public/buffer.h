@@ -20,7 +20,7 @@
 
 /**
  * \file buffer.h
- * \c The buffer class is a simple container for memory chunks, it
+ * \c The flm_Buffer class is a simple container for memory chunks, it
  * holds the content of this chunk, its length, and a handler to free
  * it. This handler will be called when the reference counter of the
  * buffer reaches zero. For example, if you allocated a buffer using
