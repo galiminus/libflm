@@ -38,13 +38,13 @@ typedef struct flm_Monitor flm_Monitor;
 #endif /* !_FLM__SKIP */
 
 /**
- * \brief Create a new monitor object.
+ * \brief Create a new flm_Monitor object.
  *
- * Monitors are not thread-safe, using the same monitor in
+ * \remark Monitors are not thread-safe, using the same monitor in
  * multiple threads will probably lead to an application crash. But it is
  * possible to create as many monitor as needed, one for each thread.
  *
- * \return A pointer to a new monitor object.
+ * \return A pointer to a new flm_Monitor object.
  */
 flm_Monitor *
 flm_MonitorNew ();
@@ -52,11 +52,11 @@ flm_MonitorNew ();
 /**
  * \brief Wait for events.
  *
- * This function returns in case of error, when there is nothing to
+ * \remark This function returns in case of error, when there is nothing to
  * monitor or when all the monitored objects are closed and all timers
  * elapsed.
  *
- * \param monitor A pointer to a monitor object.
+ * \param monitor A pointer to a flm_Monitor object.
  *
  * \par Example of IO monitoring
  * \code
@@ -69,6 +69,7 @@ flm_MonitorNew ();
  * fd = open ("/dev/zero", O_RDONLY);
  * io = flm_IONew (monitor, fd, NULL);
  * flm_IORead (io, my_read_handler);
+ * flm_IORelease (io);
  *
  * flm_MonitorWait (monitor);
  * \endcode
@@ -79,7 +80,7 @@ flm_MonitorWait (flm_Monitor * monitor);
 /**
  * \brief Increment the reference counter.
  *
- * \param monitor A pointer to a monitor object.
+ * \param monitor A pointer to a flm_Monitor object.
  * \return The same pointer, this function cannot fail.
  */
 flm_Monitor *
@@ -90,11 +91,12 @@ flm_MonitorRetain (flm_Monitor * monitor);
  *
  * When the counter reaches zero all the internals references to monitored
  * IO objects, timers and threads will be released and those objects will
- * be freed if there is no more references to them. Note that the
- * underlying file descriptor of the IO objects will not be
+ * be freed if there is no more references to them.
+ * 
+ * \remark The underlying file descriptor of the IO objects will not be
  * automatically closed.
  *
- * \param monitor A pointer to a monitor object.
+ * \param monitor A pointer to a flm_Monitor object.
  */
 void
 flm_MonitorRelease (flm_Monitor * monitor);

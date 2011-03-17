@@ -54,7 +54,7 @@ typedef void (*flm_BufferFreeContentHandler)(void * ptr);
  * \param length The lenght (in bytes) of this array.
  * \param fr_handler A pointer to a desallocation function.
  *
- * \return A pointer to a new buffer object.
+ * \return A pointer to a new flm_Buffer object.
  *
  * \par Example with static string:
  * \code
@@ -79,7 +79,7 @@ flm_BufferNew (char *				content,
 	       flm_BufferFreeContentHandler	fr_handler);
 
 /**
- * \brief Create a new buffer object and fill it with a formatted
+ * \brief Create a new flm_Buffer object and fill it with a formatted
  * string.
  *
  * This function is the equivalent of printf() for
@@ -91,7 +91,7 @@ flm_BufferNew (char *				content,
  *
  * \param format A printf()-style format string.
  *
- * \return A pointer to a new buffer object.
+ * \return A pointer to a new flm_Buffer object.
  *
  * \par Example:
  * \code
@@ -113,7 +113,7 @@ flm_BufferPrintf (const char *                  format, ...);
  * ending \0 in the total length, even if this character is present at
  * the end of the buffer content.
  *
- * \param buffer A pointer to a buffer object.
+ * \param buffer A pointer to a flm_Buffer object.
  *
  * \return The length of the buffer in bytes.
  */
@@ -127,7 +127,7 @@ flm_BufferLength (flm_Buffer * buffer);
  * ending \0, even is this character is not included in the total
  * length.
  *
- * \param buffer A pointer to a buffer object.
+ * \param buffer A pointer to a flm_Buffer object.
  *
  * \return The content of the buffer.
  */
@@ -137,7 +137,7 @@ flm_BufferContent (flm_Buffer * buffer);
 /**
  * \brief Increment the reference counter.
  *
- * \param buffer A pointer to a buffer object.
+ * \param buffer A pointer to a flm_Buffer object.
  *
  * \return The same pointer, this function cannot fail.
  */
@@ -151,7 +151,7 @@ flm_BufferRetain (flm_Buffer *  buffer);
  * free the memory consumed by the buffer content, then the buffer
  * object itself will be freed.
  *
- * \param buffer A pointer to buffer object.
+ * \param buffer A pointer to flm_Buffer object..
  */
 void
 flm_BufferRelease (flm_Buffer * buffer);

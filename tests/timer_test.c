@@ -7,6 +7,10 @@
 
 #include "test_utils.h"
 
+/**
+ * \example timer_test.c
+ */
+
 START_TEST(test_timer_create)
 {
     flm_Monitor * monitor;
