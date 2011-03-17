@@ -47,19 +47,15 @@ flm__ErrorLocation ()
 {
     int * error;
 
-    if (pthread_once (&flm__ErrorInitOnce, flm__ErrorInit) == -1) {
-        return (NULL);
-    }
+    
+    assert (pthread_once (&flm__ErrorInitOnce, flm__ErrorInit) != -1);
 
     if ((error = pthread_getspecific (flm__ErrorLocationKey)) == NULL) {
         error = malloc (sizeof (int));
 
         /**
-         * This is the only assertion in libflm, if the library cannot even
-         * take some memory to store the error value the first time,
-         * there is no point to continue.
-         *
-         * It should never happen, anyway ...
+         * If the library cannot even take some memory to store the
+         * error value the first time, there is no point to continue.
          */
         assert (error != NULL);
 
