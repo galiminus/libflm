@@ -14,6 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/**
+ * \brief The main event loop object
+ */
+
+/**
+ * \file monitor.h
+ * \c A monitor handle Input/Ouput, threads and timer. It is basically
+ * an event loop waiting from kernel notifications, and using the best
+ * supported I/O notification framework available on the
+ * system. Currently, only epoll(7) and select(2) are supported.
+ */
+
 #ifndef _FLM_CORE_PUBLIC_MONITOR_H_
 # define _FLM_CORE_PUBLIC_MONITOR_H_
 
@@ -26,31 +38,70 @@ typedef struct flm_Monitor flm_Monitor;
 #endif /* !_FLM__SKIP */
 
 /**
- * \brief The main event loop object
- */
-
-/**
- * \brief Create a new event loop.
- *
- * The function will take the best IO monitoring system available on
- * the host. Currently, epoll(7) and select(2) backends are available.
+ * \brief Create a new monitor object.
  *
  * Monitors are not thread-safe, using the same monitor in
- * multiple will probably lead to an application crash. But it is
+ * multiple threads will probably lead to an application crash. But it is
  * possible to create as many monitor as needed, one for each thread.
  *
- *
+ * \return A pointer to a new monitor object.
  */
 flm_Monitor *
 flm_MonitorNew ();
 
+/**
+ * \brief Wait for events.
+ *
+ * This function returns in case of error, when there is nothing to
+ * monitor or when all the monitored objects are closed and all timers
+ * elapsed.
+ *
+ * \param monitor A pointer to a monitor object.
+ *
+ * \par Example of IO monitoring
+ * \code
+ * flm_Monitor *        monitor;
+ * flm_IO *             io;
+ * int                  fd;
+ *
+ * monitor = flm_MonitorNew ();
+ * 
+ * fd = open ("/dev/zero", O_RDONLY);
+ * io = flm_IONew (monitor, fd, NULL);
+ * flm_IORead (io, my_read_handler);
+ *
+ * flm_MonitorWait (monitor);
+ * \endcode
+ */
 int
 flm_MonitorWait (flm_Monitor * monitor);
 
+/**
+ * \brief Increment the reference counter.
+ *
+ * \param monitor A pointer to a monitor object.
+ * \return The same pointer, this function cannot fail.
+ */
 flm_Monitor *
 flm_MonitorRetain (flm_Monitor * monitor);
 
+/**
+ * \brief Decrement the reference counter.
+ *
+ * When the counter reaches zero all the internals references to monitored
+ * IO objects, timers and threads will be released and those objects will
+ * be freed if there is no more references to them. Note that the
+ * underlying file descriptor of the IO objects will not be
+ * automatically closed.
+ *
+ * \param monitor A pointer to a monitor object.
+ */
 void
 flm_MonitorRelease (flm_Monitor * monitor);
+
+/**
+ * \example "Monitor unit tests"
+ * \include monitor_test.c
+ */
 
 #endif /* !_FLM_CORE_PUBLIC_MONITOR_H_ */

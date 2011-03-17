@@ -113,7 +113,7 @@ flm_BufferPrintf (const char *                  format, ...);
  * ending \0 in the total length, even if this character is present at
  * the end of the buffer content.
  *
- * \param buffer A buffer object.
+ * \param buffer A pointer to a buffer object.
  *
  * \return The length of the buffer in bytes.
  */
@@ -127,7 +127,7 @@ flm_BufferLength (flm_Buffer * buffer);
  * ending \0, even is this character is not included in the total
  * length.
  *
- * \param buffer A buffer object.
+ * \param buffer A pointer to a buffer object.
  *
  * \return The content of the buffer.
  */
@@ -135,23 +135,23 @@ char *
 flm_BufferContent (flm_Buffer * buffer);
 
 /**
- * \brief Increase the reference counter.
+ * \brief Increment the reference counter.
  *
- * \param buffer A buffer object.
+ * \param buffer A pointer to a buffer object.
  *
- * \return The same buffer object, this function cannot fail.
+ * \return The same pointer, this function cannot fail.
  */
 flm_Buffer *
 flm_BufferRetain (flm_Buffer *  buffer);
 
 /**
- * \brief Decrease the reference counter.
+ * \brief Decrement the reference counter.
  *
- * When the counter reaches zero, the 'free' handler will be called to
+ * When the counter reaches zero the 'free' handler will be called to
  * free the memory consumed by the buffer content, then the buffer
  * object itself will be freed.
  *
- * \param buffer A buffer object.
+ * \param buffer A pointer to buffer object.
  */
 void
 flm_BufferRelease (flm_Buffer * buffer);

@@ -25,12 +25,6 @@
 #include "flm/core/private/obj.h"
 #include "flm/core/private/monitor.h"
 
-const char * flm__IOErrors[] =
-{
-    "Object is not shared",
-    "Not implemented"
-};
-
 flm_IO *
 flm_IONew (flm_Monitor *        monitor,
            int                  fd,
@@ -151,8 +145,6 @@ flm__IOInit (flm_IO *                   io,
     if (io->monitor && flm__MonitorIOAdd (io->monitor, io) == -1) {
         return (-1);
     }
-    
-    flm__ErrorAdd (FLM__TYPE_IO >> 16, flm__IOErrors);
     
     return (0);
 }

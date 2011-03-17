@@ -27,37 +27,12 @@
 pthread_key_t flm__ErrorLocationKey;
 pthread_once_t flm__ErrorInitOnce;
 
-static const char ** flm__Errors[FLM__ERROR_MAX_DOMAINS];
-
 static void flm__ErrorInit (void);
 
 int
 flm_Error ()
 {
     return (flm__Error);
-}
-
-const char *
-flm_ErrorDesc ()
-{
-    const char * errno_str;
-    uint32_t error;
-
-    error = flm_Error ();
-
-    switch (error) {
-    case FLM_ERR_ERRNO:
-        errno_str = strerror (errno);
-        if (errno_str == NULL) {
-            return (FLM__STRERR_UNKNOWN);
-        }
-        return (errno_str);
-    case FLM_ERR_NOMEM:
-        return (FLM__STRERR_NOMEM);
-    case FLM_ERR_NOSYS:
-        return (FLM__STRERR_NOSYS);
-    }
-    return (flm__ErrorDesc (error >> 16, error & 0x0000ffff));
 }
 
 void
@@ -81,27 +56,14 @@ flm__ErrorLocation ()
 
         /**
          * This is the only assertion in libflm, if the library cannot even
-         * take some memory to store the error value, there is no point to
-         * continue.
+         * take some memory to store the error value the first time,
+         * there is no point to continue.
+         *
+         * It should never happen, anyway ...
          */
         assert (error != NULL);
 
         pthread_setspecific (flm__ErrorLocationKey, error);
     }
     return (error);
-}
-
-void
-flm__ErrorAdd (int domain,
-               const char ** errors)
-{
-    flm__Errors[domain] = errors;
-    return ;
-}
-
-const char *
-flm__ErrorDesc (int domain,
-                int error)
-{
-    return (flm__Errors[domain][error]);
 }

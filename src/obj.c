@@ -15,14 +15,8 @@
  */
 
 #include "flm/core/private/alloc.h"
-#include "flm/core/private/error.h"
 
 #include "flm/core/private/obj.h"
-
-const char * flm__ObjErrors[] =
-{
-    "No more memory avaible."
-};
 
 void
 flm__ObjInit (flm_Obj * obj)
@@ -37,8 +31,6 @@ flm__ObjInit (flm_Obj * obj)
     
     /* reference counter */
     obj->stat.refcount = 1;
-    
-    flm__ErrorAdd (FLM_TYPE_OBJ >> 16, flm__ObjErrors);
     
     return ;
 }

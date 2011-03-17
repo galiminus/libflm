@@ -21,20 +21,7 @@
 
 #define flm__Error (*(flm__ErrorLocation()))
 
-#define	FLM__STRERR_UNKNOWN	"Unknown error"
-#define FLM__STRERR_NOMEM       "No more memory available"
-#define FLM__STRERR_NOSYS       "Mandatory system call is unavailable"
-#define FLM__STRERR_BUG         "Bug discovered"
-
-#define FLM__ERROR_MAX_DOMAINS	128
-
 int *
 flm__ErrorLocation ();
-
-void
-flm__ErrorAdd (int domain, const char ** errors);
-
-const char *
-flm__ErrorDesc (int domain, int error);
 
 #endif /* !_FLM_CORE_PRIVATE_ERROR_H_ */

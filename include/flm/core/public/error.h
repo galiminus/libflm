@@ -52,17 +52,4 @@ enum flm_error
 int
 flm_Error (void);
 
-/**
- * \brief Return a description string of the last error.
- *
- * See flm_obj_error() for more explanations.
- *
- * You should take a look to flm_strerror().
- *
- * \param obj A pointer to an obj.
- * \return A string describing the last error code.
- */
-const char *
-flm_ErrorDesc (void);
-
 #endif /* !_FLM_CORE_PUBLIC_ERROR_H_ */
