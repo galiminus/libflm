@@ -27,6 +27,11 @@ typedef struct flm_Timer flm_Timer;
 
 #endif /* !_FLM__SKIP */
 
+/**
+ * A timer handler is a callback function that take the timer itself
+ * as its first argument, and an user-defined state set at the timer
+ * creation (see the flm_TimerCreate() function).
+ */
 typedef void (*flm_TimerHandler) (flm_Timer * timer, void * state);
 
 #include "flm/core/public/obj.h"

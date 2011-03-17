@@ -1,6 +1,6 @@
 includedir=$(prefix)/include/flm/core/private
 
-include_HEADERS =			\
+include_HEADERS =		\
 alloc.h					\
 buffer.h				\
 error.h					\
@@ -11,8 +11,7 @@ select.h				\
 epoll.h					\
 obj.h					\
 stream.h				\
-tcp_client.h				\
-tcp_server.h				\
+tcp_server.h			\
 timer.h					\
 thread.h				\
 thread_pool.h
