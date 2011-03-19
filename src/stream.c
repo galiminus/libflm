@@ -256,31 +256,16 @@ int
 flm_StreamStartTLSServer (flm_Stream *               stream,
                           SSL_CTX *                  context)
 {
+    /**
+     * TODO: don't forget to flush the existing buffers, since an
+     * attacker could easily inject some clear-text data right after the
+     * TLS negociation.
+     */
     if (flm__StreamInitTLS (stream, context) == -1) {
         goto error;
     }
 
     if (SSL_accept (stream->tls.obj) < 0) {
-        goto shutdown_tls;
-    }
-
-    return (0);
-    
-  shutdown_tls:
-    flm__StreamShutdownTLS (stream);
-  error:
-    return (-1);
-}
-
-int
-flm_StreamStartTLSClient (flm_Stream *              stream,
-                          SSL_CTX *                 context)
-{
-    if (flm__StreamInitTLS (stream, context) == -1) {
-        goto error;
-    }
-
-    if (SSL_connect (stream->tls.obj) < 0) {
         goto shutdown_tls;
     }
 

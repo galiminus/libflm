@@ -227,14 +227,14 @@ flm__EpollPerfWait (flm__Epoll * epoll)
             continue ;
         }
         ret = 0;
-        if ((event->events & (EPOLLIN | EPOLLRDHUP)) &&                   \
-            flm__IORead (io, ((flm_Monitor *) epoll)) == io->rd.limit && \
-            io->rd.can &&                                                 \
+        if ((event->events & (EPOLLIN | EPOLLRDHUP)) &&                    \
+            flm__IORead (io, ((flm_Monitor *) epoll)) == io->rd.limit &&   \
+            io->rd.can &&                                                  \
             flm__EpollPerfReset (epoll, io) == -1) {
             ret = -1;
         }
         if ((event->events & EPOLLOUT) &&                                  \
-            flm__IOWrite (io, ((flm_Monitor *) epoll)) == io->wr.limit && \
+            flm__IOWrite (io, ((flm_Monitor *) epoll)) == io->wr.limit &&  \
             io->wr.can &&                                                  \
             flm__EpollPerfReset (epoll, io) == -1) {
             ret = -1;

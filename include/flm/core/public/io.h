@@ -36,6 +36,13 @@ typedef void (*flm_IOCloseHandler) (flm_IO * io, void * state);
 
 typedef void (*flm_IOErrorHandler) (flm_IO * io, void * state, int error);
 
+/**
+ * \brief Create a new flm_IO object from an existing file descriptor.
+ *
+ * Input and output on the newly created flm_IO object will be
+ * scheduled by the monitor passed as the first parameter, this
+ * monitor will retain a reference to the flm_IO object.
+ */
 flm_IO *
 flm_IONew (flm_Monitor *	monitor,
 	   int			fd,

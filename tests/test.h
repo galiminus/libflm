@@ -11,3 +11,6 @@ timer_suite (void);
 
 Suite *
 thread_suite (void);
+
+Suite *
+io_suite (void);

@@ -119,16 +119,16 @@ flm__IOInit (flm_IO *                   io,
     ((flm_Obj *)(io))->perf.destruct =                  \
         (flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
     
-    io->state           =       state;
+    io->state                   =       state;
     
-    io->sys.fd          =       fd;
+    io->sys.fd                  =       fd;
     
-    io->rd.can          =       false;
-    io->rd.want         =       true;
+    io->rd.can                  =       false;
+    io->rd.want                 =       true;
     io->rd.limit                =       4;
     
-    io->wr.can          =       false;
-    io->wr.want         =       false;
+    io->wr.can                  =       false;
+    io->wr.want                 =       false;
     io->wr.limit                =       4;
     
     io->cl.shutdown             =       false;

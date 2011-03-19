@@ -1,3 +1,11 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include <assert.h>
+#include <fcntl.h>
+
+#include <check.h>
+
 #include "flm/flm.h"
 
 #include "flm/core/private/alloc.h"
@@ -77,4 +85,14 @@ setTestAlloc (uint32_t count)
     }
 
     return ;
+}
+
+int
+getFDCount ()
+{
+    int fd;
+
+    fd = open ("/dev/null", O_RDONLY);
+    close(fd);
+    return (fd);
 }

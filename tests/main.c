@@ -28,11 +28,25 @@ main (void)
     Suite * threadSuite = thread_suite ();
     SRunner * threadRunner = srunner_create (threadSuite);
 
+    Suite * ioSuite = io_suite ();
+    SRunner * ioRunner = srunner_create (ioSuite);
+
     number_failed = 0;
     
     srunner_run_all (bufferRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (bufferRunner);
     srunner_free (bufferRunner);
+
+    printf (">> Switch to the Epoll backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
+    srunner_run_all (ioRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (ioRunner);
+
+    printf (">> Switch to the select() backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_SELECT);
+    srunner_run_all (ioRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (ioRunner);
+    srunner_free (ioRunner);
 
     printf (">> Switch to the Epoll backend\n");
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
