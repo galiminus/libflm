@@ -25,6 +25,43 @@
 #include "flm/core/private/obj.h"
 #include "flm/core/private/thread.h"
 
+int (*pthreadMutexInitHandler) (pthread_mutex_t *,
+                                const pthread_mutexattr_t *);
+
+int (*pthreadMutexLockHandler) (pthread_mutex_t *);
+
+int (*pthreadMutexUnlockHandler) (pthread_mutex_t *);
+
+int (*pthreadCreateHandler) (pthread_t *,
+                             const pthread_attr_t *,
+                             void *(*) (void *),
+                             void *);
+
+int (*pthreadJoinHandler) (pthread_t, void **);
+
+int (*writeHandler) (int, const void *, size_t);
+
+int (*pipeHandler) (int[2]);
+
+void
+flm__setPthreadMutexInitHandler (int (*handler) (pthread_mutex_t *,
+                                                 const pthread_mutexattr_t *))
+{
+    pthreadMutexInitHandler = handler;
+}
+
+void
+flm__setPthreadMutexLockHandler (int (*handler) (pthread_mutex_t *))
+{
+    pthreadMutexLockHandler = handler;
+}
+
+void
+flm__setPthreadMutexUnlockHandler (int (*handler) (pthread_mutex_t *))
+{
+    pthreadMutexUnlockHandler = handler;
+}
+
 flm_Thread *
 flm_ThreadNew (flm_Monitor *	monitor,
                void *           state)
@@ -65,29 +102,40 @@ flm__ThreadInit (flm_Thread *		thread,
     TAILQ_INIT (&(thread->msgs));
     
     thread->monitor = flm_MonitorRetain (monitor);
+
+    pthreadMutexInitHandler     =       pthread_mutex_init;
+    pthreadMutexLockHandler     =       pthread_mutex_lock;
+    pthreadMutexUnlockHandler   =       pthread_mutex_unlock;
+    pthreadCreateHandler        =       pthread_create;
+    pthreadJoinHandler          =       pthread_join;
+    writeHandler                =       write;
+    pipeHandler                 =       pipe;
     
-    if (pipe (thread_pipe) == -1) {
+    if (pipeHandler (thread_pipe) == -1) {
         goto release_monitor;
     }
     
     thread->pipe.out = flm_StreamNew (thread->monitor,
                                       thread_pipe[0],
                                       thread);
+    if (thread->pipe.out == NULL) {
+        goto close_pipe;
+    }
     
     flm_StreamOnRead (thread->pipe.out, flm__ThreadEventHandler);
     flm_StreamRelease (thread->pipe.out);
 
     thread->pipe.in = thread_pipe[1];
     
-    error = pthread_mutex_init (&(thread->lock), NULL);
+    error = pthreadMutexInitHandler (&(thread->lock), NULL);
     if (error != 0) {
-        goto close_pipe;
+        goto close_stream;
     }
     
-    error = pthread_create (&(thread->pthread),
-                            NULL,
-                            flm__ThreadStartRoutine,
-                            thread);
+    error = pthreadCreateHandler (&(thread->pthread),
+                                  NULL,
+                                  flm__ThreadStartRoutine,
+                                  thread);
     if (error != 0) {
         goto destroy_lock;
     }
@@ -95,7 +143,10 @@ flm__ThreadInit (flm_Thread *		thread,
     
   destroy_lock:
     pthread_mutex_destroy(&(thread->lock));
+  close_stream:
+    flm_StreamClose (thread->pipe.out);
   close_pipe:
+    close (thread_pipe[0]),
     close (thread_pipe[1]);
   release_monitor:
     flm_MonitorRelease (thread->monitor);
@@ -136,12 +187,12 @@ flm__ThreadEventHandler (flm_Stream *   _stream,
 
     flm_BufferRelease (buffer);
 
-    error = pthread_mutex_lock (&(thread->lock));
+    error = pthreadMutexLockHandler (&(thread->lock));
     if (error != 0) {
         return ;
     }
     
-    /* instead of executing everything, replace me by an empty
+    /* TODO: instead of executing everything, replace me by an empty
        list and execute me later */
     TAILQ_FOREACH (msg, &(thread->msgs), entries) {
         if (msg->handler) {
@@ -153,7 +204,7 @@ flm__ThreadEventHandler (flm_Stream *   _stream,
         }
     }
     
-    error = pthread_mutex_unlock (&(thread->lock));
+    error = pthreadMutexUnlockHandler (&(thread->lock));
     if (error != 0) {
         return ;
     }
@@ -195,7 +246,7 @@ flm_ThreadJoin (flm_Thread * thread)
 {
     int		error;
 
-    error = pthread_join (thread->pthread, NULL);
+    error = pthreadJoinHandler (thread->pthread, NULL);
     if (error != 0) {
         return (-1);
     }
@@ -224,19 +275,19 @@ flm_ThreadCall (flm_Thread *		thread,
     msg->handler = handler;
     msg->params = params;
     
-    error = pthread_mutex_lock (&(thread->lock));
+    error = pthreadMutexLockHandler (&(thread->lock));
     if (error != 0) {
         goto free_msg;
     }
     
     TAILQ_INSERT_TAIL (&(thread->msgs), msg, entries);
     
-    error = pthread_mutex_unlock (&(thread->lock));
+    error = pthreadMutexUnlockHandler (&(thread->lock));
     if (error != 0) {
         goto free_msg;
     }
     
-    while (write (thread->pipe.in, "0", 1) == -1) {
+    while (writeHandler (thread->pipe.in, "0", 1) == -1) {
         if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) {
             continue ;
         }

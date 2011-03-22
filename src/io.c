@@ -47,6 +47,10 @@ flm_IOShutdown (flm_IO *        io)
 {
     io->rd.want = false;
     io->cl.shutdown = true;
+
+    if (io->wr.want == false) {
+        flm__IOClose (io, io->monitor);
+    }
     return ;
 }
 
@@ -60,6 +64,8 @@ flm_IOClose (flm_IO *           io)
     io->wr.want = false;
     
     io->cl.shutdown = true;
+
+    flm__IOClose (io, io->monitor);
     return ;
 }
 
@@ -132,6 +138,8 @@ flm__IOInit (flm_IO *                   io,
     io->wr.limit                =       4;
     
     io->cl.shutdown             =       false;
+    io->cl.closed               =       false;
+
     flm_IOOnRead (io, NULL);
     flm_IOOnWrite (io, NULL);
     flm_IOOnClose (io, NULL);
@@ -217,6 +225,7 @@ flm__IOClose (flm_IO *          io,
 {
     if (io->perf.close) {
         io->perf.close (io, monitor);
+        io->cl.closed = true;
     }
     return ;
 }

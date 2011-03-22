@@ -54,7 +54,7 @@ const char * flm__StreamErrors[] =
 flm_Stream *
 flm_StreamNew (flm_Monitor *		monitor,
 	       int			fd,
-	       void *		state)
+	       void *                   state)
 {
     flm_Stream * stream;
 
@@ -356,7 +356,9 @@ flm__StreamPerfDestruct (flm_Stream * stream)
     struct flm__StreamInput * input;
     struct flm__StreamInput temp;
 
-    /* remove remaining stuff to write */
+    /**
+     * Remove remaining stuff to write
+     */
     TAILQ_FOREACH (input, &stream->inputs, entries) {
         temp.entries = input->entries;
         flm__Release (input->class.obj);
@@ -365,6 +367,7 @@ flm__StreamPerfDestruct (flm_Stream * stream)
         input = &temp;
     }
     flm__StreamShutdownTLS (stream);
+    flm__IOPerfDestruct ((flm_IO *) stream);
     return ;
 }
 

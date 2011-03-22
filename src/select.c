@@ -35,6 +35,9 @@ static int
 flm__SelectPerfAdd (flm__Select * select, flm_IO * io);
 
 static int
+flm__SelectPerfDel (flm__Select * select, flm_IO * io);
+
+static int
 flm__SelectPerfWait (flm__Select * select);
 
 flm__Select *
@@ -63,6 +66,9 @@ flm__SelectInit (flm__Select * select)
 
     ((flm_Monitor *)(select))->add	=       \
         (flm__MonitorAdd_f) flm__SelectPerfAdd;
+
+    ((flm_Monitor *)(select))->del	=       \
+        (flm__MonitorAdd_f) flm__SelectPerfDel;
     
     ((flm_Monitor *)(select))->wait	=       \
         (flm__MonitorWait_f) flm__SelectPerfWait;
@@ -73,13 +79,24 @@ flm__SelectInit (flm__Select * select)
 }
 
 int
-flm__SelectPerfAdd (flm__Select * select,
-		    flm_IO * io)
+flm__SelectPerfAdd (flm__Select *       select,
+		    flm_IO *            io)
 {
     if (io->sys.fd >= FD_SETSIZE) {
         return (-1);
     }
     select->ios[io->sys.fd] = io;
+    return (0);
+}
+
+int
+flm__SelectPerfDel (flm__Select *       select,
+                    flm_IO *            io)
+{
+    if (io->sys.fd >= FD_SETSIZE) {
+        return (-1);
+    }
+    select->ios[io->sys.fd] = NULL;
     return (0);
 }
 
@@ -117,15 +134,24 @@ flm__SelectPerfWait (flm__Select * _select)
         if ((io = _select->ios[fd]) == NULL) {
             continue ;
         }
+        if (io->cl.shutdown && !io->wr.want && !io->cl.closed) {
+            flm__IOClose (io, (flm_Monitor *) _select);
+            continue ;
+        }
         if (io->rd.want) {
             FD_SET (io->sys.fd, &rset);
         }
         if (io->wr.want) {
             FD_SET (io->sys.fd, &wset);
         }
+
         if (io->sys.fd > max) {
             max = io->sys.fd;
         }
+    }
+
+    if (max == -1 && delay_ptr == NULL) {
+        return (0);
     }
 
     for (;;) {
@@ -158,10 +184,6 @@ flm__SelectPerfWait (flm__Select * _select)
         }
         if (FD_ISSET (fd, &wset)) {
             flm__IOWrite (io, (flm_Monitor *) _select);
-        }
-        if (io->cl.shutdown && !io->wr.want) {
-            flm__IOClose (io, (flm_Monitor *) _select);
-            break ;
         }
     }
     return (0);

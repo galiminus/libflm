@@ -240,7 +240,7 @@ flm__EpollPerfWait (flm__Epoll * epoll)
             ret = -1;
         }
 
-        if (io->cl.shutdown && !io->wr.want) {
+        if (io->cl.shutdown && !io->wr.want && !io->cl.closed) {
             flm__IOClose (io, ((flm_Monitor *) epoll));
         }
     }

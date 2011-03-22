@@ -131,7 +131,7 @@ flm_TimerCancel (flm_Timer *	timer);
 /**
  * \brief Increment the reference counter.
  *
- * \param monitor A pointer to a flm_Timer object.
+ * \param timer A pointer to a flm_Timer object.
  * \return The same pointer, this function cannot fail.
  */
 flm_Timer *
@@ -148,7 +148,7 @@ flm_TimerRetain (flm_Timer *    timer);
  * will be freed automatically when the monitor will release its own
  * reference to the timer.
  *
- * \param monitor A pointer to a monitor object.
+ * \param timer A pointer to a monitor object.
  */
 void
 flm_TimerRelease (flm_Timer *   timer);

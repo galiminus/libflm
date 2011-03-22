@@ -14,3 +14,6 @@ thread_suite (void);
 
 Suite *
 io_suite (void);
+
+Suite *
+stream_suite (void);

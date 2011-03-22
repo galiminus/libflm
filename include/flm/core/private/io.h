@@ -64,6 +64,7 @@ struct flm_IO
         flm_IOWriteHandler	handler;
     } wr;
     struct {
+        bool                    closed;
         bool			shutdown;
         flm_IOCloseHandler	handler;
     } cl;

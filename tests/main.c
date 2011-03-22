@@ -31,6 +31,9 @@ main (void)
     Suite * ioSuite = io_suite ();
     SRunner * ioRunner = srunner_create (ioSuite);
 
+    Suite * streamSuite = stream_suite ();
+    SRunner * streamRunner = srunner_create (streamSuite);
+
     number_failed = 0;
     
     srunner_run_all (bufferRunner, CK_NORMAL);
@@ -47,6 +50,17 @@ main (void)
     srunner_run_all (ioRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (ioRunner);
     srunner_free (ioRunner);
+
+    printf (">> Switch to the Epoll backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
+    srunner_run_all (streamRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (streamRunner);
+
+    printf (">> Switch to the select() backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_SELECT);
+    srunner_run_all (streamRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (streamRunner);
+    srunner_free (streamRunner);
 
     printf (">> Switch to the Epoll backend\n");
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
