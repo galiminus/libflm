@@ -340,7 +340,7 @@ START_TEST(test_timer_multiple)
             ((start.tv_sec * 1000) + start.tv_usec / 1000));
 
     fail_if (diff < (monitor->tm.res * 1.50) + 200);
-    fail_if (diff > (monitor->tm.res * 2.50) + 200);
+    fail_if (diff > (monitor->tm.res * 3.10) + 200);
 
     fail_if (_elapsed != count);
 }

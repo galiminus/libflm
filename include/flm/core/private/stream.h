@@ -71,6 +71,7 @@ struct flm_Stream
 
 #define FLM_STREAM__RBUFFER_SIZE		2048
 #define FLM_STREAM__IOVEC_SIZE			8
+#define FLM_STREAM__READ_FILE_SIZE              2048
 
 int
 flm__StreamInit (flm_Stream *           stream,
@@ -107,6 +108,9 @@ flm__StreamWrite (flm_Stream *		stream);
 
 ssize_t
 flm__StreamSysWritev (flm_Stream *	stream);
+
+ssize_t
+flm__StreamSysReadWriteTo (flm_Stream *	stream);
 
 ssize_t
 flm__StreamSysSendFile (flm_Stream *	stream);

@@ -48,7 +48,6 @@ AC_TYPE_SSIZE_T
 AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([gettimeofday localtime_r memset])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
@@ -58,6 +57,6 @@ AC_CONFIG_FILES([Makefile
                  include/flm/core/private/Makefile
                  tests/Makefile])
 
-AC_CHECK_FUNCS([memset socket select epoll_ctl epoll_wait])
+AC_CHECK_FUNCS([memset socket select epoll_ctl epoll_wait sendfile])
 
 AC_OUTPUT

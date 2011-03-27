@@ -185,7 +185,7 @@ flm__IORead (flm_IO *           io,
 {
     uint8_t count;
 
-    for (count = 0; count < io->rd.limit; count++) {
+    for (count = 0; true; count++) {
         if (!io->rd.want) {
             break ;
         }
@@ -205,7 +205,7 @@ flm__IOWrite (flm_IO *          io,
 {
     uint8_t count;
 
-    for (count = 0; count < io->wr.limit; count++) {
+    for (count = 0; true; count++) {
         if (!io->wr.want) {
             break ;
         }

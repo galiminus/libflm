@@ -1,3 +1,7 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <check.h>
 
 #include "flm/flm.h"
@@ -335,6 +339,63 @@ START_TEST(test_stream_push_buffer)
 }
 END_TEST
 
+START_TEST(test_stream_push_file)
+{
+    int raw_file;
+    flm_File * file;
+    int baseFD;
+    int fds[2];
+    flm_Monitor * monitor;
+    flm_Stream * stream_in;
+    flm_Stream * stream_out;
+    size_t i;
+
+    int error;
+
+    /**
+     * Create the file
+     */
+    raw_file = open ("/tmp/_libflm_testfile", O_CREAT|O_TRUNC|O_WRONLY);
+    for (i = 0; i < 1000; i++) {
+        error = write (raw_file, "aaaaaaaaaaaaaaaaaaaa", 20);
+    }
+    close (raw_file);
+
+    setTestAlloc (0);
+
+    baseFD = getFDCount ();
+    fail_if (pipe (fds) == -1);
+
+    if ((monitor = flm_MonitorNew ()) == NULL) {
+        fail ("Monitor creatstreamn failed");
+    }
+    if ((stream_in = flm_StreamNew (monitor, fds[1], (void *)42)) == NULL) {
+        fail ("Stream creatstreamn failed");
+    }
+    if ((stream_out = flm_StreamNew (monitor, fds[0], stream_in)) == NULL) {
+        fail ("Stream creatstreamn failed");
+    }
+    flm_StreamOnRead (stream_out, _big_read_handler);
+    flm_StreamOnClose (stream_out, _close_handler);
+    flm_StreamOnClose (stream_in, _close_handler);
+
+    file = flm_FileOpen ("", "/tmp/_libflm_testfile", "r");
+    flm_StreamPushFile (stream_in, file, 0, 0);
+    flm_FileRelease (file);
+
+    flm_StreamRelease (stream_in);
+    flm_StreamRelease (stream_out);
+
+    flm_MonitorWait (monitor);
+    flm_MonitorRelease (monitor);
+
+    fail_unless (nb_read == 20000);
+    fail_unless (nb_closed == 2);
+    fail_unless (getAllocSum () == 0);
+    fail_unless (getFDCount () == baseFD);
+}
+END_TEST
+
 Suite *
 stream_suite (void)
 {
@@ -351,6 +412,10 @@ stream_suite (void)
   tcase_add_test (tc_core, test_stream_big_read);
   tcase_add_test (tc_core, test_stream_printf);
   tcase_add_test (tc_core, test_stream_push_buffer);
+
+  tcase_set_timeout(tc_core, 30);
+  tcase_add_test (tc_core, test_stream_push_file);
+
   suite_add_tcase (s, tc_core);
 
   return s;

@@ -54,7 +54,7 @@ struct flm_Monitor
     flm__MonitorWait_f			wait;
     
     struct {
-        uint32_t                        count;
+        size_t                          count;
         TAILQ_HEAD (iolt, flm_IO)	list;
     } io;
 

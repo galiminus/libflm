@@ -196,7 +196,7 @@ flm_StreamPushFile (flm_Stream *	stream,
     }	
     
     input->class.file = flm_FileRetain (file);
-    input->type = FLM__STREAM_TYPE_BUFFER;
+    input->type = FLM__STREAM_TYPE_FILE;
     input->off = off;
     input->count = count;
     TAILQ_INSERT_TAIL (&(stream->inputs), input, entries);
@@ -408,7 +408,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
     drain_count = 0;
     if (nb_read == 0) {
         /* close */
-        ((flm_IO *)(stream))->rd.can = 0;
+        ((flm_IO *)(stream))->rd.can = false;
         flm_IOShutdown ((flm_IO *) stream);
         goto out;
     }
@@ -417,13 +417,13 @@ flm__StreamPerfRead (flm_Stream *	stream,
             /**
              * the kernel buffer was empty
              */
-            ((flm_IO *)(stream))->rd.can = 0;
+            ((flm_IO *)(stream))->rd.can = false;
         }
         else if (errno == EINTR) {
             /**
              * interrupted by a signal, just retry
              */
-            ((flm_IO *)(stream))->rd.can = 1;
+            ((flm_IO *)(stream))->rd.can = true;
         }
         else {
             /* fatal error */
@@ -441,7 +441,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
         goto out;
     }
     /* read event */
-    ((flm_IO *)(stream))->rd.can = 1;
+    ((flm_IO *)(stream))->rd.can = true;
     for (drain = nb_read; drain; drain_count++) {
 
         iov_read = drain < iovec[drain_count].iov_len ?		\
@@ -471,7 +471,7 @@ flm__StreamPerfRead (flm_Stream *	stream,
         }
 
         if (drain < iovec[drain_count].iov_len) {
-            ((flm_IO *)(stream))->rd.can = 0;
+            ((flm_IO *)(stream))->rd.can = false;
             drain = 0;
         }
         else {
@@ -502,16 +502,15 @@ flm__StreamPerfWrite (flm_Stream *	stream,
     (void) count;
 
     nb_write = flm__StreamWrite (stream);
-
     if (nb_write < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             /* kernel buffer was full */
-            ((flm_IO *)(stream))->wr.can = 0;
+            ((flm_IO *)(stream))->wr.can = false;
             return ;
         }
         else if (errno == EINTR) {
             /* interrupted by a signal, just retry */
-            ((flm_IO *)(stream))->wr.can = 1;
+            ((flm_IO *)(stream))->wr.can = true;
             return ;
         }
         else {
@@ -541,7 +540,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
     }
 
     drain = nb_write;
-    ((flm_IO *)(stream))->wr.can = 1;
+    ((flm_IO *)(stream))->wr.can = true;
     TAILQ_FOREACH (input, &(stream->inputs), entries) {
         if (drain == 0) {
             break ;
@@ -549,17 +548,21 @@ flm__StreamPerfWrite (flm_Stream *	stream,
         if (drain < input->tried) {
             input->off += drain;
             input->count -= drain;
-            ((flm_IO *)(stream))->wr.can = 0;
+            ((flm_IO *)(stream))->wr.can = false;
             break ;
         }
 
+        input->off += input->tried;
+        input->count -= input->tried;
         drain -= input->tried;
 
-        temp.entries = input->entries;
-        flm__Release (input->class.obj);
-        TAILQ_REMOVE (&(stream->inputs), input, entries);
-        flm__Free (input);
-        input = &temp;
+        if (input->count == 0) {
+            temp.entries = input->entries;
+            flm__Release (input->class.obj);
+            TAILQ_REMOVE (&(stream->inputs), input, entries);
+            flm__Free (input);
+            input = &temp;
+        }
     }
 
     if (TAILQ_FIRST (&stream->inputs) == NULL) {
@@ -585,7 +588,7 @@ flm__StreamWrite (flm_Stream * stream)
         break ;
 
     case FLM__STREAM_TYPE_FILE:
-#if defined (linux)
+#if defined (HAVE_SENDFILE)
         nb_write = flm__StreamSysSendFile (stream);
 #else
         nb_write = flm__StreamSysReadWriteTo (stream);
@@ -620,11 +623,57 @@ flm__StreamSysWritev (flm_Stream * stream)
 }
 
 ssize_t
+flm__StreamSysReadWriteTo (flm_Stream * stream)
+{
+    struct flm__StreamInput *   input;
+    char *                      buffer;
+    ssize_t                     rcount;
+    ssize_t                     wcount;
+
+    if ((input = TAILQ_FIRST (&stream->inputs)) == NULL) {
+        return (0);
+    }
+
+    if (lseek (((flm_IO *)(input->class.file))->sys.fd,
+               input->off,
+               SEEK_SET) == -1) {
+        goto error;
+    }
+
+    buffer = flm__Alloc (FLM_STREAM__READ_FILE_SIZE * sizeof (char));
+    if (buffer == NULL) {
+        goto error;
+    }
+
+    rcount = read (((flm_IO *)(input->class.file))->sys.fd,
+                   buffer,
+                   FLM_STREAM__READ_FILE_SIZE);
+    if (rcount == -1) {
+        goto free_buffer;
+    }
+
+    input->tried = rcount;
+
+    wcount = write (((flm_IO *)(stream))->sys.fd, buffer, rcount);
+    if (wcount == -1) {
+        goto free_buffer;
+    }
+
+    flm__Free (buffer);
+
+    return (wcount);
+    
+  free_buffer:
+    flm__Free (buffer);
+  error:
+    return (-1);
+}
+
+ssize_t
 flm__StreamSysSendFile (flm_Stream * stream)
 {
-    struct flm__StreamInput * input;
-
-    off_t off;
+    struct flm__StreamInput *   input;
+    off_t                       off;
 
     if ((input = TAILQ_FIRST (&stream->inputs)) == NULL) {
         return (0);

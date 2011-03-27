@@ -56,9 +56,6 @@ flm__Release (flm_Obj * obj)
 void *
 flm__PerfRetain (flm_Obj * obj)
 {
-	if (obj == NULL) {
-		return (NULL);
-	}
 	obj->stat.refcount++;
 	return (obj);
 }
