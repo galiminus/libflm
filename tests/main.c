@@ -16,11 +16,17 @@ main (void)
 {
     int number_failed;
 
+    Suite * allocSuite = alloc_suite ();
+    SRunner * allocRunner = srunner_create (allocSuite);
+
     Suite * bufferSuite = buffer_suite ();
     SRunner * bufferRunner = srunner_create (bufferSuite);
 
     Suite * monitorSuite = monitor_suite ();
     SRunner * monitorRunner = srunner_create (monitorSuite);
+
+    Suite * epollSuite = epoll_suite ();
+    SRunner * epollRunner = srunner_create (epollSuite);
 
     Suite * timerSuite = timer_suite ();
     SRunner * timerRunner = srunner_create (timerSuite);
@@ -36,6 +42,10 @@ main (void)
 
     number_failed = 0;
     
+    srunner_run_all (allocRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (allocRunner);
+    srunner_free (allocRunner);
+
     srunner_run_all (bufferRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (bufferRunner);
     srunner_free (bufferRunner);
@@ -66,6 +76,9 @@ main (void)
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
     srunner_run_all (monitorRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (monitorRunner);
+
+    srunner_run_all (epollRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (epollRunner);
 
     printf (">> Switch to the select() backend\n");
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_SELECT);

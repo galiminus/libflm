@@ -1,7 +1,9 @@
 TESTS = check_libflm
 check_PROGRAMS = check_libflm
 check_libflm_SOURCES = 	main.c				\
+						alloc_test.c 		\
 						buffer_test.c 		\
+						epoll_test.c		\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\

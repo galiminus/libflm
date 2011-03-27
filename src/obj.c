@@ -38,19 +38,13 @@ flm__ObjInit (flm_Obj * obj)
 void *
 flm__Retain (flm_Obj * obj)
 {
-    if (obj->perf.retain) {
-        return (obj->perf.retain (obj));
-    }
-    return (obj);
+    return (obj->perf.retain (obj));
 }
 
 void
 flm__Release (flm_Obj * obj)
 {
-    if (obj->perf.release) {
-        return (obj->perf.release (obj));
-    }
-    return ;
+    return (obj->perf.release (obj));
 }
 
 void *

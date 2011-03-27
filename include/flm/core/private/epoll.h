@@ -42,4 +42,13 @@ flm__EpollInit (flm__Epoll * epoll);
 void
 flm__EpollPerfDestruct (flm__Epoll * epoll);
 
+void
+flm__setEpollCreateHandler (int (*handler)(int));
+
+void
+flm__setEpollCtlHandler (int (*handler)(int, int, int, struct epoll_event *));
+
+void
+flm__setEpollWaitHandler (int (*handler) (int, struct epoll_event *, int, int));
+
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_EPOLL_H_ */

@@ -47,7 +47,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am_check_libflm_OBJECTS = check_libflm-main.$(OBJEXT) \
+	check_libflm-alloc_test.$(OBJEXT) \
 	check_libflm-buffer_test.$(OBJEXT) \
+	check_libflm-epoll_test.$(OBJEXT) \
 	check_libflm-monitor_test.$(OBJEXT) \
 	check_libflm-timer_test.$(OBJEXT) \
 	check_libflm-thread_test.$(OBJEXT) \
@@ -221,7 +223,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 check_libflm_SOURCES = main.c				\
+						alloc_test.c 		\
 						buffer_test.c 		\
+						epoll_test.c		\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\
@@ -284,7 +288,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-alloc_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-buffer_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-epoll_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-io_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-monitor_test.Po@am__quote@
@@ -328,6 +334,20 @@ check_libflm-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
+check_libflm-alloc_test.o: alloc_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-alloc_test.o -MD -MP -MF $(DEPDIR)/check_libflm-alloc_test.Tpo -c -o check_libflm-alloc_test.o `test -f 'alloc_test.c' || echo '$(srcdir)/'`alloc_test.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-alloc_test.Tpo $(DEPDIR)/check_libflm-alloc_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='alloc_test.c' object='check_libflm-alloc_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-alloc_test.o `test -f 'alloc_test.c' || echo '$(srcdir)/'`alloc_test.c
+
+check_libflm-alloc_test.obj: alloc_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-alloc_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-alloc_test.Tpo -c -o check_libflm-alloc_test.obj `if test -f 'alloc_test.c'; then $(CYGPATH_W) 'alloc_test.c'; else $(CYGPATH_W) '$(srcdir)/alloc_test.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-alloc_test.Tpo $(DEPDIR)/check_libflm-alloc_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='alloc_test.c' object='check_libflm-alloc_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-alloc_test.obj `if test -f 'alloc_test.c'; then $(CYGPATH_W) 'alloc_test.c'; else $(CYGPATH_W) '$(srcdir)/alloc_test.c'; fi`
+
 check_libflm-buffer_test.o: buffer_test.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-buffer_test.o -MD -MP -MF $(DEPDIR)/check_libflm-buffer_test.Tpo -c -o check_libflm-buffer_test.o `test -f 'buffer_test.c' || echo '$(srcdir)/'`buffer_test.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-buffer_test.Tpo $(DEPDIR)/check_libflm-buffer_test.Po
@@ -341,6 +361,20 @@ check_libflm-buffer_test.obj: buffer_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='buffer_test.c' object='check_libflm-buffer_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-buffer_test.obj `if test -f 'buffer_test.c'; then $(CYGPATH_W) 'buffer_test.c'; else $(CYGPATH_W) '$(srcdir)/buffer_test.c'; fi`
+
+check_libflm-epoll_test.o: epoll_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-epoll_test.o -MD -MP -MF $(DEPDIR)/check_libflm-epoll_test.Tpo -c -o check_libflm-epoll_test.o `test -f 'epoll_test.c' || echo '$(srcdir)/'`epoll_test.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-epoll_test.Tpo $(DEPDIR)/check_libflm-epoll_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='epoll_test.c' object='check_libflm-epoll_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-epoll_test.o `test -f 'epoll_test.c' || echo '$(srcdir)/'`epoll_test.c
+
+check_libflm-epoll_test.obj: epoll_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-epoll_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-epoll_test.Tpo -c -o check_libflm-epoll_test.obj `if test -f 'epoll_test.c'; then $(CYGPATH_W) 'epoll_test.c'; else $(CYGPATH_W) '$(srcdir)/epoll_test.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-epoll_test.Tpo $(DEPDIR)/check_libflm-epoll_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='epoll_test.c' object='check_libflm-epoll_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-epoll_test.obj `if test -f 'epoll_test.c'; then $(CYGPATH_W) 'epoll_test.c'; else $(CYGPATH_W) '$(srcdir)/epoll_test.c'; fi`
 
 check_libflm-monitor_test.o: monitor_test.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-monitor_test.o -MD -MP -MF $(DEPDIR)/check_libflm-monitor_test.Tpo -c -o check_libflm-monitor_test.o `test -f 'monitor_test.c' || echo '$(srcdir)/'`monitor_test.c

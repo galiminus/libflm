@@ -61,7 +61,6 @@ flm__setEpollWaitHandler (int (*handler) (int, struct epoll_event *, int, int))
     epollWaitHandler = handler;
 }
 
-
 flm__Epoll *
 flm__EpollNew ()
 {
@@ -117,7 +116,7 @@ flm__EpollInit (flm__Epoll * epoll)
 
     if ((epoll->epfd = epollCreateHandler (epoll->size)) == -1) {
         flm__Error = FLM_ERR_ERRNO;
-        goto error;
+        goto destruct_monitor;
     }
 
     epoll->events = flm__Alloc (epoll->size * sizeof (struct epoll_event));
@@ -130,6 +129,8 @@ flm__EpollInit (flm__Epoll * epoll)
 
   close_epfd:
     close (epoll->epfd);
+  destruct_monitor:
+    flm__MonitorPerfDestruct ((flm_Monitor *) epoll);
   error:
     return (-1);
 }
