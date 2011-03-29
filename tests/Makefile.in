@@ -50,9 +50,11 @@ am_check_libflm_OBJECTS = check_libflm-main.$(OBJEXT) \
 	check_libflm-alloc_test.$(OBJEXT) \
 	check_libflm-buffer_test.$(OBJEXT) \
 	check_libflm-epoll_test.$(OBJEXT) \
+	check_libflm-select_test.$(OBJEXT) \
 	check_libflm-monitor_test.$(OBJEXT) \
 	check_libflm-timer_test.$(OBJEXT) \
 	check_libflm-thread_test.$(OBJEXT) \
+	check_libflm-tcp_server_test.$(OBJEXT) \
 	check_libflm-io_test.$(OBJEXT) \
 	check_libflm-stream_test.$(OBJEXT) \
 	check_libflm-test_utils.$(OBJEXT)
@@ -226,9 +228,11 @@ check_libflm_SOURCES = main.c				\
 						alloc_test.c 		\
 						buffer_test.c 		\
 						epoll_test.c		\
+						select_test.c		\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\
+						tcp_server_test.c	\
 						io_test.c		    \
 						stream_test.c	    \
 						test_utils.c
@@ -294,7 +298,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-io_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-monitor_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-select_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-stream_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-tcp_server_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-test_utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-thread_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-timer_test.Po@am__quote@
@@ -376,6 +382,20 @@ check_libflm-epoll_test.obj: epoll_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-epoll_test.obj `if test -f 'epoll_test.c'; then $(CYGPATH_W) 'epoll_test.c'; else $(CYGPATH_W) '$(srcdir)/epoll_test.c'; fi`
 
+check_libflm-select_test.o: select_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-select_test.o -MD -MP -MF $(DEPDIR)/check_libflm-select_test.Tpo -c -o check_libflm-select_test.o `test -f 'select_test.c' || echo '$(srcdir)/'`select_test.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-select_test.Tpo $(DEPDIR)/check_libflm-select_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='select_test.c' object='check_libflm-select_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-select_test.o `test -f 'select_test.c' || echo '$(srcdir)/'`select_test.c
+
+check_libflm-select_test.obj: select_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-select_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-select_test.Tpo -c -o check_libflm-select_test.obj `if test -f 'select_test.c'; then $(CYGPATH_W) 'select_test.c'; else $(CYGPATH_W) '$(srcdir)/select_test.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-select_test.Tpo $(DEPDIR)/check_libflm-select_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='select_test.c' object='check_libflm-select_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-select_test.obj `if test -f 'select_test.c'; then $(CYGPATH_W) 'select_test.c'; else $(CYGPATH_W) '$(srcdir)/select_test.c'; fi`
+
 check_libflm-monitor_test.o: monitor_test.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-monitor_test.o -MD -MP -MF $(DEPDIR)/check_libflm-monitor_test.Tpo -c -o check_libflm-monitor_test.o `test -f 'monitor_test.c' || echo '$(srcdir)/'`monitor_test.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-monitor_test.Tpo $(DEPDIR)/check_libflm-monitor_test.Po
@@ -417,6 +437,20 @@ check_libflm-thread_test.obj: thread_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread_test.c' object='check_libflm-thread_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-thread_test.obj `if test -f 'thread_test.c'; then $(CYGPATH_W) 'thread_test.c'; else $(CYGPATH_W) '$(srcdir)/thread_test.c'; fi`
+
+check_libflm-tcp_server_test.o: tcp_server_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-tcp_server_test.o -MD -MP -MF $(DEPDIR)/check_libflm-tcp_server_test.Tpo -c -o check_libflm-tcp_server_test.o `test -f 'tcp_server_test.c' || echo '$(srcdir)/'`tcp_server_test.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-tcp_server_test.Tpo $(DEPDIR)/check_libflm-tcp_server_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcp_server_test.c' object='check_libflm-tcp_server_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-tcp_server_test.o `test -f 'tcp_server_test.c' || echo '$(srcdir)/'`tcp_server_test.c
+
+check_libflm-tcp_server_test.obj: tcp_server_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-tcp_server_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-tcp_server_test.Tpo -c -o check_libflm-tcp_server_test.obj `if test -f 'tcp_server_test.c'; then $(CYGPATH_W) 'tcp_server_test.c'; else $(CYGPATH_W) '$(srcdir)/tcp_server_test.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-tcp_server_test.Tpo $(DEPDIR)/check_libflm-tcp_server_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcp_server_test.c' object='check_libflm-tcp_server_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-tcp_server_test.obj `if test -f 'tcp_server_test.c'; then $(CYGPATH_W) 'tcp_server_test.c'; else $(CYGPATH_W) '$(srcdir)/tcp_server_test.c'; fi`
 
 check_libflm-io_test.o: io_test.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-io_test.o -MD -MP -MF $(DEPDIR)/check_libflm-io_test.Tpo -c -o check_libflm-io_test.o `test -f 'io_test.c' || echo '$(srcdir)/'`io_test.c

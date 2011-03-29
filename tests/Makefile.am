@@ -4,9 +4,11 @@ check_libflm_SOURCES = 	main.c				\
 						alloc_test.c 		\
 						buffer_test.c 		\
 						epoll_test.c		\
+						select_test.c		\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\
+						tcp_server_test.c	\
 						io_test.c		    \
 						stream_test.c	    \
 						test_utils.c

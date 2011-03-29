@@ -28,6 +28,9 @@ main (void)
     Suite * epollSuite = epoll_suite ();
     SRunner * epollRunner = srunner_create (epollSuite);
 
+    Suite * selectSuite = select_suite ();
+    SRunner * selectRunner = srunner_create (selectSuite);
+
     Suite * timerSuite = timer_suite ();
     SRunner * timerRunner = srunner_create (timerSuite);
 
@@ -39,6 +42,9 @@ main (void)
 
     Suite * streamSuite = stream_suite ();
     SRunner * streamRunner = srunner_create (streamSuite);
+
+    Suite * tcpServerSuite = tcp_server_suite ();
+    SRunner * tcpServerRunner = srunner_create (tcpServerSuite);
 
     number_failed = 0;
     
@@ -74,6 +80,17 @@ main (void)
 
     printf (">> Switch to the Epoll backend\n");
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
+    srunner_run_all (tcpServerRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (tcpServerRunner);
+
+    printf (">> Switch to the select() backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_SELECT);
+    srunner_run_all (tcpServerRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (tcpServerRunner);
+    srunner_free (tcpServerRunner);
+
+    printf (">> Switch to the Epoll backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
     srunner_run_all (monitorRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (monitorRunner);
 
@@ -85,6 +102,9 @@ main (void)
     srunner_run_all (monitorRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (monitorRunner);
     srunner_free (monitorRunner);
+
+    srunner_run_all (selectRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (selectRunner);
 
     printf (">> Switch to the Epoll backend\n");
     flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);

@@ -41,4 +41,7 @@ flm__SelectNew (void);
 int
 flm__SelectInit (flm__Select * select);
 
+void
+flm__setSelectHandler (int (*handler) (int, fd_set *, fd_set *, fd_set *, struct timeval *));
+
 #endif /* !_FLM_CORE_PRIVATE_MONITOR_SELECT_H_ */

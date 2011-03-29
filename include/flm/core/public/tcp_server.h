@@ -28,6 +28,12 @@ typedef struct flm_TCPServer flm_TCPServer;
 
 #endif /* !_FLM__SKIP */
 
+typedef void (*flm_TCPServerCloseHandler)	\
+(flm_TCPServer * tcp_server, void * state);
+
+typedef void (*flm_TCPServerErrorHandler)	\
+(flm_TCPServer * tcp_server, void * state, int error);
+
 typedef void (*flm_TCPServerAcceptHandler)	\
 (flm_TCPServer * tcp_server, void * state, int fd);
 
@@ -35,10 +41,27 @@ flm_TCPServer *
 flm_TCPServerNew (flm_Monitor *		monitor,
 		  const char *		interface,
 		  uint16_t		port,
-		  void *	state);
+		  void *                state);
+
+void
+flm_TCPServerClose (flm_TCPServer *     tcp_server);
+
+void
+flm_TCPServerOnClose (flm_TCPServer *			tcp_server,
+                      flm_TCPServerCloseHandler  	handler);
+
+void
+flm_TCPServerOnError (flm_TCPServer *			tcp_server,
+                      flm_TCPServerErrorHandler  	handler);
 
 void
 flm_TCPServerOnAccept (flm_TCPServer *			tcp_server,
 		       flm_TCPServerAcceptHandler	handler);
+
+flm_TCPServer *
+flm_TCPServerRetain (flm_TCPServer *                    tcp_server);
+
+void
+flm_TCPServerRelease (flm_TCPServer *                   tcp_server);
 
 #endif /* !_FLM_CORE_PUBLIC_TCP_SERVER_H_ */

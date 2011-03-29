@@ -39,7 +39,7 @@ flm_TCPServer *
 flm_TCPServerNew (flm_Monitor *		monitor,
 		  const char *		interface,
 		  uint16_t		port,
-		  void *	state)
+		  void *                state)
 {
     flm_TCPServer * tcp_server;
 
@@ -55,10 +55,43 @@ flm_TCPServerNew (flm_Monitor *		monitor,
 }
 
 void
+flm_TCPServerClose (flm_TCPServer *    tcp_server)
+{
+    flm_IOClose ((flm_IO *) tcp_server);
+}
+
+void
+flm_TCPServerOnClose (flm_TCPServer *                   tcp_server,
+                      flm_TCPServerCloseHandler         handler)
+{
+    flm_IOOnClose ((flm_IO *) tcp_server, (flm_IOCloseHandler) handler);
+}
+
+void
+flm_TCPServerOnError (flm_TCPServer *                   tcp_server,
+                      flm_TCPServerErrorHandler         handler)
+{
+    flm_IOOnError ((flm_IO *) tcp_server, (flm_IOErrorHandler) handler);
+}
+
+void
 flm_TCPServerOnAccept (flm_TCPServer *			tcp_server,
 		       flm_TCPServerAcceptHandler	handler)
 {
     tcp_server->ac.handler = handler;
+    return ;
+}
+
+flm_TCPServer *
+flm_TCPServerRetain (flm_TCPServer *    tcp_server)
+{
+    return (flm__Retain ((flm_Obj *) tcp_server));
+}
+
+void
+flm_TCPServerRelease (flm_TCPServer *   tcp_server)
+{
+    flm__Release ((flm_Obj *) tcp_server);
     return ;
 }
 
@@ -118,10 +151,10 @@ flm__TCPServerInit (flm_TCPServer *	tcp_server,
         goto close_fd;
     }
 
-    if (setsockopt (fd,				\
-                    SOL_SOCKET,			\
+    if (setsockopt (fd,                                 \
+                    SOL_SOCKET,                         \
                     SO_REUSEADDR,			\
-                    (int[]){1},			\
+                    (int[]){1},                         \
                     sizeof (int)) == -1) {
         goto close_fd;
     }
@@ -131,9 +164,9 @@ flm__TCPServerInit (flm_TCPServer *	tcp_server,
         goto close_fd;
     }
 
-    if (flm__IOInit ((flm_IO *) tcp_server,         \
+    if (flm__IOInit ((flm_IO *) tcp_server,     \
                      monitor,			\
-                     fd,				\
+                     fd,                        \
                      state) == -1) {
         goto close_fd;
     }

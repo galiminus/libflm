@@ -40,6 +40,14 @@ flm__SelectPerfDel (flm__Select * select, flm_IO * io);
 static int
 flm__SelectPerfWait (flm__Select * select);
 
+int (*selectHandler) (int, fd_set *, fd_set *, fd_set *, struct timeval *);
+
+void
+flm__setSelectHandler (int (*handler) (int, fd_set *, fd_set *, fd_set *, struct timeval *))
+{
+    selectHandler = handler;
+}
+
 flm__Select *
 flm__SelectNew ()
 {
@@ -58,22 +66,26 @@ flm__SelectNew ()
 }
 
 int
-flm__SelectInit (flm__Select * select)
+flm__SelectInit (flm__Select * _select)
 {
-    if (flm__MonitorInit ((flm_Monitor *) select) == -1) {
+    if (flm__MonitorInit ((flm_Monitor *) _select) == -1) {
         return (-1);
     }
 
-    ((flm_Monitor *)(select))->add	=       \
+    ((flm_Monitor *)(_select))->add	=       \
         (flm__MonitorAdd_f) flm__SelectPerfAdd;
 
-    ((flm_Monitor *)(select))->del	=       \
+    ((flm_Monitor *)(_select))->del	=       \
         (flm__MonitorAdd_f) flm__SelectPerfDel;
     
-    ((flm_Monitor *)(select))->wait	=       \
+    ((flm_Monitor *)(_select))->wait	=       \
         (flm__MonitorWait_f) flm__SelectPerfWait;
     
-    memset (select->ios, 0, sizeof (select->ios));
+    memset (_select->ios, 0, sizeof (_select->ios));
+
+    if (selectHandler == NULL) {
+        flm__setSelectHandler (select);
+    }
     
     return (0);
 }
@@ -155,7 +167,7 @@ flm__SelectPerfWait (flm__Select * _select)
     }
 
     for (;;) {
-        ret = select (max + 1, &rset, &wset, NULL, delay_ptr);
+        ret = selectHandler (max + 1, &rset, &wset, NULL, delay_ptr);
         if (ret >= 0) {
             break ;
         }

@@ -1,8 +1,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/socket.h>
+
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+#include <netdb.h>
 
 #include <assert.h>
 #include <fcntl.h>
+
+#include <errno.h>
+#include <string.h>
 
 #include <check.h>
 
@@ -95,4 +105,36 @@ getFDCount ()
     fd = open ("/dev/null", O_RDONLY);
     close(fd);
     return (fd);
+}
+
+int
+testConnect (char * host, int port)
+{
+    int                 sock;
+    struct sockaddr_in  addr;
+    struct hostent *    addrinfo;
+
+    sock = socket (AF_INET, SOCK_STREAM, 0);
+    if (sock == -1) {
+        return (-1);
+    }
+
+    addrinfo = gethostbyname (host);
+    if (addrinfo == NULL) {
+        return (-1);
+    }
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons (port);
+
+    memcpy (&(addr.sin_addr), addrinfo->h_addr, addrinfo->h_length);
+
+    if (connect (sock,
+                 (struct sockaddr *) &addr,
+                 sizeof (struct sockaddr_in)) == -1) {
+        printf("%s\n", strerror(errno));
+        return (-1);
+    }
+    close (sock);
+    return (0);
 }

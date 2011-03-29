@@ -13,6 +13,9 @@ Suite *
 epoll_suite (void);
 
 Suite *
+select_suite (void);
+
+Suite *
 timer_suite (void);
 
 Suite *
@@ -23,3 +26,6 @@ io_suite (void);
 
 Suite *
 stream_suite (void);
+
+Suite *
+tcp_server_suite (void);

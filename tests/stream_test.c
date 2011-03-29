@@ -18,13 +18,13 @@ START_TEST(test_stream_create)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], NULL)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], NULL)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
 }
 END_TEST
@@ -52,13 +52,13 @@ START_TEST(test_stream_close)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], NULL)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], NULL)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
 
     flm_StreamOnClose (stream_out, _close_handler);
@@ -93,13 +93,13 @@ START_TEST(test_stream_shutdown)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], NULL)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], NULL)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
 
     flm_StreamOnClose (stream_out, _close_handler);
@@ -157,13 +157,13 @@ START_TEST(test_stream_read)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], (void *)42)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], stream_in)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     flm_StreamOnRead (stream_out, _read_handler);
     flm_StreamOnClose (stream_out, _close_handler);
@@ -219,13 +219,13 @@ START_TEST(test_stream_big_read)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], (void *)42)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], stream_in)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     flm_StreamOnRead (stream_out, _big_read_handler);
     flm_StreamOnClose (stream_out, _close_handler);
@@ -263,13 +263,13 @@ START_TEST(test_stream_printf)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], (void *)42)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], stream_in)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     flm_StreamOnRead (stream_out, _big_read_handler);
     flm_StreamOnClose (stream_out, _close_handler);
@@ -308,13 +308,13 @@ START_TEST(test_stream_push_buffer)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], (void *)42)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], stream_in)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     flm_StreamOnRead (stream_out, _big_read_handler);
     flm_StreamOnClose (stream_out, _close_handler);
@@ -367,13 +367,13 @@ START_TEST(test_stream_push_file)
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creatstreamn failed");
+        fail ("Monitor creation failed");
     }
     if ((stream_in = flm_StreamNew (monitor, fds[1], (void *)42)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     if ((stream_out = flm_StreamNew (monitor, fds[0], stream_in)) == NULL) {
-        fail ("Stream creatstreamn failed");
+        fail ("Stream creation failed");
     }
     flm_StreamOnRead (stream_out, _big_read_handler);
     flm_StreamOnClose (stream_out, _close_handler);
