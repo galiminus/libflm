@@ -54,6 +54,7 @@ am_check_libflm_OBJECTS = check_libflm-main.$(OBJEXT) \
 	check_libflm-monitor_test.$(OBJEXT) \
 	check_libflm-timer_test.$(OBJEXT) \
 	check_libflm-thread_test.$(OBJEXT) \
+	check_libflm-thread_pool_test.$(OBJEXT) \
 	check_libflm-tcp_server_test.$(OBJEXT) \
 	check_libflm-io_test.$(OBJEXT) \
 	check_libflm-stream_test.$(OBJEXT) \
@@ -232,6 +233,7 @@ check_libflm_SOURCES = main.c				\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\
+						thread_pool_test.c	\
 						tcp_server_test.c	\
 						io_test.c		    \
 						stream_test.c	    \
@@ -302,6 +304,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-stream_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-tcp_server_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-test_utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-thread_pool_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-thread_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libflm-timer_test.Po@am__quote@
 
@@ -437,6 +440,20 @@ check_libflm-thread_test.obj: thread_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread_test.c' object='check_libflm-thread_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-thread_test.obj `if test -f 'thread_test.c'; then $(CYGPATH_W) 'thread_test.c'; else $(CYGPATH_W) '$(srcdir)/thread_test.c'; fi`
+
+check_libflm-thread_pool_test.o: thread_pool_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-thread_pool_test.o -MD -MP -MF $(DEPDIR)/check_libflm-thread_pool_test.Tpo -c -o check_libflm-thread_pool_test.o `test -f 'thread_pool_test.c' || echo '$(srcdir)/'`thread_pool_test.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-thread_pool_test.Tpo $(DEPDIR)/check_libflm-thread_pool_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread_pool_test.c' object='check_libflm-thread_pool_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-thread_pool_test.o `test -f 'thread_pool_test.c' || echo '$(srcdir)/'`thread_pool_test.c
+
+check_libflm-thread_pool_test.obj: thread_pool_test.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-thread_pool_test.obj -MD -MP -MF $(DEPDIR)/check_libflm-thread_pool_test.Tpo -c -o check_libflm-thread_pool_test.obj `if test -f 'thread_pool_test.c'; then $(CYGPATH_W) 'thread_pool_test.c'; else $(CYGPATH_W) '$(srcdir)/thread_pool_test.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/check_libflm-thread_pool_test.Tpo $(DEPDIR)/check_libflm-thread_pool_test.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='thread_pool_test.c' object='check_libflm-thread_pool_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -c -o check_libflm-thread_pool_test.obj `if test -f 'thread_pool_test.c'; then $(CYGPATH_W) 'thread_pool_test.c'; else $(CYGPATH_W) '$(srcdir)/thread_pool_test.c'; fi`
 
 check_libflm-tcp_server_test.o: tcp_server_test.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libflm_CFLAGS) $(CFLAGS) -MT check_libflm-tcp_server_test.o -MD -MP -MF $(DEPDIR)/check_libflm-tcp_server_test.Tpo -c -o check_libflm-tcp_server_test.o `test -f 'tcp_server_test.c' || echo '$(srcdir)/'`tcp_server_test.c

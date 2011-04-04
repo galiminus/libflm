@@ -28,23 +28,39 @@
 
 struct flm_Buffer
 {
-	/* inheritance */
-	struct flm_Obj				obj;
+    struct flm_Obj				obj;
 
-	/* members */
-	char *					content;
-	size_t					len;
-
-	struct {
-		flm_BufferFreeContentHandler	handler;
-	} fr;
+    int                                         type;
+    union {
+        struct {
+            char *				content;
+            size_t                              len;
+            struct {
+                flm_BufferFreeContentHandler	handler;
+            } fr;
+        } raw;
+        struct {
+            flm_Buffer *                        from;
+            off_t                               off;
+            size_t                              count;
+        } view;
+    } content;
 };
 
+#define FLM__BUFFER_TYPE_RAW            0x01
+#define FLM__BUFFER_TYPE_VIEW           0x02
+
 void
-flm__BufferInit (flm_Buffer *			buffer,			\
-		 char *				content,		\
-		 size_t				len,			\
-		 flm_BufferFreeContentHandler	fr_handler);
+flm__BufferInitRaw (flm_Buffer *			buffer,		\
+                    char *				content,        \
+                    size_t				len,            \
+                    flm_BufferFreeContentHandler	fr_handler);
+
+void
+flm__BufferInitView (flm_Buffer *                       buffer,         \
+                     flm_Buffer *                       from,           \
+                     off_t                              off,            \
+                     size_t                             count);
 
 void
 flm__BufferPerfDestruct (flm_Buffer * buffer);

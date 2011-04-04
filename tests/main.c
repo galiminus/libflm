@@ -37,6 +37,9 @@ main (void)
     Suite * threadSuite = thread_suite ();
     SRunner * threadRunner = srunner_create (threadSuite);
 
+    Suite * threadPoolSuite = thread_pool_suite ();
+    SRunner * threadPoolRunner = srunner_create (threadPoolSuite);
+
     Suite * ioSuite = io_suite ();
     SRunner * ioRunner = srunner_create (ioSuite);
 
@@ -127,6 +130,17 @@ main (void)
     srunner_run_all (threadRunner, CK_NORMAL);
     number_failed += srunner_ntests_failed (threadRunner);
     srunner_free (threadRunner);
+
+    printf (">> Switch to the Epoll backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_EPOLL);
+    srunner_run_all (threadPoolRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (threadPoolRunner);
+
+    printf (">> Switch to the select() backend\n");
+    flm__setMonitorBackend (FLM__MONITOR_BACKEND_SELECT);
+    srunner_run_all (threadPoolRunner, CK_NORMAL);
+    number_failed += srunner_ntests_failed (threadPoolRunner);
+    srunner_free (threadPoolRunner);
 
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

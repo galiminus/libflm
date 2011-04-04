@@ -54,7 +54,6 @@ struct flm_Thread
 
 int
 flm__ThreadInit (flm_Thread *		thread,
-		 flm_Monitor *		monitor,
 		 void *               state);
 
 void
@@ -62,6 +61,7 @@ flm__ThreadPerfDestruct (flm_Thread * thread);
 
 void
 flm__ThreadExit (flm_Thread *   thread,
+                 flm_Monitor *  monitor,
                  void *         _state,
                  void *         _params);
 

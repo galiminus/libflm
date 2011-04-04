@@ -8,6 +8,7 @@ check_libflm_SOURCES = 	main.c				\
 						monitor_test.c		\
 						timer_test.c		\
 						thread_test.c		\
+						thread_pool_test.c	\
 						tcp_server_test.c	\
 						io_test.c		    \
 						stream_test.c	    \

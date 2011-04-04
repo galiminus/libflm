@@ -63,8 +63,7 @@ flm__setPthreadMutexUnlockHandler (int (*handler) (pthread_mutex_t *))
 }
 
 flm_Thread *
-flm_ThreadNew (flm_Monitor *	monitor,
-               void *           state)
+flm_ThreadNew (void *           state)
 {
     flm_Thread *        thread;
     
@@ -72,7 +71,7 @@ flm_ThreadNew (flm_Monitor *	monitor,
         return (NULL);
     }
         
-    if (flm__ThreadInit (thread, monitor, state) == -1) {
+    if (flm__ThreadInit (thread, state) == -1) {
         flm__Free (thread);
         return (NULL);
     }
@@ -81,7 +80,6 @@ flm_ThreadNew (flm_Monitor *	monitor,
 
 int
 flm__ThreadInit (flm_Thread *		thread,
-                 flm_Monitor *		monitor,
                  void *                 state)
 {
     int         error;
@@ -101,7 +99,10 @@ flm__ThreadInit (flm_Thread *		thread,
     
     TAILQ_INIT (&(thread->msgs));
     
-    thread->monitor = flm_MonitorRetain (monitor);
+    thread->monitor = flm_MonitorNew ();
+    if (thread->monitor == NULL) {
+        goto error;
+    }
 
     pthreadMutexInitHandler     =       pthread_mutex_init;
     pthreadMutexLockHandler     =       pthread_mutex_lock;
@@ -150,6 +151,7 @@ flm__ThreadInit (flm_Thread *		thread,
     close (thread_pipe[1]);
   release_monitor:
     flm_MonitorRelease (thread->monitor);
+  error:
     return (-1);
 }
 
@@ -161,11 +163,13 @@ flm__ThreadPerfDestruct (flm_Thread * thread)
 
 void
 flm__ThreadExit (flm_Thread *   thread,
+                 flm_Monitor *  monitor,
                  void *         _state,
                  void *         _params)
 {
     (void) _state;
     (void) _params;
+    (void) monitor;
 
     flm_StreamClose (thread->pipe.out);
     close (thread->pipe.in);
@@ -197,7 +201,7 @@ flm__ThreadEventHandler (flm_Stream *   _stream,
     TAILQ_FOREACH (msg, &(thread->msgs), entries) {
         if (msg->handler) {
             temp.entries = msg->entries;
-            msg->handler(thread, thread->state, msg->params);
+            msg->handler(thread, thread->monitor, thread->state, msg->params);
             TAILQ_REMOVE (&(thread->msgs), msg, entries);
             flm__Free (msg);
             msg = &temp;

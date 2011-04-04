@@ -14,7 +14,7 @@ START_TEST(test_stream_create)
     flm_Monitor * monitor;
     flm_Stream * stream_in;
     flm_Stream * stream_out;
-    
+
     fail_if (pipe (fds) == -1);
 
     if ((monitor = flm_MonitorNew ()) == NULL) {

@@ -32,6 +32,8 @@
 
 #define FLM__TYPE_STREAM	0x00060000
 
+typedef flm_Buffer *(*flm__StreamPerfAlloc_f) (flm_Stream * stream);
+
 struct flm__StreamInput
 {
 	union {
@@ -53,19 +55,25 @@ struct flm__StreamInput
 struct flm_Stream
 {
     /* inheritance */
-    struct flm_IO				io;
-    
+    struct flm_IO			io;
+
+    flm_Stream *                        pipe;
+
     struct {
-            flm_StreamReadHandler		handler;
+        flm_StreamReadHandler		handler;
     } rd;
     struct {
         flm_StreamWriteHandler		handler;
     } wr;
-    
+
     struct {
         SSL *                           obj;
     } tls;
-    
+
+    struct {
+        flm__StreamPerfAlloc_f          alloc;
+    } perf;
+
     TAILQ_HEAD (flin, flm__StreamInput)	inputs;
 };
 
@@ -90,7 +98,7 @@ void
 flm__StreamPerfDestruct (flm_Stream *	stream);
 
 void *
-flm__StreamDefaultFeed (void *	state,
+flm__StreamDefaultFeed (void *          state,
 			size_t		size);
 
 void
@@ -105,6 +113,9 @@ flm__StreamPerfWrite (flm_Stream *	stream,
 
 ssize_t
 flm__StreamWrite (flm_Stream *		stream);
+
+flm_Buffer *
+flm__StreamPerfAlloc (flm_Stream *      stream);
 
 ssize_t
 flm__StreamSysWritev (flm_Stream *	stream);

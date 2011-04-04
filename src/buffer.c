@@ -37,7 +37,22 @@ flm_BufferNew (char *                           content,
         flm__Error = FLM_ERR_NOMEM;
         return (NULL);
     }
-    flm__BufferInit (buffer, content, len, fr_handler);
+    flm__BufferInitRaw (buffer, content, len, fr_handler);
+    return (buffer);
+}
+
+flm_Buffer *
+flm_BufferView (flm_Buffer *    from,
+                off_t           off,
+                size_t          count)
+{
+    flm_Buffer *        buffer;
+
+    if ((buffer = flm__Alloc (sizeof (flm_Buffer))) == NULL) {
+        flm__Error = FLM_ERR_NOMEM;
+        return (NULL);
+    }
+    flm__BufferInitView (buffer, from, off, count);
     return (buffer);
 }
 
@@ -56,19 +71,19 @@ flm_BufferPrintf (const char *          format,
     va_start (ap, format);
     len = vsnprintf (NULL, 0, format, ap);
     va_end (ap);
-    
+
     alloc = len + 1;
-    
+
     content = flm__Alloc (alloc * sizeof (char));
     if (content == NULL) {
         flm__Error = FLM_ERR_NOMEM;
         goto error;
     }
-    
+
     va_start (ap, format);
     vsnprintf (content, alloc, format, ap);
     va_end (ap);
-    
+
     if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
         goto free_content;
     }
@@ -84,13 +99,26 @@ error:
 size_t
 flm_BufferLength (flm_Buffer *          buffer)
 {
-    return (buffer->len);
+    if (buffer->type == FLM__BUFFER_TYPE_RAW) {
+        return (buffer->content.raw.len);
+    }
+    else if (buffer->type == FLM__BUFFER_TYPE_VIEW) {
+        return (buffer->content.view.count);
+    }
+    return (0);
 }
 
 char *
 flm_BufferContent (flm_Buffer *         buffer)
 {
-    return (buffer->content);
+    if (buffer->type == FLM__BUFFER_TYPE_RAW) {
+        return (buffer->content.raw.content);
+    }
+    else if (buffer->type == FLM__BUFFER_TYPE_VIEW) {
+        return (&(flm_BufferContent (
+                      buffer->content.view.from)[buffer->content.view.off]));
+    }
+    return (NULL);
 }
 
 flm_Buffer *
@@ -107,10 +135,10 @@ flm_BufferRelease (flm_Buffer *         buffer)
 }
 
 void
-flm__BufferInit (flm_Buffer *                   buffer,
-                 char *                         content,
-                 size_t                         len,
-                 flm_BufferFreeContentHandler   fr_handler)
+flm__BufferInitRaw (flm_Buffer *                   buffer,
+                    char *                         content,
+                    size_t                         len,
+                    flm_BufferFreeContentHandler   fr_handler)
 {
     flm__ObjInit ((flm_Obj *) buffer);
 
@@ -119,18 +147,43 @@ flm__BufferInit (flm_Buffer *                   buffer,
     ((flm_Obj *)(buffer))->perf.destruct =                      \
         (flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
 
-    buffer->len = len;
-    buffer->content = content;
+    buffer->type = FLM__BUFFER_TYPE_RAW;
+    buffer->content.raw.len = len;
+    buffer->content.raw.content = content;
+    buffer->content.raw.fr.handler = fr_handler;
+    return ;
+}
 
-    buffer->fr.handler = fr_handler;
+void
+flm__BufferInitView (flm_Buffer *                  buffer,
+                     flm_Buffer *                  from,
+                     off_t                         off,
+                     size_t                        count)
+{
+    flm__ObjInit ((flm_Obj *) buffer);
+
+    ((flm_Obj *)(buffer))->type = FLM__TYPE_BUFFER;
+
+    ((flm_Obj *)(buffer))->perf.destruct =                      \
+        (flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
+
+    buffer->type = FLM__BUFFER_TYPE_VIEW;
+    buffer->content.view.from = flm_BufferRetain (from);
+    buffer->content.view.off = off;
+    buffer->content.view.count = count;
     return ;
 }
 
 void
 flm__BufferPerfDestruct (flm_Buffer *   buffer)
 {
-    if (buffer->fr.handler) {
-        buffer->fr.handler (buffer->content);
+    if (buffer->type == FLM__BUFFER_TYPE_RAW) {
+        if (buffer->content.raw.fr.handler) {
+            buffer->content.raw.fr.handler (buffer->content.raw.content);
+        }
+    }
+    else if (buffer->type == FLM__BUFFER_TYPE_VIEW) {
+        flm_BufferRelease (buffer->content.view.from);
     }
     return ;
 }

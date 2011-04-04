@@ -47,7 +47,6 @@ flm__ErrorLocation ()
 {
     int * error;
 
-    
     assert (pthread_once (&flm__ErrorInitOnce, flm__ErrorInit) != -1);
 
     if ((error = pthread_getspecific (flm__ErrorLocationKey)) == NULL) {

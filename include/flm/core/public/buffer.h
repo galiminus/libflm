@@ -59,7 +59,7 @@ typedef void (*flm_BufferFreeContentHandler)(void * ptr);
  * \par Example with static string:
  * \code
  * flm_Buffer * buffer;
- * 
+ *
  * buffer = flm_BufferNew ("test", 5, NULL);
  * \endcode
  *
@@ -77,6 +77,11 @@ flm_Buffer *
 flm_BufferNew (char *				content,
 	       size_t				length,
 	       flm_BufferFreeContentHandler	fr_handler);
+
+flm_Buffer *
+flm_BufferView (flm_Buffer *                    buffer,
+                off_t                           off,
+                size_t                          count);
 
 /**
  * \brief Create a new flm_Buffer object and fill it with a formatted
@@ -100,7 +105,7 @@ flm_BufferNew (char *				content,
  *
  *  buffer = flm_BufferPrintf ("TEST %d %s ", 42, "coucou");
  *  assert (strcmp (flm_BufferContent (buffer), "TEST 42 coucou ") == 0);
- * 
+ *
  * \endcode
  */
 flm_Buffer *

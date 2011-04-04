@@ -30,7 +30,7 @@ END_TEST
 START_TEST(test_buffer_content)
 {
     flm_Buffer * buffer;
-    
+
     if ((buffer = flm_BufferNew ("test", 5, NULL)) == NULL) {
         fail ("Buffer creation failed");
     }
@@ -41,7 +41,7 @@ END_TEST
 START_TEST(test_buffer_length)
 {
     flm_Buffer * buffer;
-    
+
     if ((buffer = flm_BufferNew ("test", 4, NULL)) == NULL) {
         fail ("Buffer creation failed");
     }
@@ -54,13 +54,33 @@ END_TEST
 START_TEST(test_buffer_printf_length)
 {
     flm_Buffer * buffer;
-    
+
     if ((buffer = flm_BufferPrintf ("TEST %d %s ", 42, "coucou")) == NULL) {
         fail ("Buffer creation failed");
     }
-    if (flm_BufferLength (buffer) != 15) {
-        fail ("Invalid buffer content");
+    fail_unless (flm_BufferLength (buffer) == 15);
+}
+END_TEST
+
+START_TEST(test_buffer_view)
+{
+    flm_Buffer * buffer;
+    flm_Buffer * view;
+
+    setTestAlloc (0);
+
+    if ((buffer = flm_BufferPrintf ("TEST %d %s ", 42, "coucou")) == NULL) {
+        fail ("Buffer creation failed");
     }
+    view = flm_BufferView (buffer, 3, 6);
+    fail_if (view == NULL);
+
+    flm_BufferRelease (buffer);
+
+    fail_unless (flm_BufferLength (view) == 6);
+    fail_unless (strncmp (flm_BufferContent (view), "T 42 c", 6) == 0);
+    flm_BufferRelease (view);
+    fail_unless (getAllocSum () == 0);
 }
 END_TEST
 
@@ -75,7 +95,7 @@ _buffer_free_handler (void * content) {
 START_TEST(test_buffer_free)
 {
     flm_Buffer * buffer;
-    
+
     setTestAlloc (0);
     _has_freed = 0;
     if ((buffer = flm_BufferNew ("test", 5, _buffer_free_handler)) == NULL) {
@@ -137,6 +157,7 @@ buffer_suite (void)
   tcase_add_test (tc_core, test_buffer_content);
   tcase_add_test (tc_core, test_buffer_length);
   tcase_add_test (tc_core, test_buffer_printf_length);
+  tcase_add_test (tc_core, test_buffer_view);
   tcase_add_test (tc_core, test_buffer_free);
   tcase_add_test (tc_core, test_buffer_alloc_fail);
   tcase_add_test (tc_core, test_buffer_destruct);

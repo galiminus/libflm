@@ -46,6 +46,9 @@ flm__ThreadPoolInit (flm_ThreadPool *   thread_pool)
 
     ((flm_Obj *)(thread_pool))->type = FLM__TYPE_THREAD_POOL;
 
+    ((flm_Obj *)(thread_pool))->perf.destruct =                      \
+        (flm__ObjPerfDestruct_f) flm__ThreadPoolPerfDestruct;
+
     thread_pool->count = 0;
     thread_pool->current = 0;
 
@@ -57,6 +60,20 @@ flm__ThreadPoolInit (flm_ThreadPool *   thread_pool)
     }
 
     return (0);
+}
+
+void
+flm__ThreadPoolPerfDestruct (flm_ThreadPool *   thread_pool)
+{
+    uint32_t      count;
+
+    for (count = 0; count < thread_pool->count; count++) {
+        flm_ThreadRelease (thread_pool->threads[count]);
+    }
+    if (thread_pool->threads) {
+        flm__Free (thread_pool->threads);
+    }
+    return ;
 }
 
 int
@@ -80,11 +97,11 @@ flm_ThreadPoolAdd (flm_ThreadPool *     thread_pool,
     if (thread_pool->threads) {
         memcpy (threads,                                        \
                 thread_pool->threads,                           \
-                thread_pool->count * sizeof(flm_Thread *));
+                thread_pool->count * sizeof (flm_Thread *));
+        flm__Free(thread_pool->threads);
     }
-    flm__Free(thread_pool->threads);
 
-    threads[count - 1] = thread;
+    threads[count - 1] = flm_ThreadRetain (thread);
     thread_pool->threads = threads;
     thread_pool->count = count;
 
@@ -104,10 +121,10 @@ flm_ThreadPoolAdd (flm_ThreadPool *     thread_pool,
 int
 flm_ThreadPoolJoin (flm_ThreadPool *            thread_pool)
 {
-    uint32_t        i;
+    uint32_t        count;
 
-    for (i = 0; i < thread_pool->count; i++) {
-        if (flm_ThreadJoin (thread_pool->threads[i]) == -1) {
+    for (count = 0; count < thread_pool->count; count++) {
+        if (flm_ThreadJoin (thread_pool->threads[count]) == -1) {
             return (-1);
         }
     }

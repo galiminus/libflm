@@ -22,6 +22,9 @@ Suite *
 thread_suite (void);
 
 Suite *
+thread_pool_suite (void);
+
+Suite *
 io_suite (void);
 
 Suite *

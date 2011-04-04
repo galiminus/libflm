@@ -46,7 +46,7 @@ struct flm_IO
     void *  			state;
 
     flm_Monitor *		monitor;
-    
+
     struct {
         int			fd;
     } sys;

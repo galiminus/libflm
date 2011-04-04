@@ -6,13 +6,9 @@
 
 START_TEST(test_thread_create)
 {
-    flm_Monitor * monitor;
     flm_Thread * thread;
     
-    if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creation failed");
-    }
-    if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
+    if ((thread = flm_ThreadNew ((void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
 }
@@ -20,17 +16,12 @@ END_TEST
 
 START_TEST(test_thread_release)
 {
-    flm_Monitor * monitor;
     flm_Thread * thread;
 
     setTestAlloc (0);
-    if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creation failed");
-    }
-    if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
+    if ((thread = flm_ThreadNew ((void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
-    flm_MonitorRelease (monitor);
     flm_ThreadRelease (thread);
 
     /**
@@ -45,7 +36,7 @@ END_TEST
 START_TEST(test_thread_alloc_fail)
 {
     setTestAlloc (1);
-    fail_if (flm_ThreadNew (NULL, NULL) != NULL);
+    fail_if (flm_ThreadNew (NULL) != NULL);
     fail_unless (getAllocSum () == 0);
 }
 END_TEST
@@ -54,10 +45,12 @@ int _called = 0;
 
 void
 _thread_call_handler (flm_Thread * thread,
+                      flm_Monitor * monitor,
                       void * state,
                       void * params)
 {
     (void) thread;
+    (void) monitor;
 
     fail_unless (state == (void *)42);
     fail_unless (params == (void *)21);
@@ -66,17 +59,12 @@ _thread_call_handler (flm_Thread * thread,
 
 START_TEST(test_thread_call)
 {
-    flm_Monitor * monitor;
     flm_Thread * thread;
 
     setTestAlloc (0);
-    if ((monitor = flm_MonitorNew ()) == NULL) {
-        fail ("Monitor creation failed");
-    }
-    if ((thread = flm_ThreadNew (monitor, (void*)42)) == NULL) {
+    if ((thread = flm_ThreadNew ((void*)42)) == NULL) {
         fail ("Thread creation failed");
     }
-    flm_MonitorRelease (monitor);
 
     if (flm_ThreadCall (thread, _thread_call_handler, (void *) 21) == -1) {
         fail ("Thread call failed");

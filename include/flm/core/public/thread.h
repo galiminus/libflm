@@ -27,11 +27,10 @@ typedef struct flm_Thread flm_Thread;
 #endif /* !_FLM__SKIP */
 
 typedef void (*flm_ThreadCallHandler)	\
-(flm_Thread * thread, void * state, void * params);
+(flm_Thread * thread, flm_Monitor * monitor, void * state, void * params);
 
 flm_Thread *
-flm_ThreadNew (flm_Monitor *	monitor,
-	       void *           state);
+flm_ThreadNew (void *           state);
 
 int
 flm_ThreadJoin (flm_Thread *	thread);

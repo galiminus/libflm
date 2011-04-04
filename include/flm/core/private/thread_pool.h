@@ -41,6 +41,9 @@ struct flm_ThreadPool
 int
 flm__ThreadPoolInit (flm_ThreadPool *		thread_pool);
 
+void
+flm__ThreadPoolPerfDestruct (flm_ThreadPool *   thread_pool);
+
 void *
 flm__ThreadStartRoutine (void *			_params);
 
