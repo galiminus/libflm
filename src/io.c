@@ -31,7 +31,7 @@ flm_IONew (flm_Monitor *        monitor,
            void *               state)
 {
     flm_IO * io;
-    
+
     if ((io = flm__Alloc (sizeof (flm_IO))) == NULL) {
         return (NULL);
     }
@@ -59,10 +59,10 @@ flm_IOClose (flm_IO *           io)
 {
     io->rd.can = false;
     io->rd.want = false;
-    
+
     io->wr.can = false;
     io->wr.want = false;
-    
+
     io->cl.shutdown = true;
 
     flm__IOClose (io, io->monitor);
@@ -104,13 +104,13 @@ flm_IOOnError (flm_IO *                 io,
 flm_IO *
 flm_IORetain (flm_IO *                  io)
 {
-    return (flm__Retain ((flm_Obj *) io));
+    return (flm__Retain (&io->obj));
 }
 
 void
 flm_IORelease (flm_IO *                 io)
 {
-    flm__Release ((flm_Obj *) io);
+    flm__Release (&io->obj);
     return ;
 }
 
@@ -120,23 +120,23 @@ flm__IOInit (flm_IO *                   io,
              int                        fd,
              void *                     state)
 {
-    flm__ObjInit ((flm_Obj *) io);
+    flm__ObjInit (&io->obj);
 
-    ((flm_Obj *)(io))->perf.destruct =                  \
+    io->obj.perf.destruct =                             \
         (flm__ObjPerfDestruct_f) flm__IOPerfDestruct;
-    
+
     io->state                   =       state;
-    
+
     io->sys.fd                  =       fd;
-    
+
     io->rd.can                  =       false;
     io->rd.want                 =       true;
     io->rd.limit                =       4;
-    
+
     io->wr.can                  =       false;
     io->wr.want                 =       false;
     io->wr.limit                =       4;
-    
+
     io->cl.shutdown             =       false;
     io->cl.closed               =       false;
 
@@ -144,16 +144,16 @@ flm__IOInit (flm_IO *                   io,
     flm_IOOnWrite (io, NULL);
     flm_IOOnClose (io, NULL);
     flm_IOOnError (io, NULL);
-    
+
     io->perf.read               =       flm__IOPerfRead;
     io->perf.write              =       flm__IOPerfWrite;
     io->perf.close              =       flm__IOPerfClose;
-    
+
     io->monitor         =       monitor;
     if (io->monitor && flm__MonitorIOAdd (io->monitor, io) == -1) {
         return (-1);
     }
-    
+
     return (0);
 }
 

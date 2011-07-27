@@ -72,21 +72,21 @@ flm__SelectInit (flm__Select * _select)
         return (-1);
     }
 
-    ((flm_Monitor *)(_select))->add	=       \
+    _select->monitor.add	=               \
         (flm__MonitorAdd_f) flm__SelectPerfAdd;
 
-    ((flm_Monitor *)(_select))->del	=       \
+    _select->monitor.del        =               \
         (flm__MonitorAdd_f) flm__SelectPerfDel;
-    
-    ((flm_Monitor *)(_select))->wait	=       \
+
+    _select->monitor.wait        =              \
         (flm__MonitorWait_f) flm__SelectPerfWait;
-    
+
     memset (_select->ios, 0, sizeof (_select->ios));
 
     if (selectHandler == NULL) {
         flm__setSelectHandler (select);
     }
-    
+
     return (0);
 }
 
@@ -125,17 +125,17 @@ flm__SelectPerfWait (flm__Select * _select)
     fd_set                  wset;
     int                     max;
 
-    if (((flm_Monitor *)(_select))->tm.next == -1) {
+    if (_select->monitor.tm.next == -1) {
         delay_ptr = NULL;
     }
-    else if (((flm_Monitor *)(_select))->tm.next >= 1000) {
-        delay.tv_sec = ((flm_Monitor *)(_select))->tm.next / 1000;
-        delay.tv_usec = (((flm_Monitor *)(_select))->tm.next * 1000) % 1000;
+    else if (_select->monitor.tm.next >= 1000) {
+        delay.tv_sec = _select->monitor.tm.next / 1000;
+        delay.tv_usec = (_select->monitor.tm.next * 1000) % 1000;
         delay_ptr = &delay;
     }
     else {
         delay.tv_sec = 0;
-        delay.tv_usec = ((flm_Monitor *)(_select))->tm.next * 1000;
+        delay.tv_usec = _select->monitor.tm.next * 1000;
         delay_ptr = &delay;
     }
 
@@ -147,7 +147,7 @@ flm__SelectPerfWait (flm__Select * _select)
             continue ;
         }
         if (io->cl.shutdown && !io->wr.want && !io->cl.closed) {
-            flm__IOClose (io, (flm_Monitor *) _select);
+            flm__IOClose (io, &_select->monitor);
             continue ;
         }
         if (io->rd.want) {
@@ -192,10 +192,10 @@ flm__SelectPerfWait (flm__Select * _select)
         }
 
         if (FD_ISSET (fd, &rset)) {
-            flm__IORead (io, (flm_Monitor *) _select);
+            flm__IORead (io, &_select->monitor);
         }
         if (FD_ISSET (fd, &wset)) {
-            flm__IOWrite (io, (flm_Monitor *) _select);
+            flm__IOWrite (io, &_select->monitor);
         }
     }
     return (0);

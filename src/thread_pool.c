@@ -42,11 +42,11 @@ flm__ThreadPoolInit (flm_ThreadPool *   thread_pool)
 {
     int         error;
 
-    flm__ObjInit ((flm_Obj *) thread_pool);
+    flm__ObjInit (&thread_pool->obj);
 
-    ((flm_Obj *)(thread_pool))->type = FLM__TYPE_THREAD_POOL;
+    thread_pool->obj.type = FLM__TYPE_THREAD_POOL;
 
-    ((flm_Obj *)(thread_pool))->perf.destruct =                      \
+    thread_pool->obj.perf.destruct =                      \
         (flm__ObjPerfDestruct_f) flm__ThreadPoolPerfDestruct;
 
     thread_pool->count = 0;
@@ -179,12 +179,12 @@ flm_ThreadPoolCallTo (flm_ThreadPool *          thread_pool,
 flm_ThreadPool *
 flm_ThreadPoolRetain (flm_ThreadPool *          thread_pool)
 {
-    return (flm__Retain ((flm_Obj *) thread_pool));
+    return (flm__Retain (&thread_pool->obj));
 }
 
 void
 flm_ThreadPoolRelease (flm_ThreadPool *         thread_pool)
 {
-    flm__Release ((flm_Obj *) thread_pool);
+    flm__Release (&thread_pool->obj);
     return ;
 }

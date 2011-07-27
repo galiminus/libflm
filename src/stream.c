@@ -140,10 +140,9 @@ flm_StreamPushBuffer (flm_Stream *	stream,
         goto error;
     }
 
-    ((flm_IO *)(stream))->wr.want = true;
-    if (((flm_IO *)(stream))->monitor &&                            \
-        flm__MonitorIOReset (((flm_IO *)(stream))->monitor,
-                             (flm_IO *) stream) == -1) {
+    stream->io.wr.want = true;
+    if (stream->io.monitor &&                                   \
+        flm__MonitorIOReset (stream->io.monitor, &stream->io) == -1) {
         goto free_input;
     }
 
@@ -171,7 +170,7 @@ flm_StreamPushFile (flm_Stream *	stream,
     struct stat stat;
 
     if (count == 0) {
-        if (fstat (((flm_IO *)(file))->sys.fd, &stat) == -1) {
+        if (fstat (file->io.sys.fd, &stat) == -1) {
             return (-1);
         }
         if (off > stat.st_size) {
@@ -183,9 +182,8 @@ flm_StreamPushFile (flm_Stream *	stream,
     if ((input = flm__Alloc (sizeof (struct flm__StreamInput))) == NULL) {
         goto error;
     }
-    if (((flm_IO *)(stream))->monitor &&                           \
-        flm__MonitorIOReset (((flm_IO *)(stream))->monitor,        \
-                             (flm_IO *) stream) == -1) {
+    if (stream->io.monitor &&                           \
+        flm__MonitorIOReset (stream->io.monitor, &stream->io) == -1) {
         goto free_input;
     }
 
@@ -195,7 +193,7 @@ flm_StreamPushFile (flm_Stream *	stream,
     input->count = count;
     TAILQ_INSERT_TAIL (&(stream->inputs), input, entries);
 
-    ((flm_IO *)(stream))->wr.want = true;
+    stream->io.wr.want = true;
     return (0);
 
   free_input:
@@ -207,13 +205,13 @@ flm_StreamPushFile (flm_Stream *	stream,
 void
 flm_StreamShutdown (flm_Stream *        stream)
 {
-    flm_IOShutdown ((flm_IO *) stream);
+    flm_IOShutdown (&stream->io);
 }
 
 void
 flm_StreamClose (flm_Stream *           stream)
 {
-    flm_IOClose ((flm_IO *) stream);
+    flm_IOClose (&stream->io);
 }
 
 void
@@ -236,14 +234,14 @@ void
 flm_StreamOnClose (flm_Stream *                 stream,
                    flm_StreamCloseHandler       handler)
 {
-    flm_IOOnClose ((flm_IO *) stream, (flm_IOCloseHandler) handler);
+    flm_IOOnClose (&stream->io, (flm_IOCloseHandler) handler);
 }
 
 void
 flm_StreamOnError (flm_Stream *                 stream,
                    flm_StreamErrorHandler       handler)
 {
-    flm_IOOnError ((flm_IO *) stream, (flm_IOErrorHandler) handler);
+    flm_IOOnError (&stream->io, (flm_IOErrorHandler) handler);
 }
 
 int
@@ -274,26 +272,13 @@ flm_StreamStartTLSServer (flm_Stream *               stream,
 flm_Stream *
 flm_StreamRetain (flm_Stream * stream)
 {
-    return (flm__Retain ((flm_Obj *) stream));
+    return (flm__Retain (&stream->io.obj));
 }
 
 void
 flm_StreamRelease (flm_Stream * stream)
 {
-    flm__Release ((flm_Obj *) stream);
-    return ;
-}
-
-void
-flm_StreamPipe (flm_Stream * stream,
-                flm_Stream * to)
-{
-    if (to == NULL) {
-        stream->pipe = NULL;
-    }
-    else {
-        stream->pipe = flm_StreamRetain (to);
-    }
+    flm__Release (&stream->io.obj);
     return ;
 }
 
@@ -303,25 +288,24 @@ flm__StreamInit (flm_Stream *	stream,
 		 int		fd,
 		 void *		state)
 {
-    if (flm__IOInit ((flm_IO *) stream, monitor, fd, state) == -1) {
+    if (flm__IOInit (&stream->io, monitor, fd, state) == -1) {
         return (-1);
     }
-    ((flm_Obj *)(stream))->type = FLM__TYPE_STREAM;
+    stream->io.obj.type = FLM__TYPE_STREAM;
 
-    ((flm_Obj *)(stream))->perf.destruct =                      \
+    stream->io.obj.perf.destruct =                              \
         (flm__ObjPerfDestruct_f) flm__StreamPerfDestruct;
 
-    ((flm_IO *)(stream))->perf.read	=                       \
+    stream->io.perf.read	=                       \
         (flm__IOSysRead_f) flm__StreamPerfRead;
 
-    ((flm_IO *)(stream))->perf.write	=                       \
+    stream->io.perf.write	=                       \
         (flm__IOSysWrite_f) flm__StreamPerfWrite;
 
     TAILQ_INIT (&stream->inputs);
 
     flm_StreamOnRead (stream, NULL);
     flm_StreamOnWrite (stream, NULL);
-    flm_StreamPipe (stream, NULL);
 
     stream->perf.alloc = flm__StreamPerfAlloc;
 
@@ -338,7 +322,7 @@ flm__StreamInitTLS (flm_Stream *                stream,
     if (stream->tls.obj == NULL) {
         goto error;
     }
-    if (!SSL_set_fd (stream->tls.obj, ((flm_IO *)(stream))->sys.fd)) {
+    if (!SSL_set_fd (stream->tls.obj, stream->io.sys.fd)) {
         goto free_obj;
     }
     return (0);
@@ -377,7 +361,7 @@ flm__StreamPerfDestruct (flm_Stream * stream)
         input = &temp;
     }
     flm__StreamShutdownTLS (stream);
-    flm__IOPerfDestruct ((flm_IO *) stream);
+    flm__IOPerfDestruct (&stream->io);
     return ;
 }
 
@@ -387,9 +371,7 @@ flm__StreamPerfAlloc (flm_Stream *      stream)
     char *              content;
     flm_Buffer *        buffer;
 
-    if (stream->pipe) {
-        return (stream->perf.alloc (stream->pipe));
-    }
+    (void) stream;
 
     content = flm__Alloc (FLM_STREAM__RBUFFER_SIZE);
     if (content == NULL) {
@@ -450,8 +432,8 @@ flm__StreamPerfRead (flm_Stream *	stream,
     drain_count = 0;
     if (nb_read == 0) {
         /* close */
-        ((flm_IO *)(stream))->rd.can = false;
-        flm_IOShutdown ((flm_IO *) stream);
+        stream->io.rd.can = false;
+        flm_IOShutdown (&stream->io);
         goto out;
     }
     else if (nb_read < 0) {
@@ -459,25 +441,23 @@ flm__StreamPerfRead (flm_Stream *	stream,
             /**
              * the kernel buffer was empty
              */
-            ((flm_IO *)(stream))->rd.can = false;
+            stream->io.rd.can = false;
         }
         else if (errno == EINTR) {
             /**
              * interrupted by a signal, just retry
              */
-            ((flm_IO *)(stream))->rd.can = true;
+            stream->io.rd.can = true;
         }
         else {
             /* fatal error */
             flm__Error = FLM_ERR_ERRNO;
-            flm_IOClose ((flm_IO *) stream);
+            flm_IOClose (&stream->io);
             /**
              * Call the error handler
              */
-            if (((flm_IO *)(stream))->er.handler) {
-                ((flm_IO *)(stream))->er.handler ((flm_IO *) stream,
-                                                  ((flm_IO *)(stream))->state,
-                                                  flm_Error());
+            if (stream->io.er.handler) {
+                stream->io.er.handler (&stream->io, stream->io.state, flm_Error());
             }
         }
         goto out;
@@ -495,10 +475,8 @@ flm__StreamPerfRead (flm_Stream *	stream,
             /**
              * Call the error handler
              */
-            if (((flm_IO *)(stream))->er.handler) {
-                ((flm_IO *)(stream))->er.handler ((flm_IO *) stream,
-                                                  ((flm_IO *)(stream))->state,
-                                                  flm_Error());
+            if (stream->io.er.handler) {
+                stream->io.er.handler (&stream->io, stream->io.state, flm_Error());
             }
             goto out;
         }
@@ -507,11 +485,11 @@ flm__StreamPerfRead (flm_Stream *	stream,
          * Call the read handler with the new buffer
          */
         if (stream->rd.handler) {
-            stream->rd.handler (stream, ((flm_IO *)(stream))->state, buffer);
+            stream->rd.handler (stream, &stream->io.state, buffer);
         }
 
         if (drain < iovec[drain_count].iov_len) {
-            ((flm_IO *)(stream))->rd.can = false;
+            stream->io.rd.can = false;
             drain = 0;
         }
         else {
@@ -550,26 +528,24 @@ flm__StreamPerfWrite (flm_Stream *	stream,
     if (nb_write < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             /* kernel buffer was full */
-            ((flm_IO *)(stream))->wr.can = false;
+            stream->io.wr.can = false;
             return ;
         }
         else if (errno == EINTR) {
             /* interrupted by a signal, just retry */
-            ((flm_IO *)(stream))->wr.can = true;
+            stream->io.wr.can = true;
             return ;
         }
         else {
             /* fatal error */
             flm__Error = FLM_ERR_ERRNO;
-            flm_IOClose ((flm_IO *) stream);
+            flm_IOClose (&stream->io);
 
             /**
              * Call the error handler
              */
-            if (((flm_IO *)(stream))->er.handler) {
-                ((flm_IO *)(stream))->er.handler ((flm_IO *) stream,
-                                                  ((flm_IO *)(stream))->state,
-                                                  flm_Error());
+            if (stream->io.er.handler) {
+                stream->io.er.handler (&stream->io, stream->io.state, flm_Error());
             }
             return ;
         }
@@ -579,13 +555,11 @@ flm__StreamPerfWrite (flm_Stream *	stream,
      * Call the write handler with the number of bytes written
      */
     if (stream->wr.handler) {
-        stream->wr.handler (stream,
-                            ((flm_IO *)(stream))->state,
-                            nb_write);
+        stream->wr.handler (stream, stream->io.state, nb_write);
     }
 
     drain = nb_write;
-    ((flm_IO *)(stream))->wr.can = true;
+    stream->io.wr.can = true;
     TAILQ_FOREACH (input, &(stream->inputs), entries) {
         if (drain == 0) {
             break ;
@@ -593,7 +567,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
         if (drain < input->tried) {
             input->off += drain;
             input->count -= drain;
-            ((flm_IO *)(stream))->wr.can = false;
+            stream->io.wr.can = false;
             break ;
         }
 
@@ -611,7 +585,7 @@ flm__StreamPerfWrite (flm_Stream *	stream,
     }
 
     if (TAILQ_FIRST (&stream->inputs) == NULL) {
-        ((flm_IO *)(stream))->wr.want = false;
+        stream->io.wr.want = false;
     }
     return ;
 }
@@ -665,7 +639,7 @@ flm__StreamSysWritev (flm_Stream * stream)
         iovec[iov_count].iov_len = input->tried = input->count;
         iov_count++;
     }
-    return (writev (((flm_IO *)(stream))->sys.fd, iovec, iov_count));
+    return (writev (stream->io.sys.fd, iovec, iov_count));
 }
 
 ssize_t
@@ -680,7 +654,7 @@ flm__StreamSysReadWriteTo (flm_Stream * stream)
         return (0);
     }
 
-    if (lseek (((flm_IO *)(input->class.file))->sys.fd,
+    if (lseek (input->class.file->io.sys.fd,
                input->off,
                SEEK_SET) == -1) {
         goto error;
@@ -691,7 +665,7 @@ flm__StreamSysReadWriteTo (flm_Stream * stream)
         goto error;
     }
 
-    rcount = read (((flm_IO *)(input->class.file))->sys.fd,
+    rcount = read (input->class.file->io.sys.fd,
                    buffer,
                    FLM_STREAM__READ_FILE_SIZE);
     if (rcount == -1) {
@@ -700,7 +674,7 @@ flm__StreamSysReadWriteTo (flm_Stream * stream)
 
     input->tried = rcount;
 
-    wcount = write (((flm_IO *)(stream))->sys.fd, buffer, rcount);
+    wcount = write (stream->io.sys.fd, buffer, rcount);
     if (wcount == -1) {
         goto free_buffer;
     }
@@ -727,8 +701,8 @@ flm__StreamSysSendFile (flm_Stream * stream)
 
     off = input->off;
     input->tried = input->count;
-    return (sendfile (((flm_IO *)(stream))->sys.fd,              \
-                      ((flm_IO *)(input->class.file))->sys.fd,   \
-                      &off,					 \
+    return (sendfile (stream->io.sys.fd,              \
+                      input->class.file->io.sys.fd,   \
+                      &off,                           \
                       input->tried));
 }

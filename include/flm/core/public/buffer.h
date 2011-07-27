@@ -111,6 +111,10 @@ flm_BufferView (flm_Buffer *                    buffer,
 flm_Buffer *
 flm_BufferPrintf (const char *                  format, ...);
 
+flm_Buffer *
+flm_BufferVPrintf (const char *                 format,
+                   va_list                      ap);
+
 /**
  * \brief Returns the length (in bytes) of the buffer.
  *

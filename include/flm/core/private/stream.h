@@ -57,8 +57,6 @@ struct flm_Stream
     /* inheritance */
     struct flm_IO			io;
 
-    flm_Stream *                        pipe;
-
     struct {
         flm_StreamReadHandler		handler;
     } rd;

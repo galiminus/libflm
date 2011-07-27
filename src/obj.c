@@ -28,10 +28,10 @@ flm__ObjInit (flm_Obj * obj)
     obj->perf.retain = flm__PerfRetain;
     obj->perf.release = flm__PerfRelease;
     obj->perf.destruct = NULL;
-    
+
     /* reference counter */
     obj->stat.refcount = 1;
-    
+
     return ;
 }
 

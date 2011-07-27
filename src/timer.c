@@ -68,13 +68,13 @@ flm_TimerCancel (flm_Timer *	timer)
 flm_Timer *
 flm_TimerRetain (flm_Timer *    timer)
 {
-    return (flm__Retain ((flm_Obj *) timer));
+    return (flm__Retain (&timer->obj));
 }
 
 void
 flm_TimerRelease (flm_Timer *    timer)
 {
-    flm__Release ((flm_Obj *) timer);
+    flm__Release (&timer->obj);
     return ;
 }
 
@@ -85,9 +85,9 @@ flm__TimerInit (flm_Timer *		timer,
 		void *                  state,
 		uint32_t		delay)
 {
-    flm__ObjInit ((flm_Obj *) timer);
+    flm__ObjInit (&timer->obj);
 
-    ((flm_Obj *)(timer))->type = FLM__TYPE_TIMER;
+    timer->obj.type = FLM__TYPE_TIMER;
 
     timer->handler = handler;
     timer->state = state;

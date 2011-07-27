@@ -57,21 +57,21 @@ flm_TCPServerNew (flm_Monitor *		monitor,
 void
 flm_TCPServerClose (flm_TCPServer *    tcp_server)
 {
-    flm_IOClose ((flm_IO *) tcp_server);
+    flm_IOClose (&tcp_server->io);
 }
 
 void
 flm_TCPServerOnClose (flm_TCPServer *                   tcp_server,
                       flm_TCPServerCloseHandler         handler)
 {
-    flm_IOOnClose ((flm_IO *) tcp_server, (flm_IOCloseHandler) handler);
+    flm_IOOnClose (&tcp_server->io, (flm_IOCloseHandler) handler);
 }
 
 void
 flm_TCPServerOnError (flm_TCPServer *                   tcp_server,
                       flm_TCPServerErrorHandler         handler)
 {
-    flm_IOOnError ((flm_IO *) tcp_server, (flm_IOErrorHandler) handler);
+    flm_IOOnError (&tcp_server->io, (flm_IOErrorHandler) handler);
 }
 
 void
@@ -85,13 +85,13 @@ flm_TCPServerOnAccept (flm_TCPServer *			tcp_server,
 flm_TCPServer *
 flm_TCPServerRetain (flm_TCPServer *    tcp_server)
 {
-    return (flm__Retain ((flm_Obj *) tcp_server));
+    return (flm__Retain (&tcp_server->io.obj));
 }
 
 void
 flm_TCPServerRelease (flm_TCPServer *   tcp_server)
 {
-    flm__Release ((flm_Obj *) tcp_server);
+    flm__Release (&tcp_server->io.obj);
     return ;
 }
 
@@ -100,14 +100,15 @@ flm__TCPServerInit (flm_TCPServer *	tcp_server,
 		    flm_Monitor *	monitor,
 		    const char *	interface,
 		    uint16_t		port,
-		    void *	state)
+		    void *              state)
 {
-    struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    char str_port[6];
-    int fd;
-    int error;
-    long flags;
+    struct addrinfo     hints;
+    struct addrinfo *   result;
+    struct addrinfo *   rp;
+    char                str_port[6];
+    int                 fd;
+    int                 error;
+    long                flags;
 
     (void) interface;
 
@@ -164,15 +165,15 @@ flm__TCPServerInit (flm_TCPServer *	tcp_server,
         goto close_fd;
     }
 
-    if (flm__IOInit ((flm_IO *) tcp_server,     \
+    if (flm__IOInit (&tcp_server->io,           \
                      monitor,			\
                      fd,                        \
                      state) == -1) {
         goto close_fd;
     }
-    ((flm_Obj *)(tcp_server))->type = FLM__TYPE_TCP_SERVER;
+    tcp_server->io.obj.type = FLM__TYPE_TCP_SERVER;
 
-    ((flm_IO *)(tcp_server))->perf.read	=       \
+    tcp_server->io.perf.read	=                       \
         (flm__IOSysRead_f) flm__TCPServerPerfRead;
 
     flm_TCPServerOnAccept (tcp_server, NULL);
@@ -198,7 +199,7 @@ flm__TCPServerSysAccept (flm_TCPServer * tcp_server)
     addr = (struct sockaddr *) &addr_in;
 
 #if defined(HAVE_ACCEPT4)
-    if ((fd = accept4 (((flm_IO *)(tcp_server))->sys.fd,
+    if ((fd = accept4 (tcp_server->io.sys.fd,
                        addr,
                        &addr_len,
                        SOCK_NONBLOCK)) < 0) {
@@ -208,7 +209,7 @@ flm__TCPServerSysAccept (flm_TCPServer * tcp_server)
 #else
     long flags;
 
-    if ((fd = accept (((flm_IO *)(tcp_server))->sys.fd,
+    if ((fd = accept (tcp_server->io.sys.fd,
                       addr,
                       &addr_len)) < 0) {
         flm__Error = FLM_ERR_ERRNO;
@@ -243,29 +244,29 @@ flm__TCPServerPerfRead (flm_TCPServer *	tcp_server,
 
     if ((fd = flm__TCPServerSysAccept (tcp_server)) == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            ((flm_IO *)(tcp_server))->rd.can = 0;
+            tcp_server->io.rd.can = 0;
         }
         else if (errno == EINTR) {
-            ((flm_IO *)(tcp_server))->rd.can = 1;
+            tcp_server->io.rd.can = 1;
         }
         else {
-            ((flm_IO *)(tcp_server))->rd.can = 0;
+            tcp_server->io.rd.can = 0;
             /**
              * Call the error handler
              */
-            if (((flm_IO *)(tcp_server))->er.handler) {
-                ((flm_IO *)(tcp_server))->er.handler ((flm_IO *) tcp_server,
-                                                      ((flm_IO *)(tcp_server))->state,
-                                                      flm_Error());
+            if (tcp_server->io.er.handler) {
+                tcp_server->io.er.handler (&tcp_server->io,
+                                           tcp_server->io.state,
+                                           flm_Error());
             }
             return (-1);
         }
     }
     else {
-        ((flm_IO *)(tcp_server))->rd.can = 1;
+        tcp_server->io.rd.can = 1;
         if (tcp_server->ac.handler) {
             tcp_server->ac.handler (tcp_server,
-                                    ((flm_IO *)(tcp_server))->state,
+                                    tcp_server->io.state,
                                     fd);
         }
     }

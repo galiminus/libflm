@@ -77,10 +77,10 @@ flm_MonitorNew ()
 
     switch (_flm__MonitorBackend) {
     case FLM__MONITOR_BACKEND_EPOLL:
-        monitor = ((flm_Monitor *)(flm__EpollNew ()));
+        monitor = &(flm__EpollNew ()->monitor);
         break ;
     case FLM__MONITOR_BACKEND_SELECT:
-        monitor = ((flm_Monitor *)(flm__SelectNew ()));
+        monitor = &(flm__SelectNew ()->monitor);
         break ;
     default:
         flm__Error = FLM_ERR_NOSYS;
@@ -112,13 +112,13 @@ flm_MonitorWait (flm_Monitor * monitor)
 flm_Monitor *
 flm_MonitorRetain (flm_Monitor * monitor)
 {
-    return (flm__Retain ((flm_Obj *) monitor));
+    return (flm__Retain (&monitor->obj));
 }
 
 void
 flm_MonitorRelease (flm_Monitor * monitor)
 {
-    flm__Release ((flm_Obj *) monitor);
+    flm__Release (&monitor->obj);
     return ;
 }
 
@@ -127,11 +127,11 @@ flm__MonitorInit (flm_Monitor * monitor)
 {
     size_t count;
 
-    flm__ObjInit ((flm_Obj *) monitor);
+    flm__ObjInit (&monitor->obj);
 
-    ((flm_Obj *)(monitor))->type = FLM__TYPE_MONITOR;
+    monitor->obj.type = FLM__TYPE_MONITOR;
 
-    ((flm_Obj *)(monitor))->perf.destruct =                     \
+    monitor->obj.perf.destruct =                     \
         (flm__ObjPerfDestruct_f) flm__MonitorPerfDestruct;
 
     /**
@@ -305,10 +305,10 @@ flm__MonitorTimerTick (flm_Monitor * monitor)
             if (timer->wh.rounds > 0) {
                 timer->wh.rounds--;
                 continue ;
-                
+
             }
             temp.wh.entries = timer->wh.entries;
-            
+
             flm_TimerRetain (timer);
             flm_TimerCancel (timer);
             if (timer->handler) {

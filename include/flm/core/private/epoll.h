@@ -23,7 +23,7 @@
 
 typedef struct flm__Epoll
 {
-	struct flm_Monitor	Monitor;
+	struct flm_Monitor	monitor;
 
 	int			epfd;
 

@@ -59,13 +59,13 @@ flm_FileOpen (const char *      root,
 flm_File *
 flm_FileRetain (flm_File * file)
 {
-    return (flm__Retain ((flm_Obj *) file));
+    return (flm__Retain (&file->io.obj));
 }
 
 void
 flm_FileRelease (flm_File * file)
 {
-    flm__Release ((flm_Obj *) file);
+    flm__Release (&file->io.obj);
     return ;
 }
 
@@ -73,10 +73,10 @@ int
 flm__FileInit (flm_File *       file,
                int              fd)
 {
-    if (flm__IOInit ((flm_IO *) file, NULL, fd, NULL) == -1) {
+    if (flm__IOInit (&file->io, NULL, fd, NULL) == -1) {
         return (-1);
     }
-    ((flm_Obj *)(file))->type = FLM__TYPE_FILE;
+    file->io.obj.type = FLM__TYPE_FILE;
     return (0);
 }
 

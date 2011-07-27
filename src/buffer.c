@@ -57,8 +57,8 @@ flm_BufferView (flm_Buffer *    from,
 }
 
 flm_Buffer *
-flm_BufferPrintf (const char *          format,
-		  ...)
+flm_BufferVPrintf (const char *         format,
+                   va_list              ap)
 {
     flm_Buffer *        buffer;
 
@@ -66,11 +66,7 @@ flm_BufferPrintf (const char *          format,
     int                 len;
     size_t              alloc;
 
-    va_list             ap;
-
-    va_start (ap, format);
     len = vsnprintf (NULL, 0, format, ap);
-    va_end (ap);
 
     alloc = len + 1;
 
@@ -80,9 +76,7 @@ flm_BufferPrintf (const char *          format,
         goto error;
     }
 
-    va_start (ap, format);
     vsnprintf (content, alloc, format, ap);
-    va_end (ap);
 
     if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
         goto free_content;
@@ -96,14 +90,29 @@ error:
     return (NULL);
 }
 
+flm_Buffer *
+flm_BufferPrintf (const char *          format,
+		  ...)
+{
+    flm_Buffer *        buffer;
+    va_list             ap;
+
+    va_start (ap, format);
+    buffer = flm_BufferVPrintf (format, ap);
+    va_end (ap);
+    return (buffer);
+}
+
 size_t
 flm_BufferLength (flm_Buffer *          buffer)
 {
-    if (buffer->type == FLM__BUFFER_TYPE_RAW) {
+    switch (buffer->type) {
+    case FLM__BUFFER_TYPE_RAW:
         return (buffer->content.raw.len);
-    }
-    else if (buffer->type == FLM__BUFFER_TYPE_VIEW) {
+    case FLM__BUFFER_TYPE_VIEW:
         return (buffer->content.view.count);
+    default:
+        break;
     }
     return (0);
 }
@@ -111,12 +120,14 @@ flm_BufferLength (flm_Buffer *          buffer)
 char *
 flm_BufferContent (flm_Buffer *         buffer)
 {
-    if (buffer->type == FLM__BUFFER_TYPE_RAW) {
+    switch (buffer->type) {
+    case FLM__BUFFER_TYPE_RAW:
         return (buffer->content.raw.content);
-    }
-    else if (buffer->type == FLM__BUFFER_TYPE_VIEW) {
+    case FLM__BUFFER_TYPE_VIEW:
         return (&(flm_BufferContent (
                       buffer->content.view.from)[buffer->content.view.off]));
+    default:
+        break;
     }
     return (NULL);
 }
@@ -124,13 +135,13 @@ flm_BufferContent (flm_Buffer *         buffer)
 flm_Buffer *
 flm_BufferRetain (flm_Buffer *          buffer)
 {
-    return (flm__Retain ((flm_Obj *) buffer));
+    return (flm__Retain(&buffer->obj));
 }
 
 void
 flm_BufferRelease (flm_Buffer *         buffer)
 {
-    flm__Release ((flm_Obj *) buffer);
+    flm__Release (&buffer->obj);
     return ;
 }
 
@@ -140,11 +151,11 @@ flm__BufferInitRaw (flm_Buffer *                   buffer,
                     size_t                         len,
                     flm_BufferFreeContentHandler   fr_handler)
 {
-    flm__ObjInit ((flm_Obj *) buffer);
+    flm__ObjInit (&buffer->obj);
 
-    ((flm_Obj *)(buffer))->type = FLM__TYPE_BUFFER;
+    buffer->obj.type = FLM__TYPE_BUFFER;
 
-    ((flm_Obj *)(buffer))->perf.destruct =                      \
+    buffer->obj.perf.destruct =                                 \
         (flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
 
     buffer->type = FLM__BUFFER_TYPE_RAW;
@@ -160,11 +171,11 @@ flm__BufferInitView (flm_Buffer *                  buffer,
                      off_t                         off,
                      size_t                        count)
 {
-    flm__ObjInit ((flm_Obj *) buffer);
+    flm__ObjInit (&buffer->obj);
 
-    ((flm_Obj *)(buffer))->type = FLM__TYPE_BUFFER;
+    buffer->obj.type = FLM__TYPE_BUFFER;
 
-    ((flm_Obj *)(buffer))->perf.destruct =                      \
+    buffer->obj.perf.destruct =                                 \
         (flm__ObjPerfDestruct_f) flm__BufferPerfDestruct;
 
     buffer->type = FLM__BUFFER_TYPE_VIEW;
@@ -177,13 +188,17 @@ flm__BufferInitView (flm_Buffer *                  buffer,
 void
 flm__BufferPerfDestruct (flm_Buffer *   buffer)
 {
-    if (buffer->type == FLM__BUFFER_TYPE_RAW) {
+    switch (buffer->type) {
+    case FLM__BUFFER_TYPE_RAW:
         if (buffer->content.raw.fr.handler) {
             buffer->content.raw.fr.handler (buffer->content.raw.content);
         }
-    }
-    else if (buffer->type == FLM__BUFFER_TYPE_VIEW) {
+        break;
+    case FLM__BUFFER_TYPE_VIEW:
         flm_BufferRelease (buffer->content.view.from);
+        break;
+    default:
+        break;
     }
     return ;
 }

@@ -81,23 +81,23 @@ flm__EpollNew ()
 int
 flm__EpollInit (flm__Epoll * epoll)
 {
-    if (flm__MonitorInit ((flm_Monitor *) epoll) == -1) {
+    if (flm__MonitorInit (&epoll->monitor) == -1) {
         goto error;
     }
 
-    ((flm_Obj *)(epoll))->perf.destruct =               \
+    epoll->monitor.obj.perf.destruct =
         (flm__ObjPerfDestruct_f) flm__EpollPerfDestruct;
-    
-    ((flm_Monitor *)(epoll))->add =                     \
+
+    epoll->monitor.add =
         (flm__MonitorAdd_f) flm__EpollPerfAdd;
 
-    ((flm_Monitor *)(epoll))->del =                     \
+    epoll->monitor.del =
         (flm__MonitorDel_f) flm__EpollPerfDel;
 
-    ((flm_Monitor *)(epoll))->reset =                   \
+    epoll->monitor.reset =
         (flm__MonitorDel_f) flm__EpollPerfReset;
 
-    ((flm_Monitor *)(epoll))->wait =                    \
+    epoll->monitor.wait =
         (flm__MonitorWait_f) flm__EpollPerfWait;
 
     epoll->size = FLM__EPOLL_MAXEVENTS_DEFAULT;
@@ -130,7 +130,7 @@ flm__EpollInit (flm__Epoll * epoll)
   close_epfd:
     close (epoll->epfd);
   destruct_monitor:
-    flm__MonitorPerfDestruct ((flm_Monitor *) epoll);
+    flm__MonitorPerfDestruct (&epoll->monitor);
   error:
     return (-1);
 }
@@ -140,7 +140,7 @@ flm__EpollPerfDestruct (flm__Epoll * epoll)
 {
     close (epoll->epfd);
     flm__Free (epoll->events);
-    flm__MonitorPerfDestruct ((flm_Monitor *) epoll);
+    flm__MonitorPerfDestruct (&epoll->monitor);
     return ;
 }
 
@@ -203,13 +203,11 @@ flm__EpollPerfWait (flm__Epoll * epoll)
     struct epoll_event * event;
     flm_IO * io;
 
-    int ret;
-
     for (;;) {
         ev_max = epollWaitHandler (epoll->epfd,                       \
                                    epoll->events,                     \
                                    epoll->size,                       \
-                                   ((flm_Monitor *)(epoll))->tm.next);
+                                   epoll->monitor.tm.next);
         if (ev_max >= 0) {
             break ;
         }
@@ -227,22 +225,21 @@ flm__EpollPerfWait (flm__Epoll * epoll)
         if ((io = ((flm_IO *) (event->data.ptr))) == NULL) {
             continue ;
         }
-        ret = 0;
         if ((event->events & (EPOLLIN | EPOLLRDHUP)) &&                    \
-            flm__IORead (io, ((flm_Monitor *) epoll)) == io->rd.limit &&   \
-            io->rd.can &&                                             
+            flm__IORead (io, &epoll->monitor) == io->rd.limit &&   \
+            io->rd.can &&                                                  \
             flm__EpollPerfReset (epoll, io) == -1) {
             ret = -1;
         }
         if ((event->events & EPOLLOUT) &&                                  \
-            flm__IOWrite (io, ((flm_Monitor *) epoll)) == io->wr.limit &&
-            io->wr.can &&                                             
+            flm__IOWrite (io, &epoll->monitor) == io->wr.limit &&  \
+            io->wr.can &&                                                  \
             flm__EpollPerfReset (epoll, io) == -1) {
             ret = -1;
         }
 
         if (io->cl.shutdown && !io->wr.want && !io->cl.closed) {
-            flm__IOClose (io, ((flm_Monitor *) epoll));
+            flm__IOClose (io, &epoll->monitor);
         }
     }
     return (0);

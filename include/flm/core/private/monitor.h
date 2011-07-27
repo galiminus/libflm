@@ -47,12 +47,12 @@ enum flm__MonitorBackend {
 struct flm_Monitor
 {
     struct flm_Obj			obj;
-    
+
     flm__MonitorAdd_f			add;
     flm__MonitorDel_f			del;
     flm__MonitorReset_f			reset;
     flm__MonitorWait_f			wait;
-    
+
     struct {
         size_t                          count;
         TAILQ_HEAD (iolt, flm_IO)	list;
@@ -63,7 +63,7 @@ struct flm_Monitor
 
         /* current time */
         struct timespec			current;
-        
+
         /* milliseconds before next timeout */
         int				next;
 
@@ -72,10 +72,10 @@ struct flm_Monitor
 
         /* resolution of the timer wheel (in ms) */
         uint32_t                        res;
-        
+
         /* current position in the timer wheel */
         size_t				pos;
-        
+
         /* simple timer wheel */
         TAILQ_HEAD (tmwh, flm_Timer) *	wheel;
     } tm;
