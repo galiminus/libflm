@@ -66,7 +66,11 @@ flm_BufferVPrintf (const char *         format,
     int                 len;
     size_t              alloc;
 
-    len = vsnprintf (NULL, 0, format, ap);
+    va_list             ap_copy; /* needed on 64-bits platforms */
+
+    va_copy (ap_copy, ap);
+    len = vsnprintf (NULL, 0, format, ap_copy);
+    va_end (ap_copy);
 
     alloc = len + 1;
 
@@ -76,7 +80,9 @@ flm_BufferVPrintf (const char *         format,
         goto error;
     }
 
-    vsnprintf (content, alloc, format, ap);
+    va_copy (ap_copy, ap);
+    vsnprintf (content, alloc, format, ap_copy);
+    va_end (ap_copy);
 
     if ((buffer = flm_BufferNew (content, len, flm__Free)) == NULL) {
         goto free_content;
