@@ -203,6 +203,8 @@ flm__EpollPerfWait (flm__Epoll * epoll)
     struct epoll_event * event;
     flm_IO * io;
 
+    int ret;
+
     for (;;) {
         ev_max = epollWaitHandler (epoll->epfd,                       \
                                    epoll->events,                     \

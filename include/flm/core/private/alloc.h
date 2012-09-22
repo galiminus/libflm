@@ -36,7 +36,7 @@
  * \retval NULL in case of error.
  */
 void *
-flm__Alloc (unsigned int size);
+flm__Alloc (size_t size);
 
 /**
  * \brief Simple wrapper around flm__free(3).
